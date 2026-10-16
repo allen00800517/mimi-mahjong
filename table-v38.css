@@ -1,0 +1,15 @@
+/* Seats keep their existing art and gain a clear connection to the table. */
+#table .west .character-stage,#table .east .character-stage{top:2%;height:39vh;width:15%}
+#table .west .profile,#table .east .profile{top:calc(2% + 39vh);width:15%;border-color:#c6a77580}
+#table .north .character-stage{height:26vh;width:15%;left:42.5%}
+#table .north .profile{left:58%;top:5%;min-width:68px}
+.turn-cue{font-size:10px;line-height:1.25;color:#ffeab7;letter-spacing:1px;flex-basis:100%}
+#table .active .profile{border-color:#ffdb8a;box-shadow:0 0 0 2px #e8bb5c77,0 3px 12px #0005;background:#3a3021ee}
+#table .active .turn-cue{font-weight:700}
+.self .turn-cue{flex-basis:auto;margin-left:8px}
+.moving-card{transform-origin:0 0!important;will-change:transform,opacity;backface-visibility:visible}
+.callout{font-size:clamp(32px,5.5vw,58px);letter-spacing:3px;text-shadow:0 2px 0 #743a20,0 0 4px #251b12,0 4px 14px #0009}
+.call-performer{position:absolute;left:35%;top:17%;width:30%;height:45%;pointer-events:none;filter:drop-shadow(0 3px 6px #0007)}
+.call-performer img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#effects .callout[data-seat="0"]{z-index:2}
+@media(max-width:720px){.turn-cue{font-size:9px}#table .north .profile{left:59%;min-width:55px}}

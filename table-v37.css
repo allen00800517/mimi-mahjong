@@ -1,0 +1,11 @@
+/* Foreground tiles form one continuous row at a stable preferred width. */
+#table{overflow:visible}
+#south.self{left:var(--foreground-left);right:auto;width:var(--foreground-span)}
+.self .play-row{justify-content:flex-start!important}
+#self-meld-dock{left:var(--foreground-left);--dock-w:calc(var(--base-hand-w)*.9)}
+#self-meld-dock .small-tile{height:calc(var(--dock-w)*1.17)!important}
+#self-flowers{left:calc(var(--foreground-left) + 8px);bottom:calc(var(--footer-h) + var(--base-hand-h) + 12px);--flowers-w:calc(var(--base-hand-w)*.58)}
+#self-flowers .flowers{display:flex;flex-wrap:nowrap;gap:0}
+#self-flowers .small-tile{width:var(--flowers-w)!important;height:calc(var(--flowers-w)*1.375)!important;flex-basis:var(--flowers-w)!important}
+/* Passive wait information belongs beside the hand, away from its river. */
+.controls:has(#ready-preview:not([hidden])):has(#actions:empty){left:auto;right:3%;transform:none;bottom:calc(var(--footer-h) + var(--base-hand-h) + 12px);max-width:30%;padding:4px 6px;background:#202d24ee;border:1px solid #b6975a;border-radius:8px}

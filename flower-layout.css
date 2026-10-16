@@ -1,0 +1,40 @@
+
+/* 保留原牌圖，取消花牌與副露的整排預留帶。 */
+:root{--base-hand-w:var(--tile-w);--base-hand-h:calc(var(--base-hand-w)*1.375)}
+main{grid-template-rows:minmax(0,1fr) calc(var(--base-hand-h) + 18px) var(--controls-h)}
+.self{grid-template-rows:minmax(0,1fr);padding-top:8px;row-gap:0}
+.self .profile{grid-area:1/1}
+.play-row{grid-area:1/2;display:flex;align-items:flex-end;gap:10px;min-width:0;height:calc(var(--base-hand-h) + 7px)}
+.self .hand{grid-area:auto;flex:1;min-width:0;height:calc(var(--base-hand-h) + 7px);container-type:inline-size;padding-top:7px;gap:2px;justify-content:center}
+.self .hand .tile{--tile-w:min(var(--base-hand-w),calc((100cqw - (var(--hand-count) - 1)*2px - 8px)/var(--hand-count)));width:var(--tile-w);flex-basis:var(--tile-w);height:calc(var(--tile-w)*1.375)}
+.self .exposed{grid-area:auto;flex:0 0 auto;width:auto;height:auto;max-width:none;overflow:visible;gap:0;padding:0;align-self:end}
+.self .exposed:has(.melds:empty){display:none}
+.self .exposed .melds{gap:5px}
+.self .exposed .meld{margin:0;gap:1px;padding:0}
+.self .exposed .small-tile{width:22px!important;flex-basis:22px!important;height:30.25px!important}
+.self-flower-dock{position:absolute;left:23%;bottom:3px;z-index:4;padding:1px;border:1px solid #c4aa6940;border-radius:5px;background:#16382d90}
+.self-flower-dock .flowers{display:grid;grid-template-columns:repeat(var(--flower-columns),22px);gap:2px}
+.self-flower-dock .small-tile{width:22px!important;flex-basis:22px!important;height:30.25px!important}
+@media(max-height:500px){
+ main{grid-template-rows:minmax(0,1fr) calc(var(--base-hand-h) + 14px) var(--controls-h)}
+ .self{grid-template-rows:minmax(0,1fr);padding-top:6px}
+ .play-row{gap:8px}.self .hand{gap:1px}
+ .self .hand .tile{--tile-w:min(var(--base-hand-w),calc((100cqw - (var(--hand-count) - 1)*1px - 8px)/var(--hand-count)))}
+ .self .exposed .melds{gap:4px}.self .exposed .small-tile{width:19px!important;flex-basis:19px!important;height:26.125px!important}
+ .self-flower-dock{bottom:1px}
+ .self-flower-dock .flowers{grid-template-columns:repeat(var(--flower-columns),18px)}
+ .self-flower-dock .small-tile{width:18px!important;flex-basis:18px!important;height:24.75px!important}
+}
+@media(max-width:720px){
+ .play-row{gap:6px}.self .exposed .melds{gap:3px}
+ .self .exposed .small-tile{width:17px!important;flex-basis:17px!important;height:23.375px!important}
+}
+@media(max-width:600px){.river-west,.river-east{top:73px;max-height:54px}}
+@container(max-height:205px){.east .backs,.west .backs{top:44px}.east .back,.west .back{height:6.5px}.east .back img,.west .back img{width:6.5px;height:9.5px}}
+
+/* 有副露時將暗牌接到副露左側，避免兩者之間出現大空隙。 */
+.play-row:has(.melds:not(:empty)) .hand{justify-content:flex-end}
+
+/* 短桌面仍保留花牌與側家最後一列的間隔。 */
+@container(max-height:230px){.river-west,.river-east{max-height:calc(var(--river-w)*4 + 8px)}}
+@media(max-width:600px){.river-west,.river-east{max-height:54px}}

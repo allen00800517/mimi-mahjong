@@ -1,0 +1,867 @@
+{
+  "seed": 1617,
+  "dealer": 0,
+  "repeats": 0,
+  "scores": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "roundWind": 0,
+  "windOrigin": 0,
+  "players": [
+    {
+      "hand": [
+        "7p",
+        "8p",
+        "9p",
+        "9p",
+        "6s",
+        "7s",
+        "9s"
+      ],
+      "melds": [
+        {
+          "kind": "sequence",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from": 3,
+          "calledTile": "3m"
+        },
+        {
+          "kind": "sequence",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from": 3,
+          "calledTile": "9m"
+        },
+        {
+          "kind": "sequence",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from": 3,
+          "calledTile": "2s"
+        }
+      ],
+      "flowers": [
+        "1f",
+        "8f"
+      ],
+      "river": [
+        {
+          "tile": "4p",
+          "claimed": false
+        },
+        {
+          "tile": "1z",
+          "claimed": false
+        },
+        {
+          "tile": "3z",
+          "claimed": false
+        },
+        {
+          "tile": "4z",
+          "claimed": false
+        },
+        {
+          "tile": "2z",
+          "claimed": false
+        },
+        {
+          "tile": "6z",
+          "claimed": false
+        },
+        {
+          "tile": "3m",
+          "claimed": false
+        },
+        {
+          "tile": "7z",
+          "claimed": false
+        },
+        {
+          "tile": "6m",
+          "claimed": true
+        },
+        {
+          "tile": "4s",
+          "claimed": true
+        }
+      ],
+      "state": "S0",
+      "passed": false,
+      "everPassed": false,
+      "ponPassed": [],
+      "draws": 6,
+      "discards": 10,
+      "called": true
+    },
+    {
+      "hand": [
+        "8m",
+        "9m",
+        "3p",
+        "3p",
+        "4p",
+        "6p",
+        "7p",
+        "8p",
+        "1s",
+        "4s",
+        "5s",
+        "6s",
+        "6s"
+      ],
+      "melds": [
+        {
+          "kind": "sequence",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from": 0,
+          "calledTile": "4s"
+        }
+      ],
+      "flowers": [],
+      "river": [
+        {
+          "tile": "1m",
+          "claimed": false
+        },
+        {
+          "tile": "1z",
+          "claimed": false
+        },
+        {
+          "tile": "5z",
+          "claimed": false
+        },
+        {
+          "tile": "5m",
+          "claimed": false
+        },
+        {
+          "tile": "1m",
+          "claimed": false
+        },
+        {
+          "tile": "2z",
+          "claimed": false
+        },
+        {
+          "tile": "1p",
+          "claimed": false
+        },
+        {
+          "tile": "5z",
+          "claimed": true
+        },
+        {
+          "tile": "7m",
+          "claimed": false
+        }
+      ],
+      "state": "S0",
+      "passed": false,
+      "everPassed": false,
+      "ponPassed": [],
+      "draws": 8,
+      "discards": 9,
+      "called": true
+    },
+    {
+      "hand": [
+        "2m",
+        "2m",
+        "5p",
+        "6p",
+        "6p",
+        "7p",
+        "8p",
+        "8p",
+        "9p",
+        "3s"
+      ],
+      "melds": [
+        {
+          "kind": "triplet",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from": 3,
+          "calledTile": "5s"
+        },
+        {
+          "kind": "triplet",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from": 1,
+          "calledTile": "5z"
+        }
+      ],
+      "flowers": [],
+      "river": [
+        {
+          "tile": "8m",
+          "claimed": true
+        },
+        {
+          "tile": "1p",
+          "claimed": true
+        },
+        {
+          "tile": "4z",
+          "claimed": false
+        },
+        {
+          "tile": "7z",
+          "claimed": false
+        },
+        {
+          "tile": "7s",
+          "claimed": false
+        },
+        {
+          "tile": "4m",
+          "claimed": true
+        },
+        {
+          "tile": "8s",
+          "claimed": true
+        },
+        {
+          "tile": "1m",
+          "claimed": false
+        },
+        {
+          "tile": "2s",
+          "claimed": false
+        },
+        {
+          "tile": "9m",
+          "claimed": false
+        }
+      ],
+      "state": "S0",
+      "passed": false,
+      "everPassed": false,
+      "ponPassed": [],
+      "draws": 8,
+      "discards": 10,
+      "called": true
+    },
+    {
+      "hand": [
+        "7z"
+      ],
+      "melds": [
+        {
+          "kind": "sequence",
+          "tiles": [
+            "6m",
+            "7m",
+            "8m"
+          ],
+          "from": 2,
+          "calledTile": "8m"
+        },
+        {
+          "kind": "sequence",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from": 2,
+          "calledTile": "1p"
+        },
+        {
+          "kind": "sequence",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from": 2,
+          "calledTile": "4m"
+        },
+        {
+          "kind": "openKan",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from": 2,
+          "calledTile": "8s",
+          "added": true
+        },
+        {
+          "kind": "triplet",
+          "tiles": [
+            "6m",
+            "6m",
+            "6m"
+          ],
+          "from": 0,
+          "calledTile": "6m"
+        }
+      ],
+      "flowers": [
+        "5f",
+        "3f",
+        "6f",
+        "7f"
+      ],
+      "river": [
+        {
+          "tile": "9m",
+          "claimed": false
+        },
+        {
+          "tile": "2p",
+          "claimed": false
+        },
+        {
+          "tile": "1s",
+          "claimed": false
+        },
+        {
+          "tile": "5s",
+          "claimed": true
+        },
+        {
+          "tile": "3z",
+          "claimed": false
+        },
+        {
+          "tile": "3m",
+          "claimed": true
+        },
+        {
+          "tile": "4z",
+          "claimed": false
+        },
+        {
+          "tile": "9m",
+          "claimed": true
+        },
+        {
+          "tile": "2p",
+          "claimed": false
+        },
+        {
+          "tile": "2s",
+          "claimed": true
+        },
+        {
+          "tile": "9p",
+          "claimed": false
+        }
+      ],
+      "state": "S1",
+      "passed": false,
+      "everPassed": false,
+      "ponPassed": [],
+      "draws": 6,
+      "discards": 11,
+      "called": true
+    }
+  ],
+  "initialFlowers": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "deferredFlowers": [
+    null,
+    null,
+    null,
+    null
+  ],
+  "flowerEvent": null,
+  "flowerClosed": false,
+  "callRestriction": null,
+  "drawOrigin": "normal",
+  "deal": {
+    "dice": [
+      5,
+      6,
+      2
+    ],
+    "total": 13,
+    "doorSeat": 0,
+    "cutIndex": 26,
+    "firstWallSeat": 0,
+    "firstStack": 14
+  },
+  "backDraws": 7,
+  "wall": [
+    "4s",
+    "2z",
+    "6s",
+    "9s",
+    "2z",
+    "4z",
+    "7p",
+    "7m",
+    "1m",
+    "5m",
+    "7z",
+    "9s",
+    "4p",
+    "6z",
+    "1z",
+    "1p",
+    "4m",
+    "6z",
+    "5p",
+    "3z",
+    "6z",
+    "7s",
+    "4s",
+    "3s",
+    "1z",
+    "4p",
+    "4m",
+    "5m",
+    "6p",
+    "5p",
+    "3m",
+    "5p",
+    "2m",
+    "4f",
+    "1s",
+    "2f",
+    "3z",
+    "3p",
+    "1p",
+    "7s",
+    "2s",
+    "2p",
+    "8m",
+    "9s"
+  ],
+  "kanCount": 1,
+  "phase": "response",
+  "turn": 3,
+  "event": {
+    "type": "discard",
+    "from": 3,
+    "tile": "9p",
+    "declaration": null,
+    "first": false,
+    "lastTile": false,
+    "responses": {
+      "1": {
+        "id": "pass",
+        "label": "略過"
+      },
+      "2": {
+        "id": "pass",
+        "label": "略過"
+      }
+    },
+    "eligible": {
+      "0": false,
+      "1": false,
+      "2": false
+    }
+  },
+  "result": null,
+  "log": [
+    "骰子 5＋6＋2＝13；你開門東；從你第 14 墩取牌。",
+    "你配牌補花 春",
+    "上家配牌補花 梅",
+    "上家配牌補花 秋",
+    "開局 #1617；你坐莊，連莊 0。",
+    "你打出 4筒",
+    "下家摸牌",
+    "下家打出 1萬",
+    "對家摸牌",
+    "對家打出 8萬",
+    "上家吃 6萬 7萬 8萬",
+    "上家打出 9萬",
+    "你摸牌",
+    "你打出 東",
+    "下家摸牌",
+    "下家打出 東",
+    "對家摸牌",
+    "對家打出 1筒",
+    "上家吃 1筒 2筒 3筒",
+    "上家打出 2筒",
+    "你摸牌",
+    "你打出 西",
+    "下家摸牌",
+    "下家打出 白",
+    "對家摸牌",
+    "對家打出 北",
+    "上家補花 蘭",
+    "上家補牌",
+    "上家打出 1索",
+    "你補花 竹",
+    "你補牌",
+    "你打出 北",
+    "下家摸牌",
+    "下家打出 5萬",
+    "對家摸牌",
+    "對家打出 中",
+    "上家摸牌",
+    "上家打出 5索",
+    "對家碰 5索",
+    "對家打出 7索",
+    "上家補花 菊",
+    "上家補牌",
+    "上家打出 西",
+    "你摸牌",
+    "你打出 南",
+    "下家摸牌",
+    "下家打出 1萬",
+    "對家摸牌",
+    "對家打出 4萬",
+    "上家吃 3萬 4萬 5萬",
+    "上家打出 3萬",
+    "你吃 2萬 3萬 4萬",
+    "你打出 發",
+    "下家摸牌",
+    "下家打出 南",
+    "對家摸牌",
+    "對家打出 8索",
+    "上家碰 8索",
+    "上家打出 北",
+    "你摸牌",
+    "你打出 3萬",
+    "下家摸牌",
+    "下家打出 1筒",
+    "對家摸牌",
+    "對家打出 1萬",
+    "上家摸牌",
+    "上家申請加槓 8索",
+    "上家加槓 8索",
+    "上家補牌",
+    "上家打出 9萬",
+    "你吃 7萬 8萬 9萬",
+    "你打出 中",
+    "下家摸牌",
+    "下家打出 白",
+    "對家碰 白",
+    "對家打出 2索",
+    "上家摸牌",
+    "上家打出 2筒",
+    "你摸牌",
+    "你打出 6萬",
+    "上家碰 6萬",
+    "上家打出 2索，提交宣告聽牌",
+    "上家宣告聽牌成立",
+    "你吃 1索 2索 3索",
+    "你打出 4索",
+    "下家吃 2索 3索 4索",
+    "下家打出 7萬",
+    "對家摸牌",
+    "對家打出 9萬",
+    "上家摸牌",
+    "上家打出 9筒"
+  ],
+  "revision": 54,
+  "history": [
+    {
+      "revision": 0,
+      "seat": 0,
+      "id": "discard:4p"
+    },
+    {
+      "revision": 1,
+      "seat": 1,
+      "id": "discard:1m"
+    },
+    {
+      "revision": 2,
+      "seat": 2,
+      "id": "discard:8m"
+    },
+    {
+      "revision": 3,
+      "seat": 3,
+      "id": "chi:6"
+    },
+    {
+      "revision": 4,
+      "seat": 3,
+      "id": "discard:9m"
+    },
+    {
+      "revision": 5,
+      "seat": 0,
+      "id": "discard:1z"
+    },
+    {
+      "revision": 6,
+      "seat": 1,
+      "id": "discard:1z"
+    },
+    {
+      "revision": 7,
+      "seat": 2,
+      "id": "discard:1p"
+    },
+    {
+      "revision": 8,
+      "seat": 3,
+      "id": "chi:1"
+    },
+    {
+      "revision": 9,
+      "seat": 3,
+      "id": "discard:2p"
+    },
+    {
+      "revision": 10,
+      "seat": 0,
+      "id": "discard:3z"
+    },
+    {
+      "revision": 11,
+      "seat": 1,
+      "id": "discard:5z"
+    },
+    {
+      "revision": 12,
+      "seat": 2,
+      "id": "discard:4z"
+    },
+    {
+      "revision": 13,
+      "seat": 3,
+      "id": "discard:1s"
+    },
+    {
+      "revision": 14,
+      "seat": 0,
+      "id": "discard:4z"
+    },
+    {
+      "revision": 15,
+      "seat": 1,
+      "id": "discard:5m"
+    },
+    {
+      "revision": 16,
+      "seat": 2,
+      "id": "discard:7z"
+    },
+    {
+      "revision": 17,
+      "seat": 3,
+      "id": "discard:5s"
+    },
+    {
+      "revision": 18,
+      "seat": 0,
+      "id": "chi:3"
+    },
+    {
+      "revision": 19,
+      "seat": 2,
+      "id": "pon"
+    },
+    {
+      "revision": 20,
+      "seat": 2,
+      "id": "discard:7s"
+    },
+    {
+      "revision": 21,
+      "seat": 3,
+      "id": "discard:3z"
+    },
+    {
+      "revision": 22,
+      "seat": 0,
+      "id": "discard:2z"
+    },
+    {
+      "revision": 23,
+      "seat": 1,
+      "id": "discard:1m"
+    },
+    {
+      "revision": 24,
+      "seat": 2,
+      "id": "discard:4m"
+    },
+    {
+      "revision": 25,
+      "seat": 3,
+      "id": "chi:3"
+    },
+    {
+      "revision": 26,
+      "seat": 3,
+      "id": "discard:3m"
+    },
+    {
+      "revision": 27,
+      "seat": 0,
+      "id": "chi:2"
+    },
+    {
+      "revision": 28,
+      "seat": 0,
+      "id": "discard:6z"
+    },
+    {
+      "revision": 29,
+      "seat": 1,
+      "id": "discard:2z"
+    },
+    {
+      "revision": 30,
+      "seat": 2,
+      "id": "discard:8s"
+    },
+    {
+      "revision": 31,
+      "seat": 3,
+      "id": "pon"
+    },
+    {
+      "revision": 32,
+      "seat": 3,
+      "id": "discard:4z"
+    },
+    {
+      "revision": 33,
+      "seat": 0,
+      "id": "discard:3m"
+    },
+    {
+      "revision": 34,
+      "seat": 1,
+      "id": "discard:1p"
+    },
+    {
+      "revision": 35,
+      "seat": 2,
+      "id": "discard:1m"
+    },
+    {
+      "revision": 36,
+      "seat": 3,
+      "id": "addedKan:8s"
+    },
+    {
+      "revision": 37,
+      "seat": 3,
+      "id": "discard:9m"
+    },
+    {
+      "revision": 38,
+      "seat": 0,
+      "id": "chi:7"
+    },
+    {
+      "revision": 39,
+      "seat": 0,
+      "id": "discard:7z"
+    },
+    {
+      "revision": 40,
+      "seat": 1,
+      "id": "discard:5z"
+    },
+    {
+      "revision": 41,
+      "seat": 2,
+      "id": "pon"
+    },
+    {
+      "revision": 42,
+      "seat": 2,
+      "id": "discard:2s"
+    },
+    {
+      "revision": 43,
+      "seat": 3,
+      "id": "discard:2p"
+    },
+    {
+      "revision": 44,
+      "seat": 0,
+      "id": "discard:6m"
+    },
+    {
+      "revision": 45,
+      "seat": 1,
+      "id": "chi:6"
+    },
+    {
+      "revision": 46,
+      "seat": 3,
+      "id": "pon"
+    },
+    {
+      "revision": 47,
+      "seat": 3,
+      "id": "declare:2s"
+    },
+    {
+      "revision": 48,
+      "seat": 0,
+      "id": "chi:1"
+    },
+    {
+      "revision": 49,
+      "seat": 0,
+      "id": "discard:4s"
+    },
+    {
+      "revision": 50,
+      "seat": 1,
+      "id": "chi:2"
+    },
+    {
+      "revision": 51,
+      "seat": 1,
+      "id": "discard:7m"
+    },
+    {
+      "revision": 52,
+      "seat": 2,
+      "id": "discard:9m"
+    },
+    {
+      "revision": 53,
+      "seat": 3,
+      "id": "discard:9p"
+    }
+  ],
+  "drawn": "9p",
+  "beforeDraw": [
+    "7z"
+  ],
+  "replacement": false,
+  "lastTile": false,
+  "canKan": true,
+  "opening": null,
+  "format": "mimi-tw-prototype-3"
+}

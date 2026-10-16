@@ -1,0 +1,4 @@
+/* Fixed-view tile illustration: rails may slope, standing edges never lean. */
+#table.table-3d-ready .opponent-tiles .standing-display{display:block;width:100%;height:100%;overflow:visible;visibility:visible;filter:drop-shadow(0 1px .6px #001b1840)}
+#table.table-3d-ready .back{font-style:normal;overflow:visible}
+.moving-card .draw-back{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;background:#006b40;border-radius:2px}

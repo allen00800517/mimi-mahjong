@@ -1,0 +1,32 @@
+/* Tile art keeps the approved 512 x 704 aspect ratio in every preview. */
+.tile .tile-art,.back .tile-art{object-fit:contain}
+/* A preview owns its full size, including the flex basis inherited from rivers. */
+#response-context{--preview-w:36px}
+#chow-source{--preview-w:30px}
+#chow-options,#meld-summary{--preview-w:36px}
+#result .winning-tiles{--preview-w:27px}
+#response-context .tile,#chow-source .tile,#chow-options .tile,#meld-summary .tile,#result .winning-tiles .tile{
+ width:var(--preview-w)!important;height:calc(var(--preview-w)*1.375)!important;
+ flex:0 0 var(--preview-w)!important;aspect-ratio:8/11;
+}
+#meld-summary .called-slot,#result .winning-tiles .called-slot{
+ width:calc(var(--preview-w)*1.375);height:var(--preview-w);flex:0 0 auto!important;
+}
+#meld-summary .called-slot .called-tile,#result .winning-tiles .called-slot .called-tile{
+ width:calc(var(--preview-w)*1.375)!important;height:var(--preview-w)!important;flex:none!important;
+}
+#meld-summary .called-slot .called-tile .tile-art,#result .winning-tiles .called-slot .called-tile .tile-art{
+ width:var(--preview-w)!important;height:calc(var(--preview-w)*1.375)!important;object-fit:contain!important;
+}
+#meld-summary .called-slot.stacked,#result .winning-tiles .called-slot.stacked{height:calc(var(--preview-w)*2 + 1px)}
+#meld-summary .called-slot .added-tile,#result .winning-tiles .called-slot .added-tile{bottom:calc(var(--preview-w) + 1px)}
+/* Opponents' called tiles use the same scale as their own exposed group. */
+.seat .exposed .called-slot{width:calc(var(--flowers-w)*1.375);height:var(--flowers-w)}
+.seat .exposed .called-slot .called-tile{width:calc(var(--flowers-w)*1.375)!important;height:var(--flowers-w)!important;flex:none!important}
+.seat .exposed .called-slot .called-tile .tile-art{width:var(--flowers-w)!important;height:calc(var(--flowers-w)*1.375)!important;object-fit:contain!important}
+.seat .exposed .called-slot.stacked{height:calc(var(--flowers-w)*2 + 1px)}
+.seat .exposed .called-slot .added-tile{bottom:calc(var(--flowers-w) + 1px)}
+@media(max-width:720px){#response-context{--preview-w:28px}#result .winning-tiles{--preview-w:23px}}
+
+/* Three full-size choices fit without squeezing their tile images. */
+#chow-dialog{width:min(484px,calc(100vw - 24px))}

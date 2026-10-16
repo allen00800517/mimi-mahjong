@@ -1,0 +1,17 @@
+/* 共用完成牌身；舊圖案亦使用同樣牌身。 */
+.tile,.small-tile{padding:0!important;border:0!important;border-bottom-width:0!important;background:none!important}
+.tile svg,.tile .tile-art{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.tile{box-shadow:0 2px 3px #0005;border-radius:5px}
+.tile.chosen{outline:2px solid #f5d186;outline-offset:1px;box-shadow:0 6px 9px #0008}
+.tile.last-discard{outline:1px solid #f3cd7b;outline-offset:1px}
+.tile:disabled{filter:brightness(.94)}
+
+/* 櫻桃暗牌使用正式共用牌身圖；外觀切換不更動花牌ID與計分。 */
+.back{padding:0;border:0!important;border-bottom:0!important;background:none!important;box-shadow:0 1px 2px #0004}
+.back .tile-art{display:block;width:100%;height:100%;object-fit:fill}
+#flower-preview{display:flex;gap:5px;flex-wrap:wrap;width:100%;padding:8px 0}
+.flower-preview-tile{display:block;width:56px;aspect-ratio:512/704}
+.flower-preview-tile .tile-art{display:block;width:100%;height:100%;object-fit:contain}
+@media(max-height:420px){.flower-preview-tile{width:44px}}
+
+.back .tile-art,.tile .flower-art{object-fit:contain}

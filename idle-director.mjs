@@ -1,0 +1,38 @@
+// Approved silent idle artwork. New Flow gestures retain their natural pace.
+export const IDLE_VARIANTS=Object.freeze({blink:{label:'眨眼',duration:260,clip:'call',first:0,last:10,pingpong:true,lead:50,tail:60},tilt:{label:'歪頭微笑',duration:1800,clip:'idle',first:18,last:72,lead:150,tail:200},look:{label:'低頭看牌',duration:2500,clip:'look',first:0,last:29,lead:150,tail:200},apron:{label:'整理圍裙',duration:3000,clip:'apron',first:0,last:35,lead:150,tail:200}});
+const PERIOD=120000;
+const between=(random,a,b)=>a+(b-a)*Math.max(0,Math.min(.999999,random()));
+export function idlePose(kind,ms,variants=IDLE_VARIANTS){
+ const spec=variants[kind];if(!spec||ms<0||ms>=spec.duration)return {clip:'idle',frame:0,idleVariant:'quiet'};
+ const p=ms/spec.duration,triangle=1-Math.abs(p*2-1);
+ const frame=spec.first+Math.round((spec.pingpong?triangle:p)*(spec.last-spec.first));
+ const pose={clip:spec.clip,frame,idleVariant:kind};
+ const {lead,tail}=spec;
+ if(ms<lead)return {...pose,previous:{clip:'idle',frame:0},previousMix:1-ms/lead};
+ if(ms>spec.duration-tail)return {...pose,next:{clip:'idle',frame:0},nextMix:(ms-(spec.duration-tail))/tail};
+ return pose;
+}
+export class IdleDirector{
+ constructor(now=0,{random=Math.random,variants=IDLE_VARIANTS}={}){this.random=random;this.variants=variants;this.start=now;this.lastAccent=null;this.breathPeriod=between(random,4600,6400);this.breathPhase=between(random,0,Math.PI*2);this.plans=new Map();}
+ plan(period){
+  if(this.plans.has(period))return this.plans.get(period);
+  const r=this.random,events=[];
+  const available=Object.keys(this.variants).filter(x=>x!=='blink'),maxDuration=Math.max(0,...available.map(x=>this.variants[x].duration));
+  // Only the first block uses the 11–19 s opening; later blocks continue the 20–32 s rest from the previous block's last gesture.
+  const previous=this.plans.get(period-1)?.filter(e=>e.kind!=='blink').at(-1);
+  let accentAt=period>0&&previous?Math.max(0,previous.end+between(r,20000,32000)-PERIOD):between(r,11000,19000);
+  while(available.length&&accentAt+maxDuration<PERIOD){
+   const choices=available.length>1?available.filter(x=>x!==this.lastAccent):available,kind=choices[Math.floor(between(r,0,choices.length))];
+   this.lastAccent=kind;events.push({kind,start:accentAt,end:accentAt+this.variants[kind].duration});accentAt+=this.variants[kind].duration+between(r,20000,32000);
+  }
+  if(this.variants.blink){const duration=this.variants.blink.duration;for(let t=between(r,3000,6000);t+duration<PERIOD;t+=between(r,3500,7000))if(!events.some(e=>t<e.end+700&&t+duration>e.start-700))events.push({kind:'blink',start:t,end:t+duration});}
+  events.sort((a,b)=>a.start-b.start);this.plans.set(period,events);if(this.plans.size>3)this.plans.delete(this.plans.keys().next().value);return events;
+ }
+ sample(now){
+  const ms=Math.max(0,now-this.start),period=Math.floor(ms/PERIOD),local=ms%PERIOD,events=this.plan(period);
+  const event=events.find(e=>local>=e.start&&local<e.end),pose=event?idlePose(event.kind,local-event.start,this.variants):{clip:'idle',frame:0,idleVariant:'quiet'};
+  // Sub-pixel breathing anchored at the feet; large gestures remain rare.
+  const fade=Math.min(1,ms/2000),breath=1+.0018*(Math.sin(ms/this.breathPeriod*Math.PI*2+this.breathPhase)-Math.sin(this.breathPhase))*fade;
+  return {...pose,breath,nextIdle:Math.round((events.find(e=>e.start>local)?.start??PERIOD)-local)};
+ }
+}

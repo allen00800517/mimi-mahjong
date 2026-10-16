@@ -1,0 +1,33 @@
+/* One readable scale for the remaining hand and exposed sets. */
+.play-row{container-type:inline-size;justify-content:flex-end;--unit:min(var(--base-hand-w),calc((100cqw - (var(--hand-count) + var(--meld-tiles))*2px - var(--meld-count)*6px - 12px)/(var(--hand-count) + var(--meld-tiles)*.9 + var(--called-count)*.3375)));--meld-w:calc(var(--unit)*.9)}
+.play-row:not(:has(.meld)){justify-content:center}
+.self .hand{container-type:normal;flex:0 0 auto;width:auto;gap:2px;padding-left:0;padding-right:0}
+.self .hand .tile{--tile-w:var(--unit);width:var(--unit);height:calc(var(--unit)*1.375);flex-basis:var(--unit);touch-action:none}
+.self .exposed .small-tile{width:var(--meld-w)!important;height:calc(var(--meld-w)*1.375)!important;flex-basis:var(--meld-w)!important}
+.self .exposed .melds{flex-wrap:nowrap;gap:6px}.meld{align-items:flex-end;flex-wrap:nowrap}
+.called-slot{display:inline-flex;position:relative;width:calc(var(--river-w)*1.375);height:var(--river-w);flex:0 0 auto;align-self:flex-end}
+.called-slot .called-tile{position:absolute;left:0;bottom:0;width:calc(var(--river-w)*1.375)!important;height:var(--river-w)!important}
+.called-tile .tile-art{position:absolute!important;left:50%;top:50%;width:var(--river-w)!important;height:calc(var(--river-w)*1.375)!important;object-fit:contain!important;transform:translate(-50%,-50%) rotate(90deg)}
+.self .called-slot{width:calc(var(--meld-w)*1.375);height:var(--meld-w)}
+.self .exposed .called-tile{width:calc(var(--meld-w)*1.375)!important;height:var(--meld-w)!important;flex-basis:auto!important}
+.self .called-tile .tile-art{width:var(--meld-w)!important;height:calc(var(--meld-w)*1.375)!important}
+.called-slot.stacked{height:calc(var(--river-w)*2 + 1px)}.called-slot .added-tile{bottom:calc(var(--river-w) + 1px)}
+.self .called-slot.stacked{height:calc(var(--meld-w)*2 + 1px)}.self .called-slot .added-tile{bottom:calc(var(--meld-w) + 1px)}
+#tile-motion-layer{position:fixed;inset:0;pointer-events:none;z-index:35}
+.moving-card{position:absolute;display:block;filter:drop-shadow(0 4px 3px #0005);transform-origin:center}
+.moving-card .tile-art{display:block;width:100%;height:100%;object-fit:contain}
+.motion-arrival{visibility:hidden!important}
+#last-play:not([hidden]){display:flex;right:21%;bottom:12px;z-index:7;padding:4px 7px;pointer-events:none}
+#last-play .tile{width:27px!important;height:37.125px!important}
+#actions .action-tiles .called-preview{outline:2px solid #f4ce79;outline-offset:1px}
+#actions .action-tiles{gap:3px}#actions .action-tiles .tile{width:21px!important;height:28.875px!important}
+#actions button[data-action^="chi:"]{min-width:94px;padding:4px 6px;min-height:44px}
+.moving-tiles .hand .tile{transition:none}
+@media(max-width:720px){.play-row{gap:6px}.self .exposed .melds{gap:4px}#actions button[data-action^="chi:"]{min-width:85px;padding:4px}#actions .action-tiles .tile{width:18px!important;height:24.75px!important}}
+@media(prefers-reduced-motion:reduce){.tile{transition:none}}
+
+.self .meld:has(.stacked){--meld-w:min(calc(var(--unit)*.9),calc(var(--base-hand-h)/2))}
+
+/* 最新牌放在左上工具留白，避開三家暗牌和棄牌。 */
+header #last-play:not([hidden]){left:10px;right:auto;top:2px;bottom:auto;max-width:180px;padding:2px 5px;font-size:10px;gap:5px}
+header #last-play .tile{width:19px!important;height:26.125px!important}

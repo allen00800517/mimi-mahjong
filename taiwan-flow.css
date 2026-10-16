@@ -1,0 +1,39 @@
+/* One coherent action zone near the player's hand; announcements stay with seats. */
+.controls{left:50%;right:auto;transform:translateX(-50%);bottom:calc(var(--base-hand-h) + 20px + var(--actions-lift,0px));max-width:68%;width:max-content;display:flex;align-items:center;gap:10px}
+.controls.responding{padding:7px 10px;border:1px solid #c0a16b;border-radius:12px;background:#252c23ed;box-shadow:0 4px 18px #0006}
+#actions{max-width:100%;gap:8px;flex-wrap:wrap;overflow:visible}
+#actions button{min-width:52px;font-size:17px}
+#actions button[data-action="passWin"],#actions button[data-action="pass"],#actions button[data-action="flowerPass"]{order:10;margin-left:8px}
+#response-context{display:flex;align-items:center;gap:8px;color:#eed9b0;font-size:12px}
+#response-context[hidden]{display:none}
+#response-context>span{max-width:74px;line-height:1.4}
+#response-context .tile{width:36px!important;height:49.5px!important;flex-basis:36px}
+.self-meld-dock .exposed,.meld-row{justify-content:flex-start}
+.self-meld-dock .melds{align-items:flex-start;margin-left:0}
+.river-zone .latest-discard{outline:2px solid #eec67a;outline-offset:-1px}
+.callout{font-size:clamp(30px,5vw,54px);letter-spacing:2px;line-height:1.1}
+.callout small{font-size:11px;margin-top:4px}
+#last-play{display:none!important}
+#result{position:fixed;top:50%;left:50%;width:min(710px,94vw);height:auto;max-height:calc(100dvh - 20px);overflow:hidden;display:flex;flex-direction:column;padding:0;z-index:12}
+#result[hidden]{display:none}
+.settlement-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid #b3966055;flex-shrink:0}
+#result h2{margin:0;font-size:23px;letter-spacing:1px}
+.close-result{float:none;flex-shrink:0;margin:0}
+.settlement-body{overflow:auto;padding:12px 18px;min-height:0}
+.winning-tiles{display:flex;align-items:flex-end;flex-wrap:wrap;gap:2px;margin-bottom:10px;--river-w:27px}
+#result .winning-tiles .small-tile{width:27px!important;height:37.125px!important;flex-basis:27px!important}
+#result .winning-tiles .meld{display:flex;gap:1px;margin-left:7px}
+#result .winning-tiles .called-slot{width:37.125px;height:27px}
+#result .winning-tiles .called-tile{width:37.125px!important;height:27px!important;flex-basis:auto!important}
+#result .winning-tiles .called-tile .tile-art{width:27px;height:37.125px}
+#result .winning-tiles .called-slot.stacked{height:55px}
+#result .winning-tiles .added-tile{bottom:28px}
+.score-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.score-board>div{display:grid;gap:5px;text-align:center;background:#1c261c99;padding:8px;border-radius:6px}
+.score-board b{font-size:22px}.score-board small{font-size:11px;color:#d4c4a2}.gain{color:#ffdf92}.loss{color:#dbddd7}
+.settlement-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 18px;background:#211e18;border-top:1px solid #b3966055;flex-shrink:0}
+#settlement-countdown{margin-right:auto;color:#efddaf;font-size:12px}
+#next-hand{margin:0;width:auto;min-width:105px}
+#result .tai-total{font-size:16px;margin:8px 0;color:#f7dea3}
+@media(max-height:500px){.settlement-heading{padding:8px 12px}.settlement-body{padding:9px 12px}.settlement-footer{padding:8px 12px}#result h2{font-size:20px}.score-board{margin:8px 0}.score-board>div{padding:6px}.score-board b{font-size:18px}.controls.responding{padding:5px 8px}}
+@media(max-width:720px){.controls{left:50%;right:auto;max-width:72%;gap:6px}#actions{gap:5px}#actions button{font-size:14px;min-width:44px;padding:5px 7px}#response-context{font-size:10px;gap:5px}#response-context>span{max-width:50px}#response-context .tile{width:28px!important;height:38.5px!important;flex-basis:28px}.score-board{gap:4px}.settlement-footer{gap:5px}#settlement-countdown{font-size:11px}#next-hand{min-width:78px}#result .winning-tiles .small-tile{width:23px!important;height:31.625px!important;flex-basis:23px!important}}
