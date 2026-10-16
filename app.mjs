@@ -417,6 +417,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlayOpen())close
 document.addEventListener('click',e=>{
  if(paused()||e.target.closest('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#result,#table-toast,#page-overlay'))return;
  const seat=characterActors.hitSeat(e.clientX,e.clientY);if(seat===null)return;
- if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(()=>characterActors.poke(seat)).then(syncSound);else characterActors.poke(seat);
+ // Give audio a moment to unlock so the first tap is voiced, but never let a stalled resume() swallow the reaction.
+ if(sound.enabled&&sound.state!=='running'){const ready=sound.unlock().then(()=>characterActors.prepareVoices());Promise.race([ready,new Promise(r=>setTimeout(r,400))]).then(()=>characterActors.poke(seat));ready.then(syncSound,()=>{});}else characterActors.poke(seat);
 });
 $('flower-close').onclick=()=>$('flower-dialog').close();$('flower-dialog').addEventListener('close',render);

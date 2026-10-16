@@ -58,13 +58,20 @@ export class CharacterActors{
   }
   return null;
  }
- // Returns true when a reaction started. A running declaration or reaction is never restarted by taps.
+ // Returns the reaction that started ('tap' or 'poke') or false. A declaration is never cut by taps.
+ // The third tap on the same character within 10 s (taps during the first reaction count) plays the annoyed 'poke'.
  poke(seat,now=performance.now()){
   const id=this.cast?.[seat],track=this.tracks[seat];
-  if(this.disabled||this.blocked||!id||seat===0||!this.resident(seat)||track.action||!track.profile.actions.tap)return false;
-  this.voices.get(id)?.play('tap');
-  if(!this.reduced)track.play('tap',now);
-  this.last={seat,kind:'tap'};this.schedule();this.audit();return true;
+  if(this.disabled||this.blocked||!id||seat===0||!this.resident(seat)||!track.profile.actions.tap)return false;
+  track.sample(now);const running=track.action?.clip;
+  if(running&&running!=='tap')return false;
+  this.taps??=new Map();const taps=(this.taps.get(seat)||[]).filter(t=>now-t<10000);taps.push(now);this.taps.set(seat,taps);
+  const voice=this.voices.get(id);let kind='tap';
+  if(taps.length>=3&&track.profile.actions.poke){kind='poke';this.taps.delete(seat);voice?.stop();}
+  else if(running)return false;
+  voice?.play(kind);
+  if(!this.reduced)track.play(kind,now);
+  this.last={seat,kind};this.schedule();this.audit();return kind;
  }
  stopVoices(){for(const voice of this.voices.values())voice.stop();}
  async prepareVoices(){await Promise.allSettled([...this.voices.values()].map(voice=>voice.prepare()));}

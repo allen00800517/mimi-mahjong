@@ -5,7 +5,7 @@ import {TableSound} from './sound.mjs';
 import {TileRenderer} from './tile-renderer.mjs';
 import {tableLayout} from './table-layout.mjs';
 import {Game} from './engine.mjs';
-const $=id=>document.getElementById(id),names={idle:'待機',chi:'吃',pon:'碰',kan:'槓',ready:'聽',tap:'點一下'};
+const $=id=>document.getElementById(id),names={idle:'待機',chi:'吃',pon:'碰',kan:'槓',ready:'聽',tap:'點一下',poke:'連點不耐煩'};
 const preview=new MotionPreview(),sound=new TableSound();sound.enabled=true;
 const cache=new Map(),voices=new Map();let selected='ichika',seat=2,assets=null,canvas=null,stageImage=null,loading=true,request=0,eventToken=0,queue=[],replayAt=null,replayEnabled=false,frame=null;
 for(const [id,media] of Object.entries(CHARACTER_MEDIA)){
@@ -47,7 +47,7 @@ async function selectCharacter(id){
 function syncAssetState(){const voice=voices.get(selected);$('asset-state').textContent=assets?'動作已載入 · 語音 '+(voice?.buffers.size||0)+'/'+assets.motion.voices.length+' 已解碼；首次播放時啟用音訊。':'目前為靜態圖；吃、碰、槓、聽的動作與語音尚待製作。';}
 function syncControls(){
  for(const b of $('cast-list').children)b.setAttribute('aria-pressed',String(b.dataset.character===selected));
- for(const b of $('action-list').children){b.disabled=loading||!assets&&b.dataset.kind!=='idle';b.setAttribute('aria-pressed',String(b.dataset.kind===preview.kind));}
+ for(const b of $('action-list').children){b.disabled=loading||!assets&&b.dataset.kind!=='idle'||b.dataset.kind!=='idle'&&!preview.profile.actions[b.dataset.kind];b.setAttribute('aria-pressed',String(b.dataset.kind===preview.kind));}
  for(const id of ['play','pause','previous','next','timeline','duration','mode','speed','repeat','sequence'])$(id).disabled=loading||!assets;
  $('voice-only').disabled=loading||!assets||preview.kind==='idle';$('duration').value=Math.round(preview.duration);$('duration').disabled=loading||!assets||preview.naturalIdle;$('duration').parentElement.firstChild.textContent=preview.naturalIdle?'觀察時窗（ms） ':'動作長度（ms） ';
  $('idle-options').hidden=preview.kind!=='idle'||!assets;for(const b of $('idle-options').children){b.disabled=loading||!assets||b.dataset.idle!=='auto'&&!preview.profile.idleVariants[b.dataset.idle];b.setAttribute('aria-pressed',String(b.dataset.idle===preview.idleVariant));}
