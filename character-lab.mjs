@@ -5,7 +5,7 @@ import {TableSound} from './sound.mjs';
 import {TileRenderer} from './tile-renderer.mjs';
 import {tableLayout} from './table-layout.mjs';
 import {Game} from './engine.mjs';
-const $=id=>document.getElementById(id),names={idle:'待機',chi:'吃',pon:'碰',kan:'槓',ready:'聽'};
+const $=id=>document.getElementById(id),names={idle:'待機',chi:'吃',pon:'碰',kan:'槓',ready:'聽',tap:'點一下'};
 const preview=new MotionPreview(),sound=new TableSound();sound.enabled=true;
 const cache=new Map(),voices=new Map();let selected='ichika',seat=2,assets=null,canvas=null,stageImage=null,loading=true,request=0,eventToken=0,queue=[],replayAt=null,replayEnabled=false,frame=null;
 for(const [id,media] of Object.entries(CHARACTER_MEDIA)){

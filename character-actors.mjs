@@ -49,6 +49,23 @@ export class CharacterActors{
   }
   this.schedule();this.audit();
  }
+ // Easter egg: the player taps a visible opponent. Only opaque pixels of the drawn character count.
+ hitSeat(clientX,clientY){
+  for(const [seat,view] of this.views){
+   const r=view.canvas.getBoundingClientRect();if(clientX<r.left||clientX>r.right||clientY<r.top||clientY>r.bottom)continue;
+   const x=Math.floor((clientX-r.left)/r.width*view.canvas.width),y=Math.floor((clientY-r.top)/r.height*view.canvas.height);
+   try{const a=view.ctx.getImageData(Math.max(0,x-3),Math.max(0,y-3),7,7).data;for(let i=3;i<a.length;i+=4)if(a[i]>40)return seat;}catch{return seat;}
+  }
+  return null;
+ }
+ // Returns true when a reaction started. A running declaration or reaction is never restarted by taps.
+ poke(seat,now=performance.now()){
+  const id=this.cast?.[seat],track=this.tracks[seat];
+  if(this.disabled||this.blocked||!id||seat===0||!this.resident(seat)||track.action||!track.profile.actions.tap)return false;
+  this.voices.get(id)?.play('tap');
+  if(!this.reduced)track.play('tap',now);
+  this.last={seat,kind:'tap'};this.schedule();this.audit();return true;
+ }
  stopVoices(){for(const voice of this.voices.values())voice.stop();}
  async prepareVoices(){await Promise.allSettled([...this.voices.values()].map(voice=>voice.prepare()));}
  reset(){for(const track of this.tracks)track.reset(performance.now());this.stopVoices();this.last=null;}

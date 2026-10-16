@@ -412,4 +412,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlayOpen())close
  fs.hidden=!enabled||!(root.requestFullscreen||root.webkitRequestFullscreen);sync();
  fs.onclick=async()=>{try{if(active())await (document.exitFullscreen||document.webkitExitFullscreen).call(document);else{$('settings-dialog').close();await (root.requestFullscreen||root.webkitRequestFullscreen).call(root,{navigationUI:'hide'});try{await screen.orientation?.lock?.('landscape');}catch{}}}catch{$('feedback').textContent='這個瀏覽器目前不允許全螢幕。';}sync();};
  document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);}
+// Easter egg: tap an opponent's chibi and they react with a line. Never fires through buttons, tiles or dialogs,
+// and never while play is paused; a declaration always takes over.
+document.addEventListener('click',e=>{
+ if(paused()||e.target.closest('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#result,#table-toast,#page-overlay'))return;
+ const seat=characterActors.hitSeat(e.clientX,e.clientY);if(seat===null)return;
+ if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(()=>characterActors.poke(seat)).then(syncSound);else characterActors.poke(seat);
+});
 $('flower-close').onclick=()=>$('flower-dialog').close();$('flower-dialog').addEventListener('close',render);
