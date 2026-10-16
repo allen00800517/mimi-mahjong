@@ -23,7 +23,6 @@ import {freshSeed,newGameSeed} from './new-game.mjs';
 const $=id=>document.getElementById(id);
 // Status messages are written to the menu's #feedback; mirror them on the table so a closed menu never hides them.
 const toast={timer:null,pending:null,pendingAt:0,persistText:null};
-let safeProbe=null; // created on first layout; declared here because layout runs before the end of this module
 function showToast(text,{action=null,persist=false}={}){
  const el=$('table-toast');clearTimeout(toast.timer);if(!text){el.hidden=true;toast.persistText=null;return;}
  $('table-toast-text').textContent=text;const b=$('table-toast-action');b.hidden=!action;if(action){b.textContent=action.label;b.onclick=action.run;}
@@ -367,12 +366,10 @@ orientationChanged();
 
 for(let s=0;s<4;s++)$('character-'+s).onchange=()=>{const next=$('character-'+s).value,other=nextCharacters.indexOf(next);if(other<0)return;[nextCharacters[s],nextCharacters[other]]=[nextCharacters[other],nextCharacters[s]];for(let i=0;i<4;i++)$('character-'+i).value=nextCharacters[i];$('feedback').textContent='角色設定將在開始新場時生效；本場角色與分數保持配對。';};
 
-// Keep the stage clear of the iPhone notch and home indicator when running full screen (home-screen app).
-function safeInsets(){if(!safeProbe){safeProbe=document.createElement('div');safeProbe.setAttribute('aria-hidden','true');safeProbe.style.cssText='position:fixed;inset:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);visibility:hidden;pointer-events:none;z-index:-1';document.body.append(safeProbe);}const cs=getComputedStyle(safeProbe);return ['Top','Right','Bottom','Left'].map(k=>parseFloat(cs['padding'+k])||0);}
+// Full-bleed stage: on an iPhone home-screen app the 854×394 stage matches the landscape screen, so it fills edge to edge.
 function fitPrototypeUI(){
- const shell=$('game-shell'),f=foregroundFor(game),[top,right,bottom,left]=safeInsets();
- shell.style.setProperty('--stage-scale',Math.min((innerWidth-left-right)/854,(innerHeight-top-bottom)/394));
- shell.style.left=left===right?'':'calc(50% + '+(left-right)/2+'px)';shell.style.top=top===bottom?'':'calc(50% + '+(top-bottom)/2+'px)';
+ const shell=$('game-shell'),f=foregroundFor(game);
+ shell.style.setProperty('--stage-scale',Math.min(innerWidth/854,innerHeight/394));
  shell.style.setProperty('--base-hand-w',f.unit+'px');shell.style.setProperty('--base-hand-h',f.unit*1.375+'px');
  shell.style.setProperty('--meld-tile-w',f.meldUnit+'px');shell.style.setProperty('--own-meld-span',f.meldSpan+'px');
  shell.style.setProperty('--foreground-left',f.left+'px');shell.style.setProperty('--foreground-span',f.span+'px');
