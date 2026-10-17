@@ -22,6 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
+import {winGrade,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART} from './win-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -115,15 +116,28 @@ let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
  if(!winPresentation)return;clearTimeout(cinemaTimer);winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
 }
+// v0.97 · tier-1 win moment: table dims, the winning tile lights up, the winner's portrait slides in on a colour band
+// and the 胡／自摸 stamp lands. 自摸 is a stronger version (gold, bigger, longer). Tap anywhere to skip.
 function startWinCinema(){
  const r=game.result;if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return;
- const primary=r.flower?(r.flower.kind==='eight'?'八仙過海':'七搶一'):r.score?.rows.find(x=>['字一色','清一色','大四喜','大三元','小四喜','五暗刻','天胡','地胡'].includes(x.name))?.name;
  winPresentation={revision:game.revision,winner:r.winner};clearTimeout(timer);clearEffects();
- $('cinema-character').src=characterSprite(r.winner,'front');$('cinema-winner').textContent=FULL_NAMES[r.winner]+' · '+(r.method==='tsumo'?'自摸':r.method==='rob_added_kan'?'搶槓胡':'胡牌');$('cinema-title').textContent=primary||(r.method==='tsumo'?'自摸':'胡牌');
- $('win-cinema').classList.toggle('special',!!primary);$('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;
- $('cinema-skip').focus();$('cinema-character').animate([{opacity:0,transform:'translateX(-30px)'},{opacity:1,transform:'translateX(0)'}],{duration:300,easing:'ease-out',fill:'both'});
- syncSettlement();cinemaTimer=setTimeout(finishWinCinema,primary?1800:1100);
+ buildWinStamp(r);
+ $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;
+ $('cinema-skip').focus();syncSettlement();cinemaTimer=setTimeout(finishWinCinema,r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
 }
+function buildWinStamp(r){
+ const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
+ c.querySelector('.wc-stage')?.remove();c.classList.remove('special');c.classList.toggle('tsumo',tsumo);c.dataset.tier=winGrade(r)?.tier??1;
+ const stage=document.createElement('div');stage.className='wc-stage';stage.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
+ let glow='';
+ if(!tsumo){const payer=r.payments?.find(p=>p.to===r.winner)?.from,el=payer!==undefined?$('river-'+payer)?.lastElementChild:null;
+  if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
+ stage.innerHTML='<div class="wc-dim"></div><div class="wc-band"></div><img class="wc-portrait" alt="" draggable="false">'+glow+(tsumo&&r.tile?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
+ const img=stage.querySelector('.wc-portrait');img.onerror=()=>{img.onerror=null;img.src=characterSprite(r.winner,'front');};img.src=WIN_ART.portrait(id);
+ const st=stage.querySelector('.wc-stamp img');if(word!=='胡')st.remove();else{st.onload=()=>stage.querySelector('.wc-stamp').classList.add('art');st.onerror=()=>st.remove();st.src=WIN_ART.stamp;}
+ c.prepend(stage);
+}
+$('win-cinema').addEventListener('click',e=>{if(winPresentation&&e.target.id!=='cinema-skip')finishWinCinema();});
 $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
@@ -247,11 +261,15 @@ function renderSettlement(){
   }
   const resultFlowers=r.winner!==undefined?game.players[r.winner].flowers:[];
   if(resultFlowers.length)body.innerHTML+='<div class="result-flowers" aria-label="胡牌者花牌"><span>花牌</span>'+resultFlowers.map(t=>'<button class="result-flower" data-flower="'+t+'" aria-label="放大'+tileLabel(t)+'">'+tileFace(t)+'</button>').join('')+'</div>';
-  if(r.score&&r.kind!=='review')body.innerHTML+='<div class="score-rows">'+r.score.rows.map(x=>'<span>'+escape(x.name)+' '+x.tai+' 台</span>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
+  if(r.score&&r.kind!=='review'){
+   if(r.kind==='win')body.innerHTML+='<div class="score-rows rv2-rows">'+r.score.rows.map(x=>'<div class="rv2-row"><span>'+escape(x.name)+'</span><i></i><b>'+x.tai+' 台</b></div>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
+   else body.innerHTML+='<div class="score-rows">'+r.score.rows.map(x=>'<span>'+escape(x.name)+' '+x.tai+' 台</span>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
+  }
   const delta=[0,0,0,0];for(const x of r.payments??[]){delta[x.from]-=x.amount;delta[x.to]+=x.amount;}
   if(r.kind!=='review')body.innerHTML+='<div class="score-board">'+game.scores.map((score,s)=>'<div><strong>'+NAMES[s]+'</strong><b class="'+(delta[s]>0?'gain':delta[s]<0?'loss':'')+'">'+signed(delta[s])+'</b><small>累計 '+signed(score)+'</small></div>').join('')+'</div>';
   if(r.payments?.length)body.innerHTML+='<details><summary>查看付款與台數細節</summary>'+r.payments.map(x=>'<p>'+NAMES[x.from]+' → '+NAMES[x.to]+'：'+x.amount+' 分（底 100 ＋ '+x.tai+' 台 × 50；莊家／連莊 '+x.dealerTai+' 台'+(x.flowerTai!==undefined?'；本筆花台 '+x.flowerTai+' 台':'')+'）</p>').join('')+'</details>';
  }
+ decorateWinSettlement(el,r,completed);
  el.querySelector('.close-result').onclick=()=>{resultDismissed=true;settlementHeld=true;render();};
  $('settlement-pause').onclick=()=>{settlementHeld=!settlementHeld;syncSettlement();};
  for(const event of ['pointerdown','wheel','keydown'])body.addEventListener(event,()=>{settlementHeld=true;syncSettlement();},{passive:true});
@@ -261,6 +279,28 @@ function renderSettlement(){
   $('final-history').onclick=()=>{$('history-dialog').showModal();render();};
   const b=document.createElement('button');b.className='primary';b.id='next-match';b.textContent='重新抓位・開始新場';b.onclick=()=>{$('seed').value='';$('new').click();};el.querySelector('.settlement-footer').append(b);
  }
+}
+// v0.97 · win settlement, 雀魂-style: winner portrait on the left, rows tick in one by one, then the total seal.
+// The reveal plays once per hand (render() rebuilds this panel often); later rebuilds show the final state.
+let settlementRevealed=null;
+function decorateWinSettlement(el,r,completed){
+ const v2=r.kind==='win'&&!completed&&r.winner!==undefined;el.classList.toggle('result-v2',v2);if(!v2)return;
+ const id=PORTRAITS[r.winner];el.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
+ el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
+ const img=el.querySelector('.rv2-portrait');img.onerror=()=>{img.onerror=null;img.src=characterSprite(r.winner,'front');};img.src=WIN_ART.portrait(id);
+ const body=el.querySelector('.settlement-body'),total=r.score?.tai??0;
+ body.insertAdjacentHTML('beforeend','<div class="rv2-seal" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><b>'+total+'</b><small>台</small></div>');
+ const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
+ if(settlementRevealed===game.revision||reduced())return;
+ // Wait a tick: on the winning action render() runs just before the win stamp hides this panel.
+ const rev=game.revision;setTimeout(()=>{if(el.hidden||!el.isConnected||settlementRevealed===rev||game.revision!==rev)return;settlementRevealed=rev;revealSettlement(rows,seal);},0);
+}
+function revealSettlement(rows,seal){
+ const plan=revealPlan(rows.map((_,i)=>({i})));
+ rows.forEach((row,i)=>row.animate([{opacity:0,transform:'translateX(-10px)'},{opacity:1,transform:'translateX(0)'}],{duration:220,delay:plan.items[i].at,fill:'backwards',easing:'ease-out'}));
+ plan.items.forEach(it=>setTimeout(()=>{if(settlementRevealed===game.revision)sound.play('select');},it.at));
+ seal?.animate([{opacity:0,transform:'scale(1.8) rotate(-14deg)'},{opacity:1,transform:'scale(.94) rotate(-8deg)',offset:.75},{opacity:1,transform:'scale(1) rotate(-8deg)'}],{duration:320,delay:plan.sealAt,fill:'backwards',easing:'ease-in'});
+ setTimeout(()=>{if(settlementRevealed===game.revision)sound.play('place');},plan.sealAt+240);
 }
 function signed(n){return n>0?'+'+n:String(n);}
 function renderResponseContext(acts){
@@ -424,7 +464,7 @@ for(let s=0;s<4;s++)$('character-'+s).onchange=()=>{const next=$('character-'+s)
 // Full-bleed stage: on an iPhone home-screen app the 854×394 stage matches the landscape screen, so it fills edge to edge.
 function fitPrototypeUI(){
  const shell=$('game-shell'),f=foregroundFor(game);
- const view=viewSize();shell.style.setProperty('--stage-scale',Math.min(view.width/854,view.height/394));
+ const view=viewSize(),stageScale=Math.min(view.width/854,view.height/394);shell.style.setProperty('--stage-scale',stageScale);document.documentElement.style.setProperty('--stage-scale',stageScale);
  shell.style.setProperty('--base-hand-w',f.unit+'px');shell.style.setProperty('--base-hand-h',f.unit*1.375+'px');
  shell.style.setProperty('--meld-tile-w',f.meldUnit+'px');shell.style.setProperty('--own-meld-span',f.meldSpan+'px');
  shell.style.setProperty('--foreground-left',f.left+'px');shell.style.setProperty('--foreground-span',f.span+'px');
