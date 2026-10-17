@@ -65,7 +65,7 @@ export function scoreHand({hand,melds=[],flowers=[],winTile,method='ron',state='
     if(!allExposed&&waits.length===1) add(({pair:'單釣',inside:'中洞',edge:'邊張'})[pos.kind],['pair','inside','edge'].includes(pos.kind)?1:0);
     add('平胡',method!=='tsumo'&&!flowerRob&&!flowers.length&&!honor&&triples.length===0&&!pinfuExcluded&&pos.kind==='side'?2:0);
     add(flowers.length===8?'滿花':'花牌',flowerOverride??flowerTai(flowers,seatWind)); add('搶槓',method==='rob_added_kan'?1:0);
-    add('槓上開花',replacement?1:0);add('海底撈月',lastTile?1:0);
+    add('槓上開花',replacement?1:0);add(method==='tsumo'?'海底撈月':'河底撈魚',lastTile?1:0); // v0.97: 胡最後一張打出的牌叫河底撈魚（同 1 台，只是名稱分開）
     add(({heaven:'天胡',earth:'地胡',human:'人胡'})[opening],({heaven:24,earth:16,human:8})[opening]??0);
     candidates.push({rows,tai:rows.reduce((s,r)=>s+r.tai,0),pending,decomposition:d,completion:pos});
   }
