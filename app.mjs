@@ -264,17 +264,20 @@ function positionCallout(badge,seat){
 }
 
 // v0.90 · fixed action band (see action-band.mjs). Slots never move; unusable ones stay dimmed.
-let bandChoice=null;
+let bandChoice=null,bandDismissed=null;
 function renderActionBand(a,p,revision){
  const band=$('action-band');
  if(bandChoice&&bandChoice.revision!==revision)bandChoice=null;
+ if(bandDismissed!==null&&bandDismissed!==revision)bandDismissed=null;
  const m=actionBandModel({actions:a,phase:game.phase,eventTile:game.event?.tile??null,eventType:game.event?.type??null,declaring,selected,playerState:p.state,choice:bandChoice?.kind??null});
+ if(bandDismissed===revision&&m.right?.action==='band-dismiss'&&!declaring)m.visible=false;
  band.hidden=!m.visible;band.dataset.choice=m.choice||'';
  if(!m.visible){bandChoice=null;return;}
  const busy=presentation!==null,run=id=>{
   if(id==='declare-start'){declaring=true;selected=null;selectedIndex=null;render();return;}
   if(id==='declare-cancel'){declaring=false;selected=null;selectedIndex=null;render();return;}
   if(id==='choice-back'){bandChoice=null;render();return;}
+  if(id==='band-dismiss'){bandChoice=null;bandDismissed=revision;render();return;}
   bandChoice=null;perform(0,id,revision);
  };
  $('action-band-target').innerHTML=m.target?tile(m.target):'';

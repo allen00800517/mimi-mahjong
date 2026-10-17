@@ -37,7 +37,8 @@ export function actionBandModel({actions=[],phase,eventTile=null,eventType=null,
  else if(playerState!=='S0')slots.ready.tag='已聽';
  if(win)Object.assign(slots.win,{on:true,action:win.id,sub:win.id==='flowerWin'?'花胡':phase==='turn'?'自摸':eventType==='addedKan'?'搶槓':''});
  const any=BAND_SLOTS.some(s=>slots[s.key].on);
- const right=declaring?{action:'declare-cancel',text:'取消'}:pass?{action:pass.id,text:'過'}:null;
+ // On your own turn with no engine pass (e.g. only 聽 or 槓 lit), 過 just folds the band away until the next change.
+ const right=declaring?{action:'declare-cancel',text:'取消'}:pass?{action:pass.id,text:'過'}:phase==='turn'?{action:'band-dismiss',text:'過'}:null;
  const open=choice&&slots[choice]?.choices?choice:null;
  return {
   visible:any||declaring,

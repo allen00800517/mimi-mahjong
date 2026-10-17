@@ -1,3 +1,5 @@
+// Character lines play 20% quieter than the original .8 (user request, v0.90).
+export const VOICE_GAIN=.64;
 export class VoicePlayer{
  constructor({context,enabled,fetcher=(...args)=>fetch(...args)}={}){this.context=context;this.enabled=enabled;this.fetcher=fetcher;this.buffers=new Map();this.bytes=new Map();this.active=null;this.played=0;this.status='loading';}
  async preload(base,kinds=['chi','pon','kan','ready']){
@@ -20,7 +22,7 @@ export class VoicePlayer{
   const context=this.context(),buffer=this.buffers.get(kind);
   if(!this.enabled()||!context||context.state!=='running'||!buffer)return false;
   try{
-  this.stop();const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffer;gain.gain.value=.8;source.connect(gain);gain.connect(context.destination);
+  this.stop();const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffer;gain.gain.value=VOICE_GAIN;source.connect(gain);gain.connect(context.destination);
   const active={source,gain};this.active=active;
   source.onended=()=>{source.disconnect();gain.disconnect();if(this.active===active)this.active=null;};
   source.start();this.played++;return true;
