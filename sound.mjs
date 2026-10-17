@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},dice:{files:1,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
@@ -11,7 +11,7 @@ export const SOUND_PLAN=Object.freeze({
  call:()=>[['call',0]],
  select:()=>[['button',0]],
  win:({method}={})=>method==='tsumo'?[['strong',0],['reveal',.12],['win',.4]]:[['reveal',0],['win',.3]],
- shuffle:()=>[['shuffle',0],['dice',1.7]],
+ shuffle:()=>[['shuffle',0]], // dice dropped (user): it ran into the first discards; a cute dice effect comes later
 });
 export class TableSound{
  constructor({sampleBase=null,fetcher=(...a)=>fetch(...a)}={}){this.enabled=false;this.context=null;this.played=0;this.master=null;this.sampleBase=sampleBase;this.fetcher=fetcher;this.samples=null;}

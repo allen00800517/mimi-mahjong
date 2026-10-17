@@ -10,7 +10,7 @@ export const MUSIC_TRACKS=Object.freeze({
  ready:{label:'聽牌',url:'./assets/music-v1/bgm-ready.mp3',loopStart:18.994,loopEnd:143.824},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
-export const MUSIC_VOLUME=.5;
+export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
 
 // Which track should play right now. choice: 'auto' or a wind track id the player fixed in the menu.
 export function musicTrackFor({phase,players=[],roundWind=0,rounds=null,seed=0,choice='auto'}={}){
