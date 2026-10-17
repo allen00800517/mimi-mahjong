@@ -1,7 +1,7 @@
 // v0.91 · Background music. Four round tracks (東南西北) plus one "someone declared 聽" track.
-// Each file is mono and already normalised; the loop crossfade is baked into the file just before loopEnd,
+// Each file is stereo and already normalised; the loop crossfade is baked into the file just before loopEnd,
 // so an AudioBufferSourceNode can jump loopEnd → loopStart sample-accurately with no audible seam.
-// Only the playing track and the next one stay decoded, to keep memory low on phones.
+// Only the playing track stays decoded, to keep memory low on phones.
 export const MUSIC_TRACKS=Object.freeze({
  east:{label:'東風圈',url:'./assets/music-v1/bgm-east.mp3',loopStart:7.964,loopEnd:163.538},
  south:{label:'南風圈',url:'./assets/music-v1/bgm-south.mp3',loopStart:35.782,loopEnd:144.08},
@@ -57,13 +57,12 @@ export class MusicPlayer{
   src.connect(gain);gain.connect(out);src.start(now);
   if(this.active)this.stopActive(this.fade);
   this.active={id,src,gain};this.current=id;this.prune(id);
-  if(id!=='ready')this.load('ready'); // decode the 聽 track ahead so the switch is instant
  }
  stopActive(fade){
   const a=this.active,ctx=this.context();this.active=null;if(!a)return;
   try{const now=ctx.currentTime;a.gain.gain.cancelScheduledValues(now);a.gain.gain.setValueAtTime(a.gain.gain.value,now);a.gain.gain.linearRampToValueAtTime(0,now+fade);a.src.stop(now+fade+.05);a.src.onended=()=>{a.src.disconnect();a.gain.disconnect();};}catch{}
  }
- // Keep the playing track and the 聽 track decoded; drop the rest.
- prune(keep){for(const id of [...this.buffers.keys()])if(id!==keep&&id!=='ready')this.buffers.delete(id);}
+ // Stereo tracks are ~60MB once decoded, so only the playing one stays decoded; the next is decoded when needed.
+ prune(keep){for(const id of [...this.buffers.keys()])if(id!==keep)this.buffers.delete(id);}
  stop(){this.pending=null;this.stopActive(.25);this.current=null;}
 }
