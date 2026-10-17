@@ -46,6 +46,8 @@ const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[sea
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
 const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});
+// v0.96 · add ?mem=1 to the address to see how much character art is decoded (for testing on a phone).
+if(/[?&]mem=1/.test(location.search)){const box=document.createElement('div');box.id='mem-debug';box.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.append(box);let peak=0;setInterval(()=>{try{const a=JSON.parse(document.getElementById('table').dataset.characterAudit||'{}'),m=a.memory||[],total=m.reduce((n,x)=>n+(x.mb||0),0);peak=Math.max(peak,total);box.textContent='角色圖 '+total.toFixed(0)+'MB（最高 '+peak.toFixed(0)+'）\n'+m.map(x=>x.id+' '+(x.mb||0)+'MB 等待'+(x.misses||0)).join('\n');}catch{}},1000);}
 const characterActors=new CharacterActors(sound);
 let preferences={speed:750,motion:true,sound:false,flowerSkin:'character',confirmButton:false,music:'auto'};
 try{Object.assign(preferences,JSON.parse(localStorage.getItem('mimi-tw-preferences-4')||'{}'));}catch{}

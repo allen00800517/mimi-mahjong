@@ -34,6 +34,7 @@ export class IdleDirector{
   const event=events.find(e=>local>=e.start&&local<e.end),pose=event?idlePose(event.kind,local-event.start,this.variants):{clip:'idle',frame:0,idleVariant:'quiet'};
   // Sub-pixel breathing anchored at the feet; large gestures remain rare.
   const fade=Math.min(1,ms/2000),breath=1+.0018*(Math.sin(ms/this.breathPeriod*Math.PI*2+this.breathPhase)-Math.sin(this.breathPhase))*fade;
-  return {...pose,breath,nextIdle:Math.round((events.find(e=>e.start>local)?.start??PERIOD)-local)};
+  const upcoming=events.find(e=>e.start>local);
+  return {...pose,breath,nextIdle:Math.round((upcoming?.start??PERIOD)-local),nextKind:upcoming?.kind??null};
  }
 }
