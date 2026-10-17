@@ -20,6 +20,7 @@ import {actionBandModel} from './action-band.mjs';
 import {MusicPlayer,musicTrackFor} from './music.mjs';
 import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
+import {DiceShow,diceBadgeText} from './dice-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -69,6 +70,7 @@ function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/i
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
 const unlockAudio=()=>{if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(syncSound);};
 for(const type of ['pointerdown','pointerup','touchend','click','keydown'])document.addEventListener(type,unlockAudio,{passive:true,capture:true});
+const diceShow=new DiceShow($('game-shell'));let pendingDice=false;
 let lastEffect=null,presentation=null,selectedIndex=null,stickerTimer=null;
 function clearEffects(){tableView.cancelMotion({redraw:false});presentation=null;document.querySelectorAll('.motion-arrival').forEach(e=>e.classList.remove('motion-arrival'));document.querySelectorAll('.hand .tile').forEach(e=>e.getAnimations().forEach(a=>a.cancel()));$('effects').getAnimations({subtree:true}).forEach(a=>a.cancel());$('effects').replaceChildren();document.body.classList.remove('moving-tiles','discard-in-flight');}
 const presenter=createTablePresenter({tableView,getGame:()=>game,getSelectedIndex:()=>selectedIndex,getPresentation:()=>presentation,setPresentation:value=>{presentation=value;},clearTimer:()=>clearTimeout(timer),clearEffects,render,reduced,paused:()=>paused(),sound,syncSound,names:()=>NAMES,characterSprite,positionCallout,animatedResident:s=>characterActors.resident(s)&&!reduced()});
@@ -119,7 +121,7 @@ $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
-const paused=()=>!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
+const paused=()=>diceShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
 function syncCharacters(){try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
@@ -138,7 +140,7 @@ function newMatch(seed){
  const roster=Array.from({length:4},(_,s)=>$('character-'+s).value),draw=drawSeats(seed,roster);
  const next=new Match({seed,rounds:Number($('rounds').value),starter:draw.starter});
  archiveCompletedMatch();
- match=next;suspendedTable=null;game=match.game;seating=draw;PORTRAITS=[...draw.seats];syncCast();$('auto').checked=true;
+ match=next;pendingDice=true;suspendedTable=null;game=match.game;seating=draw;PORTRAITS=[...draw.seats];syncCast();$('auto').checked=true;
 }
 function clearPracticeLink(){
  try{const url=new URL(location.href);if(url.searchParams.has('scene')){for(const key of ['scene','case','auto'])url.searchParams.delete(key);history.replaceState(null,'',url.pathname+url.search+url.hash);}}catch{}
@@ -219,7 +221,7 @@ function advanceResult(revision,handNumber){
  if(paused()||revision!==game.revision||!game.result||match?.status==='completed')return;
  settlementClock.clear();
  if(!match)return;
- try{match.advance(handNumber);game=match.game;sound.play('shuffle');
+ try{match.advance(handNumber);game=match.game;sound.play('shuffle');pendingDice=true;
   lastEffect=null;clearEffects();resultDismissed=false;selected=null;selectedIndex=null;declaring=false;saveLocal();render();
  }catch(e){settlementHeld=true;$('feedback').textContent=e.message;const label=$('settlement-countdown');if(label)label.textContent='無法接續：'+e.message;console.error(e);}
 }
@@ -358,6 +360,8 @@ function render(){
   if(replacement&&!replacement.disabled&&replacement.dataset.tile===handFocus.tile)replacement.focus({preventScroll:true});
  }
  if(paused())return;
+ if(pendingDice&&game.deal&&game.phase==='turn'&&!game.result){startDice();return;}
+ pendingDice=false;
  if(forced)timer=setTimeout(()=>perform(0,a[0].id,revision),reduced()?250:600);
  else if($('auto').checked){const seat=findComputer();if(seat!==null){const id=chooseAction(game.publicView(seat));timer=setTimeout(()=>perform(seat,id,revision),computerDelay({id,speed:Number($('speed').value)}));}}
 }
@@ -369,6 +373,12 @@ function renderMatchSummary(){
  if(seating)el.innerHTML+='<details><summary>開場抓位紀錄</summary><p>'+seating.roster.map((id,i)=>CAST[id][0]+' 抽到'+['東','南','西','北'][seating.winds[i]]).join('／')+'</p><p>定莊骰：'+seating.dice.join('・')+'；首莊：'+NAMES[seating.starter]+'。畫面始終以自家為下方；每手門風另依開門骰決定。</p></details>';
  if(completedMatches.length)el.innerHTML+='<details><summary>已完成場次（'+completedMatches.length+' 場）</summary>'+completedMatches.map(row=>'<p>'+row.current.rounds+' 圈／'+row.current.history.length+' 手：'+row.characters.map((id,s)=>CAST[id][0]+' '+signed(row.current.game.scores[s])).join('、')+'</p>').join('')+'</details>';
  if(match.history.length)el.innerHTML+='<details><summary>逐手紀錄（'+match.history.length+' 手）</summary><div class="history-scroll"><table><thead><tr><th>手</th><th>圈／莊</th><th>結果</th><th>四家累計</th></tr></thead><tbody>'+match.history.map(r=>'<tr><td>'+r.number+'</td><td>'+['東','南','西','北'][r.roundWind]+' '+r.handInRound+' 莊<br>連 '+r.repeats+'</td><td>'+escape(r.kind==='draw'?'流局':NAMES[r.winner]+(r.method==='flower'?'花胡':r.method==='tsumo'?'自摸':r.method==='rob_added_kan'?'搶槓胡':'胡牌'))+'</td><td>'+r.scores.join('／')+'</td></tr>').join('')+'</tbody></table></div></details>';
+}
+// v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
+function startDice(){
+ pendingDice=false;clearTimeout(timer);
+ diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:reduced(),
+  onStart:()=>{sound.fade('shuffle',.35);sound.play('dice');},onDone:()=>render()});
 }
 function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;return null;}
 function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s)));}

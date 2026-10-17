@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.6}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
@@ -11,7 +11,8 @@ export const SOUND_PLAN=Object.freeze({
  call:()=>[['call',0]],
  select:()=>[['button',0]],
  win:({method}={})=>method==='tsumo'?[['strong',0],['reveal',.12],['win',.4]]:[['reveal',0],['win',.3]],
- shuffle:()=>[['shuffle',0]], // dice dropped (user): it ran into the first discards; a cute dice effect comes later
+ shuffle:()=>[['shuffle',0]], // the old recorded dice ran into the first discards (user); dice now have their own show
+ dice:()=>[['dice',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
 });
 export class TableSound{
  constructor({sampleBase=null,fetcher=(...a)=>fetch(...a)}={}){this.enabled=false;this.context=null;this.played=0;this.master=null;this.sampleBase=sampleBase;this.fetcher=fetcher;this.samples=null;}
@@ -31,7 +32,7 @@ export class TableSound{
  sample(kind,delay=0){
   const list=this.samples?.get(kind),ctx=this.context;if(!list?.length||!ctx)return false;
   let i=Math.floor(Math.random()*list.length);if(list.length>1&&i===this.lastIndex?.[kind])i=(i+1)%list.length;(this.lastIndex??={})[kind]=i;
-  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=list[i];g.gain.value=SFX[kind].gain;src.connect(g);g.connect(this.bus);src.start(ctx.currentTime+delay);src.onended=()=>{src.disconnect();g.disconnect();};return true;
+  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=list[i];g.gain.value=SFX[kind].gain;src.connect(g);g.connect(this.bus);src.start(ctx.currentTime+delay);const live=(this.live??={})[kind]??=new Set(),entry={src,g};live.add(entry);src.onended=()=>{live.delete(entry);src.disconnect();g.disconnect();};return true;
  }
  play(kind,detail={}){
   if(!this.enabled||!this.context||this.context.state!=='running')return;
@@ -40,6 +41,8 @@ export class TableSound{
   if(!plan||!this.samples?.get(plan[0][0])?.length){this.playTone(kind==='riichi'?'discard':kind==='shuffle'||kind==='flower'?'place':kind);return;}
   this.played++;for(const [k,d] of plan)this.sample(k,d);
  }
+ // Fade out whatever is still playing of one kind (never a hard cut), e.g. the shuffle when the dice are thrown.
+ fade(kind,seconds=.3){const ctx=this.context,live=this.live?.[kind];if(!ctx||!live)return;const now=ctx.currentTime;for(const {src,g} of live){try{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(g.gain.value,now);g.gain.linearRampToValueAtTime(0,now+seconds);src.stop(now+seconds+.02);}catch{}}}
  suspend(){if(this.context?.state==='running')this.context.suspend().catch(()=>{});}
  resume(){const state=this.context?.state;if(this.enabled&&state&&state!=='running'&&state!=='closed')this.context.resume().catch(()=>{});}
  get state(){return this.context?.state||'uninitialized';}

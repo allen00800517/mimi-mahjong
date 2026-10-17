@@ -241,3 +241,15 @@ body.discard-in-flight #action-band,body.moving-tiles #action-band{visibility:hi
 #action-band-right[hidden]{display:none}
 #action-band-side:not([hidden])+#action-band-right{margin-left:8px}
 #action-band .band-slot::after{content:'';position:absolute;inset:-9px;border-radius:50%}
+/* v0.93 · opening dice (dice-show.mjs) */
+.dice-show{position:absolute;inset:0;z-index:40;pointer-events:none}
+.dice-show .die-pos{position:absolute;width:var(--die);height:var(--die)}
+.dice-show .die-shadow{position:absolute;left:8%;right:8%;bottom:-14%;height:28%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));opacity:.6}
+.dice-show .die-hop{position:absolute;inset:0;perspective:calc(var(--die) * 7)}
+.dice-show .die-cube{position:absolute;inset:0;transform-style:preserve-3d}
+.dice-show .die-face{position:absolute;inset:0;backface-visibility:hidden}
+.dice-show .die-face svg{display:block;width:100%;height:100%}
+.dice-show .die-core{position:absolute;inset:7%;border-radius:12%;background:#efe2c4}
+.dice-show .dice-sparkles{position:absolute;width:0;height:0}
+.dice-show .dice-sparkles i{position:absolute;width:12px;height:12px;background:#ffe08a;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);filter:drop-shadow(0 0 3px rgba(255,220,120,.8))}
+.dice-show .dice-badge{position:absolute;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:rgba(43,29,17,.86);border:1.5px solid #e7c37a;color:#fff1d2;font:700 13px/1.3 "Noto Sans TC","Microsoft JhengHei",sans-serif;white-space:nowrap;letter-spacing:.5px}
