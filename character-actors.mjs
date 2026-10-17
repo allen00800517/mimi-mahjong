@@ -50,15 +50,25 @@ export class CharacterActors{
   }
   this.schedule();this.audit();
  }
- // Easter egg: the player taps a visible opponent. Only opaque pixels of the drawn character count.
- hitSeat(clientX,clientY){
-  ({x:clientX,y:clientY}=pointOf(clientX,clientY));
+ // Easter egg: the player taps a visible opponent. Only the drawn character counts, but with a finger-sized
+ // tolerance (radius in CSS px): slim figures such as 珍美 were easy to miss with a 4 px window.
+ hitSeat(clientX,clientY,radius=16){
+  ({x:clientX,y:clientY}=pointOf(clientX,clientY));let best=null,bestDistance=Infinity;
   for(const [seat,view] of this.views){
-   const r=rectOf(view.canvas);if(clientX<r.left||clientX>r.right||clientY<r.top||clientY>r.bottom)continue;
-   const x=Math.floor((clientX-r.left)/r.width*view.canvas.width),y=Math.floor((clientY-r.top)/r.height*view.canvas.height);
-   try{const a=view.ctx.getImageData(Math.max(0,x-3),Math.max(0,y-3),7,7).data;for(let i=3;i<a.length;i+=4)if(a[i]>40)return seat;}catch{return seat;}
+   const r=rectOf(view.canvas);if(clientX<r.left-radius||clientX>r.right+radius||clientY<r.top-radius||clientY>r.bottom+radius)continue;
+   const c=view.canvas,sx=c.width/r.width,sy=c.height/r.height;
+   const x0=Math.max(0,Math.floor((clientX-radius-r.left)*sx)),y0=Math.max(0,Math.floor((clientY-radius-r.top)*sy));
+   const x1=Math.min(c.width,Math.ceil((clientX+radius-r.left)*sx)),y1=Math.min(c.height,Math.ceil((clientY+radius-r.top)*sy));
+   if(x1<=x0||y1<=y0)continue;
+   let a;try{a=view.ctx.getImageData(x0,y0,x1-x0,y1-y0).data;}catch{return seat;}
+   const w=x1-x0,step=Math.max(1,Math.round(2*sx));
+   for(let y=y0;y<y1;y+=step)for(let x=x0;x<x1;x+=step){
+    if(a[((y-y0)*w+(x-x0))*4+3]<=40)continue;
+    const d=Math.hypot(r.left+(x+.5)/sx-clientX,r.top+(y+.5)/sy-clientY);
+    if(d<=radius&&d<bestDistance){bestDistance=d;best=seat;}
+   }
   }
-  return null;
+  return best;
  }
  // Returns the reaction that started ('tap' or 'poke') or false. A declaration is never cut by taps.
  // The third tap on the same character within 10 s (taps during the first reaction count) plays the annoyed 'poke'.

@@ -419,9 +419,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlayOpen())close
  document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);}
 // Easter egg: tap an opponent's chibi and they react with a line. Never fires through buttons, tiles or dialogs,
 // and never while play is paused; a declaration always takes over.
-document.addEventListener('click',e=>{
- if(paused()||e.target.closest('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#result,#table-toast,#page-overlay'))return;
- const seat=characterActors.hitSeat(e.clientX,e.clientY);if(seat===null)return;
+// Taps are read from pointer events, not 'click': iOS Safari does not reliably deliver a click to a document listener
+// when the tapped element is not itself clickable, which made some characters feel slow or unresponsive.
+let characterTap=null;
+document.addEventListener('pointerdown',e=>{characterTap=e.isPrimary===false?null:{id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),target:e.target};},{passive:true});
+document.addEventListener('pointercancel',()=>{characterTap=null;},{passive:true});
+document.addEventListener('pointerup',e=>{
+ const tap=characterTap;characterTap=null;
+ if(!tap||tap.id!==e.pointerId||Math.hypot(e.clientX-tap.x,e.clientY-tap.y)>14||performance.now()-tap.t>800)return;
+ if(paused()||tap.target.closest?.('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#result,#table-toast,#page-overlay'))return;
+ const seat=characterActors.hitSeat(tap.x,tap.y);if(seat===null)return;
  // Give audio a moment to unlock so the first tap is voiced, but never let a stalled resume() swallow the reaction.
  if(sound.enabled&&sound.state!=='running'){const ready=sound.unlock().then(()=>characterActors.prepareVoices());Promise.race([ready,new Promise(r=>setTimeout(r,400))]).then(()=>characterActors.poke(seat));ready.then(syncSound,()=>{});}else characterActors.poke(seat);
 });
