@@ -253,3 +253,7 @@ body.discard-in-flight #action-band,body.moving-tiles #action-band{visibility:hi
 .dice-show .dice-sparkles{position:absolute;width:0;height:0}
 .dice-show .dice-sparkles i{position:absolute;width:12px;height:12px;background:#ffe08a;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);filter:drop-shadow(0 0 3px rgba(255,220,120,.8))}
 .dice-show .dice-badge{position:absolute;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:rgba(43,29,17,.86);border:1.5px solid #e7c37a;color:#fff1d2;font:700 13px/1.3 "Noto Sans TC","Microsoft JhengHei",sans-serif;white-space:nowrap;letter-spacing:.5px}
+/* v0.94 · opening deal (deal-show.mjs) */
+#south .hand .tile.dealing{position:relative}
+#south .hand .tile .deal-back{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2}
+body.deal-hide-flowers #self-flowers{visibility:hidden}

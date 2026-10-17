@@ -20,7 +20,8 @@ import {actionBandModel} from './action-band.mjs';
 import {MusicPlayer,musicTrackFor} from './music.mjs';
 import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
-import {DiceShow,diceBadgeText} from './dice-show.mjs';
+import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
+import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -70,7 +71,11 @@ function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/i
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
 const unlockAudio=()=>{if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(syncSound);};
 for(const type of ['pointerdown','pointerup','touchend','click','keydown'])document.addEventListener(type,unlockAudio,{passive:true,capture:true});
-const diceShow=new DiceShow($('game-shell'));let pendingDice=false;
+const diceShow=new DiceShow($('game-shell'));let pendingDice=false,dealTimer=null;
+// v0.94 · the deal after the dice: opponents grow through a hand-count mask, your hand flips and sorts in place.
+const dealShow=new DealShow({backSrc:()=>concealedFace().match(/src="([^"]+)"/)[1],onSound:k=>sound.play(k),
+ onStep:()=>{document.body.classList.toggle('deal-hide-flowers',dealShow.running&&!dealShow.flowersShown());tableView.update(tableGame(),$('flower-skin').value,lastEffect);}});
+function tableGame(){if(!dealShow.running)return game;const v=Object.create(game);v.players=game.players.map((p,s)=>({...p,hand:p.hand.slice(0,dealShow.handCount(s)),flowers:dealShow.flowersShown()?p.flowers:[]}));return v;}
 let lastEffect=null,presentation=null,selectedIndex=null,stickerTimer=null;
 function clearEffects(){tableView.cancelMotion({redraw:false});presentation=null;document.querySelectorAll('.motion-arrival').forEach(e=>e.classList.remove('motion-arrival'));document.querySelectorAll('.hand .tile').forEach(e=>e.getAnimations().forEach(a=>a.cancel()));$('effects').getAnimations({subtree:true}).forEach(a=>a.cancel());$('effects').replaceChildren();document.body.classList.remove('moving-tiles','discard-in-flight');}
 const presenter=createTablePresenter({tableView,getGame:()=>game,getSelectedIndex:()=>selectedIndex,getPresentation:()=>presentation,setPresentation:value=>{presentation=value;},clearTimer:()=>clearTimeout(timer),clearEffects,render,reduced,paused:()=>paused(),sound,syncSound,names:()=>NAMES,characterSprite,positionCallout,animatedResident:s=>characterActors.resident(s)&&!reduced()});
@@ -99,7 +104,7 @@ function ownMeldMarkup(p,s){
 }
 
 function inspectMelds(){if(portrait()||winPresentation)return;const d=$('meld-dialog');$('meld-summary').innerHTML=game.players[0].melds.map((m,i)=>'<section><p>'+escape(m.from!==undefined?FULL_NAMES[m.from]+' · '+(m.kind==='sequence'?'吃':m.kind==='triplet'?'碰':'槓'):m.kind==='concealedKan'?'暗槓':'吃碰槓牌組')+'</p>'+meldMarkup(m,0,i,false)+'</section>').join('');clearTimeout(timer);clearEffects();d.showModal();render();}
-function fitTableUI(){fitPrototypeUI();tableView.update(game,$('flower-skin').value,lastEffect);}
+function fitTableUI(){fitPrototypeUI();tableView.update(tableGame(),$('flower-skin').value,lastEffect);}
 const statusCopy=document.querySelector('.controls .control-copy'),statusDetails=document.createElement('details');statusDetails.id='table-status';statusDetails.innerHTML='<summary>本局狀態與聽牌提示</summary>';statusDetails.append(statusCopy);document.querySelector('#settings-dialog .menu-options').after(statusDetails);organizeTableMenu();
 $('chow-close').onclick=()=>$('chow-dialog').close();$('meld-close').onclick=()=>$('meld-dialog').close();for(const id of ['chow','meld'])$(id+'-dialog').addEventListener('close',()=>{if(!presentation)render();});
 $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))inspectMelds();});$('self-meld-dock').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('.meld')){e.preventDefault();inspectMelds();}});
@@ -121,7 +126,7 @@ $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
-const paused=()=>diceShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
+const paused=()=>diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
 function syncCharacters(){try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
@@ -359,6 +364,7 @@ function render(){
   const replacement=$('south').querySelector('.hand .tile[data-hand-index="'+handFocus.index+'"]');
   if(replacement&&!replacement.disabled&&replacement.dataset.tile===handFocus.tile)replacement.focus({preventScroll:true});
  }
+ dealShow.apply();
  if(paused())return;
  if(pendingDice&&game.deal&&game.phase==='turn'&&!game.result){startDice();return;}
  pendingDice=false;
@@ -376,9 +382,14 @@ function renderMatchSummary(){
 }
 // v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
 function startDice(){
- pendingDice=false;clearTimeout(timer);
- diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:reduced(),
-  onStart:()=>{sound.fade('shuffle',.35);sound.play('dice');},onDone:()=>render()});
+ pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);
+ const still=reduced();
+ if(!still)dealShow.prepare(game,game.dealer);else dealShow.finish({silent:true});
+ diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:still,
+  onStart:()=>{sound.fade('shuffle',.35);sound.play('dice');},onDone:()=>{if(!dealShow.running)render();}});
+ // The deal starts as soon as the dice land, overlapping the total, so the opening stays around three seconds.
+ if(!still)dealTimer=setTimeout(()=>dealShow.begin({onDone:()=>{if(!diceShow.running)render();}}),DICE_TIMING.delay+DICE_TIMING.roll+DEAL_START_AFTER_DICE);
+ dealShow.apply();
 }
 function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;return null;}
 function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s)));}
