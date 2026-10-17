@@ -17,6 +17,7 @@ import {Game,trainingGame,chooseAction,STATE_NAMES} from './engine.mjs';
 import {tileLabel,sortTiles} from './scoring.mjs';
 import {waitPreview} from './wait-preview.mjs';
 import {actionBandModel} from './action-band.mjs';
+import {MusicPlayer,musicTrackFor} from './music.mjs';
 import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
@@ -44,13 +45,14 @@ let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextChar
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
 const sound=new TableSound();
 const characterActors=new CharacterActors(sound);
-let preferences={speed:750,motion:true,sound:false,flowerSkin:'character',confirmButton:false};
+let preferences={speed:750,motion:true,sound:false,flowerSkin:'character',confirmButton:false,music:'auto'};
 try{Object.assign(preferences,JSON.parse(localStorage.getItem('mimi-tw-preferences-4')||'{}'));}catch{}
 if(Array.isArray(preferences.characters)&&preferences.characters.length===4&&new Set(preferences.characters).size===4&&preferences.characters.every(k=>typeof k==='string'&&Object.hasOwn(CAST,k)))PORTRAITS=[...preferences.characters];syncCast();
 // Manual computer pause is a temporary debugging control, not a play preference.
 // Ignore legacy saved `auto:false` left behind by a presentation failure.
 $('auto').checked=true;
 $('confirm-button').checked=preferences.confirmButton===true;
+$('music-choice').value=['auto','east','south','west','north','off'].includes(preferences.music)?preferences.music:'auto';
 $('speed').value=[250,750,1300].includes(Number(preferences.speed))?String(preferences.speed):'750';
 $('motion').checked=preferences.motion!==false;
 sound.enabled=preferences.sound===true;
@@ -58,8 +60,12 @@ $('flower-skin').value=setFlowerSkin(preferences.flowerSkin);
 function renderFlowerPreview(){$('flower-preview').innerHTML=Array.from({length:8},(_,i)=>'<button class="flower-preview-tile" data-flower="'+(i+1)+'f" aria-label="放大'+tileLabel((i+1)+'f')+'">'+tileFace((i+1)+'f')+'</button>').join('');}
 renderFlowerPreview();
 const reduced=()=>!$('motion').checked||matchMedia('(prefers-reduced-motion: reduce)').matches;
-function savePreferences(){preferences={confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
-function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);}
+function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
+// Background music follows the master sound switch, the menu choice and page visibility.
+const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});
+function syncMusic(){try{music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
+$('music-choice').onchange=()=>{savePreferences();if(sound.enabled&&sound.state!=='running')sound.unlock().then(syncMusic);else syncMusic();};
+function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);syncMusic();}
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
 const unlockAudio=()=>{if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(syncSound);};
 for(const type of ['pointerdown','pointerup','touchend','click','keydown'])document.addEventListener(type,unlockAudio,{passive:true,capture:true});
