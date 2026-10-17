@@ -43,7 +43,7 @@ const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['�
 const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+'.png';
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
-const sound=new TableSound();
+const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});
 const characterActors=new CharacterActors(sound);
 let preferences={speed:750,motion:true,sound:false,flowerSkin:'character',confirmButton:false,music:'auto'};
 try{Object.assign(preferences,JSON.parse(localStorage.getItem('mimi-tw-preferences-4')||'{}'));}catch{}
@@ -65,7 +65,7 @@ function savePreferences(){preferences={music:$('music-choice').value,confirmBut
 const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});
 function syncMusic(){try{music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
 $('music-choice').onchange=()=>{savePreferences();if(sound.enabled&&sound.state!=='running')sound.unlock().then(syncMusic);else syncMusic();};
-function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);syncMusic();}
+function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);b.dataset.samples=String(sound.samples?.size||0);syncMusic();}
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
 const unlockAudio=()=>{if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(syncSound);};
 for(const type of ['pointerdown','pointerup','touchend','click','keydown'])document.addEventListener(type,unlockAudio,{passive:true,capture:true});
@@ -166,7 +166,7 @@ async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始�
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
 function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
-function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){sound.play('win');syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
+function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){sound.play('win',{method:game.result.method});syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
 function player(s,id){
  const p=game.players[s],acts=game.actions(s),active=(game.phase==='turn'&&game.turn===s)||(game.phase==='response'&&acts.length>0)||(game.phase==='flower'&&game.flowerEvent.winner===s);
  const cue=game.phase==='turn'?'出牌':game.phase==='response'?'可回應':'花胡機會';
@@ -219,7 +219,7 @@ function advanceResult(revision,handNumber){
  if(paused()||revision!==game.revision||!game.result||match?.status==='completed')return;
  settlementClock.clear();
  if(!match)return;
- try{match.advance(handNumber);game=match.game;
+ try{match.advance(handNumber);game=match.game;sound.play('shuffle');
   lastEffect=null;clearEffects();resultDismissed=false;selected=null;selectedIndex=null;declaring=false;saveLocal();render();
  }catch(e){settlementHeld=true;$('feedback').textContent=e.message;const label=$('settlement-countdown');if(label)label.textContent='無法接續：'+e.message;console.error(e);}
 }
@@ -374,7 +374,7 @@ function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;r
 function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s)));}
 $('computer-resume').onclick=()=>{$('auto').checked=true;$('feedback').textContent='';savePreferences();clearEffects();render();};
 $('step').onclick=()=>{if(!portrait()){const s=findComputer();if(s!==null){$('settings-dialog').close();perform(s,chooseAction(game.publicView(s)));}}};$('flower-skin').onchange=()=>{setFlowerSkin($('flower-skin').value);savePreferences();renderFlowerPreview();clearEffects();render();};for(const id of ['auto','speed','motion','confirm-button'])$(id).onchange=()=>{savePreferences();clearEffects();render();};
-$('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();$('settings-dialog').close();render();};
+$('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);sound.play('shuffle');clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();$('settings-dialog').close();render();};
 document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));
 document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=async()=>{const scene=b.dataset.scene;if(!['normal','chi','ready'].includes(scene))return;b.disabled=true;try{const r=await fetch('./fixtures/'+scene+'.json');if(!r.ok)throw Error('練習牌例暫時無法載入');enterPractice(Game.restore(await r.json()));}catch(e){$('feedback').textContent='保留目前進度：'+e.message;}finally{b.disabled=false;}});
 $('resume-match').onclick=resumeMatch;

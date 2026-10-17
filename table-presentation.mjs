@@ -18,7 +18,7 @@ function captureTable(s,id){
 function presentTable(before,seat,id){
  const game=getGame(),selectedIndex=getSelectedIndex();
  const isDiscard=/^(discard|declare):/.test(id),call=game.players.some((p,s)=>p.melds.length>before.counts[s]||p.melds.some((m,i)=>m.kind!==before.kinds[s][i]));
- if(!isDiscard||reduced())sound.play(isDiscard?'discard':call?'call':'select');syncSound();
+ if(!isDiscard||reduced())sound.play(isDiscard?(/^declare:/.test(id)?'riichi':'discard'):call?'call':'select');syncSound();
  if(reduced()||paused())return;
  const changed=game.players.flatMap((p,s)=>p.melds.flatMap((m,i)=>i>=before.counts[s]?[{m,added:true}]:m.kind!==before.kinds[s][i]?[{m,added:false}]:[]))[0];
  const meldTiles=changed?(changed.added?changed.m.tiles.length:1):0,m=changed?.m;
@@ -29,7 +29,7 @@ function presentTable(before,seat,id){
  if(isDiscard)document.body.classList.add('discard-in-flight');
  if(sequence.hold)animations.push(tableView.hold(sequence.hold));
  const animate=(el,frames,ms,delay=0)=>{const a=el.animate(frames,{duration:ms,delay,fill:'both',easing:'cubic-bezier(.2,.7,.25,1)'});animations.push(a.finished.catch(()=>{}));};
- function fly(t,start,end,angle=0,{back=false,draw=false,meld=false,flower=false,delay=0}={}){const to=bounds(end);if(!start||!to||to.width<1)return;end.classList.add("motion-arrival");arrivals.push(end);const movement=tableView.fly(t,start,end,{back,draw,meld,flower,onContact:()=>{if(getPresentation()!==ticket)return;if(isDiscard&&!draw&&!flower)document.body.classList.remove("discard-in-flight");sound.play(draw?"draw":meld||flower?"place":"discard");syncSound();},delay:draw?sequence.drawDelay:meld?sequence.meldLead+delay:delay});animations.push(movement);}
+ function fly(t,start,end,angle=0,{back=false,draw=false,meld=false,flower=false,delay=0}={}){const to=bounds(end);if(!start||!to||to.width<1)return;end.classList.add("motion-arrival");arrivals.push(end);const movement=tableView.fly(t,start,end,{back,draw,meld,flower,onContact:()=>{if(getPresentation()!==ticket)return;if(isDiscard&&!draw&&!flower)document.body.classList.remove("discard-in-flight");sound.play(draw?"draw":flower?"flower":meld?"place":/^declare:/.test(id)?"riichi":"discard");syncSound();},delay:draw?sequence.drawDelay:meld?sequence.meldLead+delay:delay});animations.push(movement);}
 
  if(isDiscard){const t=id.split(':')[1],end=document.getElementById('river-'+seat).lastElementChild;fly(t,seat===0?before.selected:before.backs[seat],end,[0,-90,180,90][seat]);}
  // With no visible wall, a new tile enters over a short distance beside its hand.
