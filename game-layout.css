@@ -208,3 +208,36 @@ html.force-landscape #flower-dialog{width:max-content;max-width:calc(var(--scree
 html.force-landscape #flower-large{max-height:calc(var(--screen-w) * .65)}
 html.force-landscape #table-toast{top:10px;max-width:min(560px,calc(var(--screen-h) - 32px))}
 @media(max-width:420px){html.force-landscape dialog{padding:12px;font-size:12px}html.force-landscape .dialog-head{margin-bottom:9px}html.force-landscape .dialog-head h2{font-size:18px}}
+/* v0.90 · fixed action band above the hand: 吃 碰 槓 聽 胡 always in the same place, unusable ones dimmed.
+   System layout learned from the reference; drawn in our wood-and-gold style (聽 jade, 胡 vermilion). */
+#action-band{position:absolute;left:0;right:0;bottom:88px;height:56px;z-index:9;display:flex;align-items:center;padding:0 18px;box-sizing:border-box;background-color:rgba(30,20,11,.72);border-top:1px solid rgba(227,194,127,.55);border-bottom:1px solid rgba(227,194,127,.30);box-shadow:0 -6px 14px rgba(0,0,0,.18);color:#f5e6c8}
+#action-band[hidden]{display:none}
+body.discard-in-flight #action-band,body.moving-tiles #action-band{visibility:hidden;pointer-events:none}
+#action-band-target{width:40px;height:46px;display:grid;place-items:center}
+#action-band-target:empty{visibility:hidden}
+#action-band-target .tile{width:30px!important;height:41.25px!important;flex-basis:30px!important;border-radius:6px;box-shadow:0 0 0 2px #f2d48e,0 0 10px rgba(255,214,130,.55)}
+#action-band-slots{position:absolute;left:50%;top:3px;transform:translateX(-50%);display:flex;gap:22px}
+#action-band-slots[hidden],#action-band-choices[hidden]{display:none}
+#action-band .band-slot{position:relative;width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;display:grid;place-items:center;font-size:21px;font-weight:900;line-height:1;background:radial-gradient(circle at 50% 35%,#5a3d24,#2b1c10 72%);border:2px solid #b8925a;color:#f1dfb8;box-shadow:inset 0 1px 0 rgba(255,236,190,.25),0 2px 4px rgba(0,0,0,.4)}
+#action-band .band-slot.off{opacity:.30;filter:grayscale(.7)}
+#action-band .band-slot:disabled{cursor:default}
+#action-band .band-slot.on{background:radial-gradient(circle at 50% 30%,#fff0c4,#f0c873 45%,#c98f3f);border-color:#fff3d0;color:#4a2a10;box-shadow:0 0 0 3px rgba(255,220,140,.25),0 0 16px rgba(255,205,110,.75)}
+#action-band .band-slot.on.tone-jade{background:radial-gradient(circle at 50% 30%,#d8f3e6,#78c2a6 45%,#2f7f68);border-color:#f3e2b4;color:#123d31;box-shadow:0 0 0 3px rgba(150,220,190,.22),0 0 16px rgba(120,210,170,.7)}
+#action-band .band-slot.on.tone-red{background:radial-gradient(circle at 50% 30%,#ffb7a3,#d9473a 48%,#8e1f17);border-color:#ffe2a6;color:#fff4dc;box-shadow:0 0 0 3px rgba(255,170,140,.22),0 0 18px rgba(255,110,80,.75)}
+#action-band .band-slot.pressed{transform:translateY(1px);box-shadow:0 0 0 3px #f3e2b4,0 0 18px rgba(120,210,170,.85)}
+#action-band .band-slot:not(:disabled):active{transform:scale(.94)}
+#action-band .band-slot sub{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:9.5px;font-weight:700;line-height:1;color:#f3dca8;text-shadow:0 1px 2px #000}
+#action-band .band-slot sub.tag{color:#bba67c}
+#action-band-choices{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:14px;align-items:center}
+#action-band .band-choice{display:flex;align-items:center;gap:2px;min-height:0;padding:4px 6px;border-radius:9px;border:1.5px solid #c9a265;background:linear-gradient(#4a3420,#2b1d11);box-shadow:0 2px 5px rgba(0,0,0,.4);color:#f3dca8}
+#action-band .band-choice .tile{width:24px!important;height:33px!important;flex-basis:24px!important}
+#action-band .band-choice small{font-size:10px;margin-left:4px}
+#action-band-side{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10.5px;color:#e8d6ae;padding:3px 7px;border:1px solid rgba(227,194,127,.45);border-radius:8px;background:rgba(20,13,7,.55);max-width:190px;overflow:hidden}
+#action-band-side[hidden]{display:none}
+#action-band-side .wait-card{display:flex;flex-direction:column;align-items:center;gap:1px}
+#action-band-side .wait-card .tile{width:17px!important;height:23.4px!important;flex-basis:17px!important}
+#action-band-side .wait-card small{font-size:9px;line-height:1.1}
+#action-band-right{margin-left:auto;min-width:58px;height:34px;min-height:0;padding:0 10px;border-radius:9px;border:1.5px solid #c9a265;background:linear-gradient(#4a3420,#2b1d11);color:#f5e6c8;font-size:15px;font-weight:800}
+#action-band-right[hidden]{display:none}
+#action-band-side:not([hidden])+#action-band-right{margin-left:8px}
+#action-band .band-slot::after{content:'';position:absolute;inset:-9px;border-radius:50%}

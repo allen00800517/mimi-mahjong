@@ -16,6 +16,7 @@ import {drawSeats} from './seating.mjs';
 import {Game,trainingGame,chooseAction,STATE_NAMES} from './engine.mjs';
 import {tileLabel,sortTiles} from './scoring.mjs';
 import {waitPreview} from './wait-preview.mjs';
+import {actionBandModel} from './action-band.mjs';
 import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
@@ -88,11 +89,7 @@ function ownMeldMarkup(p,s){
  if(s!==0)return p.melds.map((m,i)=>'<div class="table-set" style="--set-units:'+ (m.tiles.length) +'">'+meldMarkup(m,s,i)+'</div>').join('');
  const perRow=5;let html='';for(let i=0;i<p.melds.length;i+=perRow)html+='<div class="meld-row">'+p.melds.slice(i,i+perRow).map((m,j)=>meldMarkup(m,s,i+j).replace('<div class="','<div role="button" tabindex="0" class="')).join('')+'</div>';return html;
 }
-function showChowChoices(acts,revision){
- const d=$('chow-dialog'),area=$('chow-options');area.replaceChildren();$('chow-source').textContent='選一組吃牌，金框是吃進的牌';
- for(const act of acts){const b=document.createElement('button');b.className='chow-choice';b.dataset.action=act.id;b.setAttribute('aria-label',act.label);const shown=[...act.tiles],calledIndex=shown.indexOf(game.event.tile);b.innerHTML=shown.map((t,i)=>tile(t,i===calledIndex?'called-preview':'')).join('');b.onclick=()=>{d.close();perform(0,act.id,revision);};area.append(b);}
- clearTimeout(timer);clearEffects();d.showModal();render();
-}
+
 function inspectMelds(){if(portrait()||winPresentation)return;const d=$('meld-dialog');$('meld-summary').innerHTML=game.players[0].melds.map((m,i)=>'<section><p>'+escape(m.from!==undefined?FULL_NAMES[m.from]+' · '+(m.kind==='sequence'?'吃':m.kind==='triplet'?'碰':'槓'):m.kind==='concealedKan'?'暗槓':'吃碰槓牌組')+'</p>'+meldMarkup(m,0,i,false)+'</section>').join('');clearTimeout(timer);clearEffects();d.showModal();render();}
 function fitTableUI(){fitPrototypeUI();tableView.update(game,$('flower-skin').value,lastEffect);}
 const statusCopy=document.querySelector('.controls .control-copy'),statusDetails=document.createElement('details');statusDetails.id='table-status';statusDetails.innerHTML='<summary>本局狀態與聽牌提示</summary>';statusDetails.append(statusCopy);document.querySelector('#settings-dialog .menu-options').after(statusDetails);organizeTableMenu();
@@ -257,8 +254,7 @@ function renderResponseContext(acts){
  const eligible=game.phase==='response'?new Set(responseHandIndices(hand.map(e=>e.dataset.tile),acts,game.event)):new Set();
  $('south').classList.toggle('response-choice',eligible.size>0);
  hand.forEach((e,i)=>e.classList.toggle('response-eligible',eligible.has(i)));
- if(game.phase==='response'&&acts.length){el.hidden=false;el.innerHTML='<span class="response-source">'+NAMES[game.event.from]+'<small>'+(game.event.type==='addedKan'?'加槓':'打出')+'</small></span>'+tile(game.event.tile);}
- else if(game.phase==='flower'&&acts.length){el.hidden=false;el.textContent='花胡機會';}
+ // v0.90: the target tile and 花胡 now show in the action band; this old context box stays empty.
  document.querySelector('.controls').classList.toggle('responding',!el.hidden);
 }
 function positionCallout(badge,seat){
@@ -267,6 +263,40 @@ function positionCallout(badge,seat){
  badge.style.left=x+'px';badge.style.top=y+'px';
 }
 
+// v0.90 · fixed action band (see action-band.mjs). Slots never move; unusable ones stay dimmed.
+let bandChoice=null;
+function renderActionBand(a,p,revision){
+ const band=$('action-band');
+ if(bandChoice&&bandChoice.revision!==revision)bandChoice=null;
+ const m=actionBandModel({actions:a,phase:game.phase,eventTile:game.event?.tile??null,eventType:game.event?.type??null,declaring,selected,playerState:p.state,choice:bandChoice?.kind??null});
+ band.hidden=!m.visible;band.dataset.choice=m.choice||'';
+ if(!m.visible){bandChoice=null;return;}
+ const busy=presentation!==null,run=id=>{
+  if(id==='declare-start'){declaring=true;selected=null;selectedIndex=null;render();return;}
+  if(id==='declare-cancel'){declaring=false;selected=null;selectedIndex=null;render();return;}
+  if(id==='choice-back'){bandChoice=null;render();return;}
+  bandChoice=null;perform(0,id,revision);
+ };
+ $('action-band-target').innerHTML=m.target?tile(m.target):'';
+ const slots=$('action-band-slots'),choices=$('action-band-choices');
+ slots.hidden=!!m.choice;choices.hidden=!m.choice;slots.replaceChildren();choices.replaceChildren();
+ if(m.choice){
+  for(const c of m.choices){
+   const b=document.createElement('button');b.type='button';b.className='band-choice';b.dataset.action=c.id;b.disabled=busy;b.setAttribute('aria-label',c.label);
+   b.innerHTML=c.tiles?c.tiles.map(t=>tile(t,t===c.called?'called-preview':'')).join(''):tile(c.tile)+'<small>'+c.kind+'</small>';
+   b.onclick=()=>run(c.id);choices.append(b);
+  }
+ }else for(const s of m.slots){
+  const b=document.createElement('button');b.type='button';b.className='band-slot tone-'+s.tone+(s.on?' on':' off')+(s.pressed?' pressed':'');
+  b.dataset.slot=s.key;b.dataset.action=s.action||(s.choices?s.key+'-choose':'');b.disabled=busy||!s.on;
+  b.innerHTML=s.text+(s.sub?'<sub>'+s.sub+'</sub>':s.tag?'<sub class="tag">'+s.tag+'</sub>':'');
+  b.setAttribute('aria-label',s.on?(s.choices?s.text+'，選擇牌組':s.text+(s.sub?' '+s.sub:'')):s.text+'（不能使用）');
+  if(s.on)b.onclick=()=>{if(s.action)run(s.action);else if(s.choices){bandChoice={kind:s.key,revision};render();}};
+  slots.append(b);
+ }
+ const r=$('action-band-right');r.hidden=!m.right;
+ if(m.right){r.textContent=m.right.text;r.dataset.action=m.right.action;r.disabled=busy;r.onclick=()=>run(m.right.action);}
+}
 function render(){
  const active=document.activeElement,handFocus=active?.matches('#south .hand .tile[data-hand-index]')?{index:active.dataset.handIndex,tile:active.dataset.tile,revision:active.dataset.revision}:null;
  clearTimeout(timer);
@@ -292,21 +322,9 @@ function render(){
   $('waits').textContent=w.length?'打出後聽：'+w.map(tileLabel).join('、'):'打出後尚未聽牌';
  }
  $('actions').replaceChildren();document.querySelector('.controls').classList.toggle('declaring',declaring);const readyTurn=!declaring&&p.state!=='S0'&&game.phase==='turn'&&game.turn===0;document.querySelector('.controls').classList.toggle('ready-locked',readyTurn);$('play-hint').hidden=!(declaring||readyTurn);$('play-hint').textContent=declaring?(selected?'打出選牌，宣告聽牌':'選擇要打出的牌'):readyTurn?'已聽牌，只能打新摸牌':'';
- const chows=a.filter(x=>x.id.startsWith('chi:'));
- for(const act of a.filter(x=>!x.id.startsWith('discard:')&&!x.id.startsWith('declare:')&&!x.id.startsWith('chi:'))){
-  const short=act.id==='pon'?'碰':act.id==='openKan'?'槓':act.id==='pass'||act.id==='passWin'||act.id==='flowerPass'?'過':act.id==='win'?(game.phase==='turn'?'自摸':'胡'):act.id==='flowerWin'?'胡':act.label;
-  const b=addButton(short,()=>perform(0,act.id,revision),act.id==='win'||act.id==='flowerWin',act.id);b.setAttribute('aria-label',act.label);b.title=act.label;if(['win','flowerWin'].includes(act.id))b.classList.add('call');
- }
- if(chows.length){const b=addButton('吃',()=>chows.length===1?perform(0,chows[0].id,revision):showChowChoices(chows,revision),false,chows.length===1?chows[0].id:'chi-choose');b.setAttribute('aria-label',chows.length===1?chows[0].label:'吃，選擇牌組');}
- if(a.some(x=>x.id.startsWith('discard:'))){
-  if(declaring){
-   addButton('取消宣告',()=>{declaring=false;selected=null;selectedIndex=null;render();});
-   if(selected&&a.some(x=>x.id==='declare:'+selected))addButton('確認'+STATE_NAMES[a.find(x=>x.id==='declare:'+selected).state]+' · 打 '+tileLabel(selected),()=>perform(0,'declare:'+selected,revision),true,'declare');
-  }else{
-   if(selected&&$('confirm-button').checked)addButton('出牌 · '+tileLabel(selected),()=>perform(0,'discard:'+selected,revision),true,'discard');
-   if(a.some(x=>x.id.startsWith('declare:')))addButton('聽',()=>{declaring=true;selected=null;selectedIndex=null;render();},false,'declare-start').setAttribute('aria-label','宣告聽牌');
-  }
- }
+ // v0.90: 吃碰槓聽胡過 live in the fixed action band; #actions keeps only the optional discard-confirm button.
+ renderActionBand(a,p,revision);
+ if(a.some(x=>x.id.startsWith('discard:'))&&!declaring&&selected&&$('confirm-button').checked)addButton('出牌 · '+tileLabel(selected),()=>perform(0,'discard:'+selected,revision),true,'discard');
  $('notice').textContent=declaring?(a.find(x=>x.id.startsWith('declare:'))?.state==='S1'?'普通宣告：固定手牌，胡牌加 1 台；可以過水。':'天聽／地聽：固定手牌、有胡必胡、禁止槓；提交後不能撤回。'):p.state!=='S0'?'已宣告，不能任意換打原手牌。'+(['S2','S3'].includes(p.state)?'有胡必胡。':'普通宣告仍可過水。'):'再點同張或上滑即可出牌；也可按確認按鈕。';
  if(game.phase==='ended')$('notice').textContent=match?.status==='completed'?'整場分數已結算，可下載紀錄或開始新場。':'本手分數已結算；繼續場次不會再次收付。';
  if(game.phase==='flower')$('notice').textContent='接受花胡會依法補足手牌並結算；放棄不移轉他人的花，也不重開同一次機會。';
@@ -387,6 +405,8 @@ function renderPrototypeState(){
  const preview=$('ready-preview'),hint=waitPreview(game,selected),waits=hint.preview;
  preview.hidden=!hint.hasPreview||(!waits.length&&!declaring);
  preview.innerHTML=waits.length?'<span class="wait-heading">聽</span>'+unseenWaitCounts(waits,game).map(w=>'<span class="wait-card" title="'+tileLabel(w.tile)+'，未見'+w.count+'張">'+tile(w.tile)+'<small>未見 '+w.count+'</small></span>').join(''):'<span class="wait-heading">這張牌不能宣告聽牌</span>';
+ // While the action band is up, the ready hint rides at its right end instead of a separate box.
+ {const side=$('action-band-side'),inBand=!$('action-band').hidden&&!preview.hidden&&!$('action-band').dataset.choice;side.hidden=!inBand;side.innerHTML=inBand?preview.innerHTML:'';if(inBand)preview.hidden=true;}
  document.querySelector('.controls').classList.toggle('waits-only',!preview.hidden&&$('actions').childElementCount===0&&$('play-hint').hidden&&$('computer-resume').hidden);
  $('sticker-image').src=characterSprite(0,'chibi');$('sticker-image').alt=FULL_NAMES[0]+'全身Q版';
  $('sticker-title').textContent=FULL_NAMES[0]+' · 角色貼圖';
@@ -427,7 +447,7 @@ document.addEventListener('pointercancel',()=>{characterTap=null;},{passive:true
 document.addEventListener('pointerup',e=>{
  const tap=characterTap;characterTap=null;
  if(!tap||tap.id!==e.pointerId||Math.hypot(e.clientX-tap.x,e.clientY-tap.y)>14||performance.now()-tap.t>800)return;
- if(paused()||tap.target.closest?.('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#result,#table-toast,#page-overlay'))return;
+ if(paused()||tap.target.closest?.('button,a,input,select,label,dialog,.tile,.meld,[data-flower],#south,.controls,#action-band,#result,#table-toast,#page-overlay'))return;
  const seat=characterActors.hitSeat(tap.x,tap.y);if(seat===null)return;
  // Give audio a moment to unlock so the first tap is voiced, but never let a stalled resume() swallow the reaction.
  if(sound.enabled&&sound.state!=='running'){const ready=sound.unlock().then(()=>characterActors.prepareVoices());Promise.race([ready,new Promise(r=>setTimeout(r,400))]).then(()=>characterActors.poke(seat));ready.then(syncSound,()=>{});}else characterActors.poke(seat);

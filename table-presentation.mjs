@@ -75,7 +75,7 @@ function presentTable(before,seat,id){
   if(Math.abs(dx)+Math.abs(dy)>2||Math.abs(sx-1)+Math.abs(sy-1)>.01)animate(el,[{transformOrigin:'0 0',transform:'translate('+dx+'px,'+dy+'px) scale('+sx+','+sy+')'},{transformOrigin:'0 0',transform:'translate(0,0) scale(1,1)'}],MOTION.settle,sequence.handDelay);
  }
  if(!animations.length){setPresentation(null);document.body.classList.remove('moving-tiles');render();return;}
- for(const b of document.querySelectorAll('.hand button,#actions button'))b.disabled=true;
+ for(const b of document.querySelectorAll('.hand button,#actions button,#action-band button'))b.disabled=true;
  tableView.draw();
  Promise.allSettled(animations).then(()=>{if(getPresentation()!==ticket)return;for(const e of arrivals)e.classList.remove('motion-arrival');clearEffects();render();});
 }
