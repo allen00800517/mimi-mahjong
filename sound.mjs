@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.6}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
