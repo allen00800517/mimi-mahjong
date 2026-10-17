@@ -1,5 +1,5 @@
 // Approved silent idle artwork. New Flow gestures retain their natural pace.
-export const IDLE_VARIANTS=Object.freeze({blink:{label:'眨眼',duration:260,clip:'call',first:0,last:10,pingpong:true,lead:50,tail:60},tilt:{label:'歪頭微笑',duration:1800,clip:'idle',first:18,last:72,lead:150,tail:200},look:{label:'低頭看牌',duration:2500,clip:'look',first:0,last:29,lead:150,tail:200},apron:{label:'整理圍裙',duration:3000,clip:'apron',first:0,last:35,lead:150,tail:200}});
+export const IDLE_VARIANTS=Object.freeze({blink:{label:'眨眼',duration:260,clip:'call',first:0,last:10,pingpong:true,lead:50,tail:60},tilt:{label:'歪頭微笑',duration:1800,clip:'idle',first:18,last:72,lead:150,tail:200},look:{label:'低頭看牌',duration:2500,clip:'look',first:0,last:29,lead:150,tail:200},apron:{label:'整理圍裙',duration:3000,clip:'apron',first:0,last:35,lead:150,tail:200},hair:{label:'撥頭髮',duration:3417,clip:'hair',first:0,last:40,lead:150,tail:200},cake:{label:'拿出蛋糕',duration:5500,clip:'cake',first:0,last:65,lead:150,tail:200}});
 const PERIOD=120000;
 const between=(random,a,b)=>a+(b-a)*Math.max(0,Math.min(.999999,random()));
 export function idlePose(kind,ms,variants=IDLE_VARIANTS){
@@ -18,12 +18,13 @@ export class IdleDirector{
   if(this.plans.has(period))return this.plans.get(period);
   const r=this.random,events=[];
   const available=Object.keys(this.variants).filter(x=>x!=='blink'),maxDuration=Math.max(0,...available.map(x=>this.variants[x].duration));
-  // Only the first block uses the 11–19 s opening; later blocks continue the 20–32 s rest from the previous block's last gesture.
+  // v0.95: gaps shortened (user): first gesture after 8–14 s, then 12–20 s of rest between gestures.
+  // Only the first block uses the opening; later blocks continue the rest from the previous block's last gesture.
   const previous=this.plans.get(period-1)?.filter(e=>e.kind!=='blink').at(-1);
-  let accentAt=period>0&&previous?Math.max(0,previous.end+between(r,20000,32000)-PERIOD):between(r,11000,19000);
+  let accentAt=period>0&&previous?Math.max(0,previous.end+between(r,12000,20000)-PERIOD):between(r,8000,14000);
   while(available.length&&accentAt+maxDuration<PERIOD){
    const choices=available.length>1?available.filter(x=>x!==this.lastAccent):available,kind=choices[Math.floor(between(r,0,choices.length))];
-   this.lastAccent=kind;events.push({kind,start:accentAt,end:accentAt+this.variants[kind].duration});accentAt+=this.variants[kind].duration+between(r,20000,32000);
+   this.lastAccent=kind;events.push({kind,start:accentAt,end:accentAt+this.variants[kind].duration});accentAt+=this.variants[kind].duration+between(r,12000,20000);
   }
   if(this.variants.blink){const duration=this.variants.blink.duration;for(let t=between(r,3000,6000);t+duration<PERIOD;t+=between(r,3500,7000))if(!events.some(e=>t<e.end+700&&t+duration>e.start-700))events.push({kind:'blink',start:t,end:t+duration});}
   events.sort((a,b)=>a.start-b.start);this.plans.set(period,events);if(this.plans.size>3)this.plans.delete(this.plans.keys().next().value);return events;
