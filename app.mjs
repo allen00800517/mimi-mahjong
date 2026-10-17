@@ -377,7 +377,7 @@ function renderMatchSummary(){
 // v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
 function startDice(){
  pendingDice=false;clearTimeout(timer);
- diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:reduced(),
+ diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES,game.dealer),from:game.dealer,reduced:reduced(),
   onStart:()=>{sound.fade('shuffle',.35);sound.play('dice');},onDone:()=>render()});
 }
 function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;return null;}

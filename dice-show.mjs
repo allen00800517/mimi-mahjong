@@ -12,7 +12,9 @@ export function dieFaces(v){
  const rest=[1,2,3].filter(n=>n!==v&&n!==7-v),[a,b]=rest;
  return {front:v,back:7-v,right:a,left:7-a,top:b,bottom:7-b};
 }
-export function diceBadgeText(deal,names){return deal.dice.join('＋')+'＝'+deal.total+'　'+names[deal.doorSeat]+' 開門';}
+// The badge names who plays first — always the dealer (莊家 starts with 17 tiles). The dice only pick where the wall
+// is broken; showing that seat's name read as "they start" (user), so it is left to the log and the menu.
+export function diceBadgeText(deal,names,dealer){return deal.dice.join('＋')+'＝'+deal.total+'　'+names[dealer]+'莊 先打';}
 // Screen direction of each seat (0 bottom = you, 1 right, 2 top, 3 left): the dice come in from the dealer.
 export function throwVector(seat){return [[0,1],[1,0],[0,-1],[-1,0]][((seat%4)+4)%4];}
 
