@@ -1,3 +1,4 @@
+import {rectOf,pointOf} from './viewport.mjs';
 // Pointer coordinates and the visible tile rectangle share viewport CSS pixels.
 export function handGesture(start,end,rect){
  const dx=end.x-start.x,up=start.y-end.y;
@@ -15,8 +16,8 @@ export function bindHandInput(button,{isCurrent,select,commit}){
  button.onpointerdown=e=>{
   if(pointer||!isCurrent()||e.button!==0||e.isPrimary===false)return;
   suppressClick=false;
-  const {width,height}=button.getBoundingClientRect();
-  pointer={x:e.clientX,y:e.clientY,id:e.pointerId,rect:{width,height}};
+  const {width,height}=rectOf(button),at=pointOf(e.clientX,e.clientY);
+  pointer={x:at.x,y:at.y,id:e.pointerId,rect:{width,height}};
   button.setPointerCapture(e.pointerId);
  };
  button.onpointercancel=button.onlostpointercapture=e=>{
@@ -26,7 +27,7 @@ export function bindHandInput(button,{isCurrent,select,commit}){
   if(!pointer||pointer.id!==e.pointerId)return;
   const start=pointer;pointer=null;
   if(!isCurrent()){suppressClick=true;return;}
-  const gesture=handGesture(start,{x:e.clientX,y:e.clientY},start.rect);
+  const gesture=handGesture(start,pointOf(e.clientX,e.clientY),start.rect);
   suppressClick=gesture!=='tap';
   if(gesture==='discard')commit();
  };

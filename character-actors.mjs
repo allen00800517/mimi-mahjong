@@ -1,3 +1,4 @@
+import {rectOf,pointOf} from './viewport.mjs';
 import {CharacterTrack,characterEvents} from './character-model.mjs';
 import {VoicePlayer} from './voice-player.mjs';
 import {paintCharacterPose,loadCharacterMotion,CHARACTER_MEDIA} from './character-media.mjs';
@@ -51,8 +52,9 @@ export class CharacterActors{
  }
  // Easter egg: the player taps a visible opponent. Only opaque pixels of the drawn character count.
  hitSeat(clientX,clientY){
+  ({x:clientX,y:clientY}=pointOf(clientX,clientY));
   for(const [seat,view] of this.views){
-   const r=view.canvas.getBoundingClientRect();if(clientX<r.left||clientX>r.right||clientY<r.top||clientY>r.bottom)continue;
+   const r=rectOf(view.canvas);if(clientX<r.left||clientX>r.right||clientY<r.top||clientY>r.bottom)continue;
    const x=Math.floor((clientX-r.left)/r.width*view.canvas.width),y=Math.floor((clientY-r.top)/r.height*view.canvas.height);
    try{const a=view.ctx.getImageData(Math.max(0,x-3),Math.max(0,y-3),7,7).data;for(let i=3;i<a.length;i+=4)if(a[i]>40)return seat;}catch{return seat;}
   }

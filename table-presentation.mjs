@@ -1,10 +1,11 @@
+import {rectOf} from './viewport.mjs';
 import {actionSequence} from './action-sequence.mjs';
 import {MOTION} from './motion-timeline.mjs';
 import {meldSourcePoses} from './presentation-model.mjs';
 // Owns the presentation of an already committed legal game action; never changes game state.
 export function createTablePresenter({tableView,getGame,getSelectedIndex,getPresentation,setPresentation,clearTimer,clearEffects,render,reduced,paused,sound,syncSound,names,characterSprite,positionCallout,animatedResident=()=>false}){
  const $=id=>document.getElementById(id),seatNode=s=>document.getElementById(['south','east','north','west'][s]);
- const bounds=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+ const bounds=el=>{if(!el)return null;const r=rectOf(el);return {x:r.x,y:r.y,width:r.width,height:r.height};};
 function captureTable(s,id){
  const game=getGame(),selectedIndex=getSelectedIndex();
  return {layout:tableView.captureLayout(),phase:game.phase,turn:game.turn,drawn:game.drawn,wall:game.wall.length,wallTiles:tableView.wallTiles(),handCounts:game.players.map(p=>p.hand.length),event:game.event?{from:game.event.from,tile:game.event.tile}:null,

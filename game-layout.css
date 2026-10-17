@@ -190,3 +190,21 @@ body.moving-tiles .controls,body.moving-tiles .turn-cue{visibility:hidden;pointe
 #page-overlay-frame{display:block;width:100%;height:100%;border:0;background:#13291f}
 #page-overlay-close{position:fixed;right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:56;min-height:36px;padding:6px 14px;font-size:13px;border:1px solid #d5b375;border-radius:9px;background:#1c2c28f5;color:#f5e6c8;box-shadow:0 3px 10px #0006}
 #fullscreen-toggle{width:100%;margin-bottom:8px}
+
+/* v0.89 · after 返回牌桌 a visible way back to the settlement / next hand */
+#result-reopen{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);z-index:19;min-height:32px;padding:5px 16px;border:1px solid #e3c27f;border-radius:999px;background:#5b3b1ef2;color:#fff1d2;font-size:13px;font-weight:700;box-shadow:0 4px 14px #0007}
+#result-reopen[hidden]{display:none}
+
+/* v0.89 · forced landscape: a phone held upright shows the table rotated 90° (top of the game toward the right edge),
+   like native mahjong apps. Fixed-position layers live inside body and rotate with it; modal dialogs sit in the top
+   layer outside body, so they rotate on their own and take their limits from the swapped screen size. */
+html.force-landscape,html.force-landscape body{overflow:hidden}
+html.force-landscape body{position:fixed;top:0;left:0;width:var(--screen-h,100vh);height:var(--screen-w,100vw);box-sizing:border-box;padding:0;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)}
+html.force-landscape dialog[open]{transform:rotate(90deg)}
+html.force-landscape dialog{width:min(700px,calc(var(--screen-h) * .9));max-height:calc(var(--screen-w) * .88)}
+html.force-landscape #settings-dialog{width:min(580px,calc(var(--screen-h) * .9));max-height:calc(var(--screen-w) * .9)}
+html.force-landscape #chow-dialog{top:0;bottom:0;margin:auto;width:max-content;max-width:calc(var(--screen-h) * .95)}
+html.force-landscape #flower-dialog{width:max-content;max-width:calc(var(--screen-h) * .9)}
+html.force-landscape #flower-large{max-height:calc(var(--screen-w) * .65)}
+html.force-landscape #table-toast{top:10px;max-width:min(560px,calc(var(--screen-h) - 32px))}
+@media(max-width:420px){html.force-landscape dialog{padding:12px;font-size:12px}html.force-landscape .dialog-head{margin-bottom:9px}html.force-landscape .dialog-head h2{font-size:18px}}

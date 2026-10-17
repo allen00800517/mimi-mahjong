@@ -1,3 +1,4 @@
+import {rectOf} from './viewport.mjs';
 import {tableLayout,VIEW} from './table-layout.mjs';
 import {setFaceImages} from './tiles.mjs';
 import {MotionTimeline,flightPose,FLIGHT,MOTION} from './motion-timeline.mjs';
@@ -34,13 +35,13 @@ export class PlayableTable{
   }catch(e){if(!this.resources.current(generation))return;this.ready=false;this.resources.invalidate();document.getElementById('table-loading-text').textContent=stage==='assets'?'牌桌素材未能載入，請重試。':'牌局畫面處理發生錯誤，請重新載入。';loading.hidden=false;retry.hidden=false;console.error(e);}
  }
  update(game,skin,lastEffect){this.layoutDirty=true;this.staticDirty=true;this.game=game;this.skin=skin;this.lastEffect=lastEffect;this.objects=tableLayout(game,skin,lastEffect);this.proxies=new Map(this.objects.map(o=>[o.key,proxyFor(o)]));this.draw();}
- toScreen(p){const r=this.canvas.getBoundingClientRect();return [r.left+p[0]*r.width/VIEW.width,r.top+p[1]*r.height/VIEW.height];}
+ toScreen(p){const r=rectOf(this.canvas);return [r.left+p[0]*r.width/VIEW.width,r.top+p[1]*r.height/VIEW.height];}
  screenRect(b){const a=this.toScreen([b.x,b.y]),z=this.toScreen([b.x+b.width,b.y+b.height]);return{x:a[0],y:a[1],width:z[0]-a[0],height:z[1]-a[1]};}
  landingPlane(el){const o=this.objects.find(o=>proxyFor(o)===el);return o?o.plane.map(p=>this.toScreen(p)):null;}
  captureLayout(){return this.objects.map(o=>({...o}));}
- logicalRect(r){const b=this.canvas.getBoundingClientRect();return {x:(r.x-b.left)*854/b.width,y:(r.y-b.top)*394/b.height,width:r.width*854/b.width,height:r.height*394/b.height};}
+ logicalRect(r){const b=rectOf(this.canvas);return {x:(r.x-b.left)*854/b.width,y:(r.y-b.top)*394/b.height,width:r.width*854/b.width,height:r.height*394/b.height};}
  objectFor(el){return this.objects.find(o=>this.proxies?.get(o.key)===el);}
- fly(face,start,end,{back=false,draw=false,meld=false,flower=false,delay=0,onContact}={}){this.staticDirty=true;const dest=this.objectFor(end)||faceObject(this.logicalRect(end.getBoundingClientRect())),source=start.origin?start:faceObject(this.logicalRect(start)),key=Symbol();const from={...source,face,back:source.back??back},to={...dest,face,back},kind=flower?'flower':draw?'draw':meld?'meld':'play',duration=MOTION[kind==='play'?'discard':kind],staged=draw||flower;this.flights.set(key,{...from,flying:true,visible:!staged||delay===0});return this.timeline.add({kind,duration,delay,contact:FLIGHT[kind].contact,onContact,update:(p,visible)=>{const pose=flightPose(from,to,p,kind);let shownBack=back;if(from.back&&!back){const flip=Math.max(0,Math.min(1,(Math.min(1,p/FLIGHT[kind].contact)-.16)/.58)),width=Math.max(.08,Math.abs(Math.cos(Math.PI*flip))),old=pose.u;pose.origin=pose.origin.map((n,i)=>n+old[i]*(1-width)/2);pose.u=old.map(n=>n*width);shownBack=flip<.5;}this.flights.set(key,{...pose,face:shownBack?null:face,back:shownBack,flying:true,visible:visible||!staged});},complete:()=>{this.flights.get(key).settled=true;}});}
+ fly(face,start,end,{back=false,draw=false,meld=false,flower=false,delay=0,onContact}={}){this.staticDirty=true;const dest=this.objectFor(end)||faceObject(this.logicalRect(rectOf(end))),source=start.origin?start:faceObject(this.logicalRect(start)),key=Symbol();const from={...source,face,back:source.back??back},to={...dest,face,back},kind=flower?'flower':draw?'draw':meld?'meld':'play',duration=MOTION[kind==='play'?'discard':kind],staged=draw||flower;this.flights.set(key,{...from,flying:true,visible:!staged||delay===0});return this.timeline.add({kind,duration,delay,contact:FLIGHT[kind].contact,onContact,update:(p,visible)=>{const pose=flightPose(from,to,p,kind);let shownBack=back;if(from.back&&!back){const flip=Math.max(0,Math.min(1,(Math.min(1,p/FLIGHT[kind].contact)-.16)/.58)),width=Math.max(.08,Math.abs(Math.cos(Math.PI*flip))),old=pose.u;pose.origin=pose.origin.map((n,i)=>n+old[i]*(1-width)/2);pose.u=old.map(n=>n*width);shownBack=flip<.5;}this.flights.set(key,{...pose,face:shownBack?null:face,back:shownBack,flying:true,visible:visible||!staged});},complete:()=>{this.flights.get(key).settled=true;}});}
  hold(duration){return this.timeline.add({kind:"read",duration,update:()=>{}});}
  cancelMotion({redraw=true}={}){this.staticDirty=true;this.shift=null;this.flights.clear();this.timeline.cancel({redraw});}
  animateLayout(previous,{handDelay=0}={}){

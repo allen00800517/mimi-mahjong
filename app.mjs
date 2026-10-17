@@ -1,4 +1,5 @@
 import {organizeTableMenu} from './table-menu.mjs';
+import {rectOf,viewSize,wantsForcedLandscape} from './viewport.mjs';
 import {CharacterActors} from './character-actors.mjs';
 import {SessionStorage} from './session-storage.mjs';
 import {foregroundFor} from './table-layout.mjs';
@@ -77,7 +78,7 @@ function meldMarkup(m,s,i,compact=true){
  }).join('')+'</div>';
 }
 const seatNode=s=>document.getElementById(['south','east','north','west'][s]);
-function bounds(el){if(!el)return null;const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}
+function bounds(el){if(!el)return null;const r=rectOf(el);return {x:r.x,y:r.y,width:r.width,height:r.height};}
 function captureTable(s,id){return presenter.capture(s,id);}
 function presentTable(before,seat,id){return presenter.present(before,seat,id);}
 
@@ -112,7 +113,8 @@ function startWinCinema(){
  syncSettlement();cinemaTimer=setTimeout(finishWinCinema,primary?1800:1100);
 }
 $('cinema-skip').onclick=finishWinCinema;
-const portrait=()=>innerHeight>innerWidth&&matchMedia('(pointer: coarse)').matches;
+// Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
+const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
 function syncCharacters(){try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
@@ -260,7 +262,7 @@ function renderResponseContext(acts){
  document.querySelector('.controls').classList.toggle('responding',!el.hidden);
 }
 function positionCallout(badge,seat){
- badge.dataset.seat=seat;const t=$('table').getBoundingClientRect(),p=seatNode(seat).querySelector('.profile').getBoundingClientRect();
+ badge.dataset.seat=seat;const t=rectOf($('table')),p=rectOf(seatNode(seat).querySelector('.profile'));
  let x=seat===1?650:seat===3?205:427,y=seat===2?130:seat===0?225:195;
  badge.style.left=x+'px';badge.style.top=y+'px';
 }
@@ -312,6 +314,8 @@ function render(){
  if(forced)$('notice').textContent='天聽／地聽有胡必胡（包含合法花胡），系統將自動接受。';
  $('result').hidden=!game.result||resultDismissed||winPresentation!==null;
  $('result-toggle').hidden=!game.result;
+ // After 返回牌桌 the hand is still over: keep a visible way back to the settlement / next hand on the table itself.
+ $('result-reopen').hidden=!game.result||!resultDismissed||winPresentation!==null;$('result-reopen').textContent=match?.status==='playing'?'本手結算・下一手 ▸':'查看本手結算 ▸';
  $('history-toggle').disabled=!match;$('resume-match').hidden=!suspendedTable;
  renderSettlement();
  $('log').innerHTML=game.log.slice(-100).map(t=>'<li>'+escape(t.replace(/你|下家|對家|上家/g,n=>({你:NAMES[0],下家:NAMES[1],對家:NAMES[2],上家:NAMES[3]})[n]))+'</li>').join('');$('log').scrollTop=$('log').scrollHeight;$('log-count').textContent=game.log.length+' 步';
@@ -351,15 +355,16 @@ $('save').onclick=async()=>{const text=JSON.stringify(createBackup(sessionSnapsh
 $('load').onchange=async e=>{const input=e.target;try{const f=input.files[0];if(!f)return;if(f.size>10e6)throw Error('紀錄檔過大');const restored=restoreBackup(JSON.parse(await f.text()));let archivesSaved=true;
  if(restored.archives===null)archivesSaved=archiveCurrent();else{archives=restored.archives;try{localStorage.setItem('mimi-tw-archives-5',JSON.stringify(archives));}catch{archivesSaved=false;}}
  adoptSession(restored);clearPracticeLink();lastEffect=null;clearEffects();resultDismissed=false;selected=null;selectedIndex=null;declaring=false;const saved=saveLocal();render();$('feedback').textContent='已恢復牌局'+(restored.archives===null?'':'與 '+archives.length+' 手歷史紀錄')+(saved&&archivesSaved?'':'；無法自動保存，請保留下載的紀錄檔。');}catch(e){$('feedback').textContent='讀取失敗：'+e.message;}finally{input.value='';}};
-function orientationChanged(){lastPortrait=portrait();if(winPresentation)finishWinCinema();clearTimeout(timer);clearEffects();const blocked=portrait();$('rotate-prompt').hidden=!blocked;$('game-shell').inert=blocked;$('settings-dialog').inert=blocked;$('history-dialog').inert=blocked;$('river-dialog').inert=blocked;$('flower-dialog').inert=blocked;$('chow-dialog').inert=blocked;$('meld-dialog').inert=blocked;$('sticker-dialog').inert=blocked;if(blocked||document.hidden){clearTimeout(stickerTimer);$('character-sticker').hidden=true;$('character-sticker').replaceChildren();}document.body.classList.toggle('portrait',blocked);if(blocked||document.hidden)sound.suspend();else sound.resume();render();}
+function orientationChanged(){document.documentElement.style.setProperty('--screen-w',innerWidth+'px');document.documentElement.style.setProperty('--screen-h',innerHeight+'px');lastPortrait=wantsForcedLandscape();document.documentElement.classList.toggle('force-landscape',lastPortrait);fitPrototypeUI();if(winPresentation)finishWinCinema();clearTimeout(timer);clearEffects();const blocked=portrait();$('rotate-prompt').hidden=!blocked;$('game-shell').inert=blocked;$('settings-dialog').inert=blocked;$('history-dialog').inert=blocked;$('river-dialog').inert=blocked;$('flower-dialog').inert=blocked;$('chow-dialog').inert=blocked;$('meld-dialog').inert=blocked;$('sticker-dialog').inert=blocked;if(blocked||document.hidden){clearTimeout(stickerTimer);$('character-sticker').hidden=true;$('character-sticker').replaceChildren();}document.body.classList.toggle('portrait',blocked);if(blocked||document.hidden)sound.suspend();else sound.resume();render();}
 for(const name of ['settings','history','river']){
  $(name+'-toggle').onclick=()=>{clearTimeout(timer);clearEffects();if(name==='river')$('river-detail').innerHTML=game.players.map((p,s)=>'<section class="all-river"><h3>'+FULL_NAMES[s]+' · '+p.river.length+' 張</h3><div>'+p.river.map(r=>tile(r.tile,r.claimed?'claimed':'')).join('')+'</div></section>').join('');if(name!=='settings')$('settings-dialog').close();$(name+'-dialog').showModal();render();};
  $(name+'-close').onclick=()=>$(name+'-dialog').close();
  $(name+'-dialog').addEventListener('close',()=>{if(!presentation&&!winPresentation)render();});
 }
 $('result-toggle').onclick=()=>{$('settings-dialog').close();resultDismissed=false;render();};
+$('result-reopen').onclick=()=>{resultDismissed=false;render();document.querySelector('#next-hand,.close-result')?.focus();};
 let lastPortrait=null;
-window.addEventListener('resize',()=>{if(portrait()!==lastPortrait)orientationChanged();else fitTableUI();});
+window.addEventListener('resize',()=>{document.documentElement.style.setProperty('--screen-w',innerWidth+'px');document.documentElement.style.setProperty('--screen-h',innerHeight+'px');if(wantsForcedLandscape()!==lastPortrait)orientationChanged();else fitTableUI();});
 document.addEventListener('visibilitychange',orientationChanged);
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{if(winPresentation&&reduced())finishWinCinema();clearEffects();render();});
 orientationChanged();
@@ -369,7 +374,7 @@ for(let s=0;s<4;s++)$('character-'+s).onchange=()=>{const next=$('character-'+s)
 // Full-bleed stage: on an iPhone home-screen app the 854×394 stage matches the landscape screen, so it fills edge to edge.
 function fitPrototypeUI(){
  const shell=$('game-shell'),f=foregroundFor(game);
- shell.style.setProperty('--stage-scale',Math.min(innerWidth/854,innerHeight/394));
+ const view=viewSize();shell.style.setProperty('--stage-scale',Math.min(view.width/854,view.height/394));
  shell.style.setProperty('--base-hand-w',f.unit+'px');shell.style.setProperty('--base-hand-h',f.unit*1.375+'px');
  shell.style.setProperty('--meld-tile-w',f.meldUnit+'px');shell.style.setProperty('--own-meld-span',f.meldSpan+'px');
  shell.style.setProperty('--foreground-left',f.left+'px');shell.style.setProperty('--foreground-span',f.span+'px');

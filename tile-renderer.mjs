@@ -1,3 +1,4 @@
+import {rectOf} from './viewport.mjs';
 import {compactFlowerSVG} from './flower-display.mjs';
 import {createImageLoader,decodeImage} from './asset-loader.mjs';
 import {TILE} from './table-layout.mjs';
@@ -112,7 +113,7 @@ export class TileRenderer{
   return pts;
  }
  draw(list,{background=true,viewport=[854,394],pixelScale=null,shadows=true,opticalSizing=true}={}){
-  const began=performance.now(),g=this.gl,c=this.canvas,r=c.getBoundingClientRect(),dpr=pixelScale??Math.min(devicePixelRatio||1,2),w=Math.round(pixelScale?viewport[0]*dpr:r.width*dpr),h=Math.round(pixelScale?viewport[1]*dpr:r.height*dpr);
+  const began=performance.now(),g=this.gl,c=this.canvas,r=rectOf(c),dpr=pixelScale??Math.min(devicePixelRatio||1,2),w=Math.round(pixelScale?viewport[0]*dpr:r.width*dpr),h=Math.round(pixelScale?viewport[1]*dpr:r.height*dpr);
   if(c.width!==w||c.height!==h){c.width=w;c.height=h;this.stats.resizes++;}
   g.viewport(0,0,w,h);g.clearColor(0,0,0,0);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);g.useProgram(this.program);g.uniform2fv(this.uniforms.uViewport,viewport);
   g.uniform1i(this.uniforms.uBody,0);g.uniform1i(this.uniforms.uFace,1);g.uniform1i(this.uniforms.uBack,2);
