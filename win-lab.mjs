@@ -2,7 +2,7 @@
 // and the settlement hand-off for the selected character, so layouts and timing can be judged side by side.
 // Preview only: the table is a still backdrop and the settlement is a simplified stand-in for the real panel.
 import {CHARACTER_MEDIA} from './character-media.mjs';
-import {WIN_ART,WIN_COLORS,WIN_TIMING,WIN_ANIM,ANIM_LAYOUTS} from './win-show.mjs';
+import {WIN_ART,WIN_COLORS,WIN_TIMING,WIN_ANIM,ANIM_LAYOUTS,slideCx} from './win-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
 const $=id=>document.getElementById(id);
 const ROWS={hu:[['門清',1],['中刻',1]],tsumo:[['門清自摸',3],['花牌',1]]};
@@ -18,13 +18,13 @@ function reset(){
  $('wl-video').hidden=true;chroma.clear();
  const anim=kind==='tsumo'?WIN_ANIM[who]:null,L=ANIM_LAYOUTS[$('wl-layout').value];
  const cx=$('wl-layout').value==='B'&&anim?.handoff?anim.handoff.cx:L.cx,h=L.frameH,w=h*16/9;
- Object.assign($('wl-video').style,{left:(cx-w/2)+'px',width:w+'px',height:h+'px'});
+ Object.assign($('wl-video').style,{left:(cx-w/2)+'px',width:w+'px',height:h+'px',transform:''});
  stage.style.setProperty('--wl-stamp-x',(anim?L.stampX:427)+'px');
  const word=kind==='tsumo'?'自摸':'胡';$('wl-stamp').classList.toggle('art',word==='胡');$('wl-stamp-text').textContent=word;
  $('wl-caption').textContent=CHARACTER_MEDIA[who].name+(kind==='tsumo'?' 自摸　·　三家各付':' 胡牌　·　放槍：權藤');
  // Settlement stand-in.
  const burst=kind==='tsumo',img=$('wl-portrait');img.src=burst?WIN_ART.burst(who):WIN_ART.portrait(who);
- img.style.height=(burst&&anim?.handoff&&$('wl-layout').value==='B'?anim.handoff.portraitH:372)+'px';
+ img.style.height=(burst&&anim?.handoff&&$('wl-layout').value!=='A'?anim.handoff.portraitH:372)+'px';
  $('wl-title').textContent=CHARACTER_MEDIA[who].name+' '+(burst?'自摸':'胡牌');
  const rows=ROWS[kind];$('wl-rows').replaceChildren(...rows.map(([n,t])=>{const r=document.createElement('div');r.className='wl-row';r.innerHTML='<span>'+n+'</span><i></i><b>'+t+' 台</b>';return r;}));
  $('wl-seal-n').textContent=rows.reduce((n,r)=>n+r[1],0);
@@ -49,7 +49,8 @@ function play(){
  const stampAt=Number($('wl-stamp-ms').value)||anim.stampAt;let stamped=false;
  if(!video.src.endsWith(anim.video.slice(1)))video.src=anim.video;
  video.muted=!$('wl-sound').checked;video.currentTime=0;
- const tick=()=>{if(token!==run)return;chroma.draw();if(!stamped&&video.currentTime*1000>=stampAt){stamped=true;showStamp();}if(!video.ended)raf=requestAnimationFrame(tick);};
+ const glide=ANIM_LAYOUTS[$('wl-layout').value].slide;
+ const tick=()=>{if(token!==run)return;if(glide)$('wl-video').style.transform='translateX('+(slideCx(anim,video.currentTime*1000)-427).toFixed(1)+'px)';chroma.draw();if(!stamped&&video.currentTime*1000>=stampAt){stamped=true;showStamp();}if(!video.ended)raf=requestAnimationFrame(tick);};
  video.onended=()=>{if(token!==run)return;chroma.draw();later(150,showSettlement);};
  video.play().then(()=>{if(token!==run)return;stage.classList.add('dim','anim');$('wl-video').hidden=false;raf=requestAnimationFrame(tick);}).catch(()=>{if(token!==run)return;$('wl-state').textContent='影片無法自動播放（可能是低耗電模式）；遊戲裡這時會改用爆發立繪 + 蓋章。';stage.classList.add('dim');later(120,showStamp);later(WIN_TIMING.tsumo,showSettlement);});
 }

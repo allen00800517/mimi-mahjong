@@ -11,7 +11,7 @@
 <aside class="lab-side"><div class="panel-heading"><h2>放大檢查</h2><select id="backdrop" aria-label="放大檢查背景"><option value="checker">透明格</option><option value="felt">桌面綠</option><option value="light">淺色</option><option value="dark">深色</option></select></div><div id="solo" data-background="checker"><img id="solo-image" alt="角色靜態圖"><canvas id="solo-canvas" width="270" height="336" aria-label="角色動作放大預覽" hidden></canvas></div><p id="asset-state" role="status">載入中</p></aside></div>
 <section class="win-lab" id="win-lab" aria-label="胡牌演出預覽"><div class="panel-heading"><h2>胡牌演出 · <span id="wl-who"></span></h2><span class="muted">選角色用上方名單；點預覽畫面可跳過演出</span></div>
 <div class="wl-controls"><div id="wl-kind" class="action-list"><button data-kind="hu">一般胡</button><button data-kind="tsumo">自摸</button></div>
-<label>自摸動畫版面 <select id="wl-layout"><option value="B">B 靠左（接結算不跳）</option><option value="A">A 置中</option></select></label>
+<label>自摸動畫版面 <select id="wl-layout"><option value="C">C 中間登場→邊動邊滑到左</option><option value="B">B 靠左（接結算不跳）</option><option value="A">A 置中</option></select></label>
 <label>「自摸」蓋字時間（ms） <input id="wl-stamp-ms" type="number" min="0" max="6000" step="50" value="2600"></label>
 <label><input id="wl-sound" type="checkbox" checked> 影片聲音</label><button id="wl-play" class="primary">重新播放</button></div>
 <div id="wl-window"><div id="wl-stage"><img class="wl-table" src="./assets/win-v1/lab-table.webp" alt=""><div class="wl-dim"></div><canvas id="wl-video" hidden></canvas>
