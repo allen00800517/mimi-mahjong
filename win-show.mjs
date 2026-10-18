@@ -47,14 +47,16 @@ export function winPortraits(result,id){
 export const WIN_ANIM=Object.freeze({
  // handoff: where the 1280×720 clip sits in layout B so its last frame lands exactly on the settlement portrait
  // (cx = frame centre on the 854 stage, frameH = the clip's height on the stage, portraitH = the figure's height there).
+ // v1.00 · all clips share one scale (frameH 394) so the four look the same size; only 權藤 is smaller (337) because his
+ // open fan would otherwise cover the score rows.
  // slide: layout C glides the clip from the centre to the hand-off spot during the big move (ms into the clip).
- ichika:{video:'./assets/win-v1/ichika-tsumo.mp4',stampAt:2600,handoff:{cx:97,frameH:394,portraitH:335},slide:{from:900,to:2600}},
+ ichika:{video:'./assets/win-v1/ichika-tsumo.mp4',stampAt:2600,handoff:{cx:92,frameH:394,portraitH:332},slide:{from:900,to:2600}},
  // 蜜蜜: take 2 (gag-face suspense, trembling from the first frame). She glides only while airborne (2.38–3.18 s) and the
  // stamp lands with her landing; she ends 40 px further right than the others (her raised arm hugs the left edge),
  // so her settlement portrait moves with her (portraitLeft, default -6).
- mimi:{video:'./assets/win-v1/mimi-tsumo.mp4',stampAt:3200,handoff:{cx:113,frameH:384,portraitH:372,portraitLeft:34},slide:{from:2380,to:3180}},
+ mimi:{video:'./assets/win-v1/mimi-tsumo.mp4',stampAt:3200,handoff:{cx:115,frameH:394,portraitH:382,portraitLeft:34},slide:{from:2380,to:3180}},
  // 珍美: take 1 (the tile leaves her hand during the turn; accepted by the user 2026-10-18). Stamp with the laugh.
- harumi:{video:'./assets/win-v1/harumi-tsumo.mp4',stampAt:2000,handoff:{cx:101,frameH:429,portraitH:372},slide:{from:1000,to:2000}},
+ harumi:{video:'./assets/win-v1/harumi-tsumo.mp4',stampAt:2000,handoff:{cx:91,frameH:394,portraitH:341},slide:{from:1000,to:2000}},
  // 權藤: motion from take A, voice from take B (the fan snaps line up within ~50 ms); the stamp lands with 「ツモじゃ」.
  gondo:{video:'./assets/win-v1/gondo-tsumo.mp4',stampAt:3050,handoff:{cx:127,frameH:337,portraitH:314},slide:{from:1800,to:2900}},
 });
