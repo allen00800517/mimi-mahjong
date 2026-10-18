@@ -17,7 +17,7 @@ import {Game,trainingGame,chooseAction,STATE_NAMES} from './engine.mjs';
 import {tileLabel,sortTiles} from './scoring.mjs';
 import {waitPreview} from './wait-preview.mjs';
 import {actionBandModel} from './action-band.mjs';
-import {MusicPlayer,musicTrackFor} from './music.mjs';
+import {MusicPlayer,musicTrackFor,MUSIC_TRACKS} from './music.mjs';
 import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
@@ -213,12 +213,11 @@ function openTitle(){
  if(sound.enabled){sound.prepare();music.load('title');}else music.prefetch('title');
  // A fresh launch (audio still locked) waits for one tap: the theme starts and the logo pops with it.
  titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',
-  onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();return music.whenPlaying('title',1200);},
+  onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();const t=MUSIC_TRACKS.title;return (await music.whenPlaying('title',1200))?Math.round((t.downbeat-t.startAt)*1000):0;},
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),
   onContinue:()=>render(),
   onNew:()=>openCharSelect({onDone:()=>startNewMatch(freshSeed()),onCancel:openTitle}),
-  onSound:async()=>{await $('sound-toggle').onclick();return sound.enabled;},
-  onPop:()=>sound.play('titlePop')});
+  onSound:async()=>{await $('sound-toggle').onclick();return sound.enabled;}});
  render();
 }
 $('back-title').onclick=()=>{$('settings-dialog').close();openTitle();};

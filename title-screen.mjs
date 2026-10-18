@@ -71,7 +71,8 @@ export class TitleScreen{
   // and the logo pops with it (user's idea; it also turns the iPhone audio rule into part of the show).
   if(tapFirst){el.classList.add('await-tap');const box=el.querySelector('.ts-box');
    const go=()=>{if(!el.classList.contains('await-tap'))return;el.classList.remove('await-tap');removeEventListener('keydown',key);
-    const gate=Promise.race([Promise.resolve(onTap?.()).catch(()=>{}),new Promise(r=>setTimeout(r,POP.musicWait))]);this.pop(onPop,gate);};
+    // onTap resolves to how long until the music's downbeat (ms), so the logo pops on the hit.
+    const gate=Promise.race([Promise.resolve(onTap?.()).catch(()=>0),new Promise(r=>setTimeout(()=>r(0),POP.musicWait))]);this.pop(onPop,gate);};
    const key=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
    box.addEventListener('click',go);addEventListener('keydown',key);this.offKey=()=>removeEventListener('keydown',key);
    el.querySelector('.ts-tap').focus({preventScroll:true});return;}
@@ -85,13 +86,13 @@ export class TitleScreen{
   // the burst tiles are fetched meanwhile.
   for(const t of new Set(BURST_TILES)){const i=new Image();i.src='./assets/title-v1/burst-'+t+'.webp';}
   const ready=[el.querySelector('.ts-bg'),img].map(i=>i.decode?i.decode().catch(()=>{}):Promise.resolve());
-  Promise.all([Promise.race([Promise.all(ready),new Promise(r=>setTimeout(r,2500))]),gate||Promise.resolve()]).then(()=>{if(this.el===el)this.startPop(onPop,!!gate);});
+  Promise.all([Promise.race([Promise.all(ready),new Promise(r=>setTimeout(r,2500))]),gate||Promise.resolve()]).then(([,lead])=>{if(this.el===el)this.startPop(onPop,!!gate,lead);});
  }
  // After the first tap the music is already starting, so the logo springs out almost at once.
- startPop(onPop,tapped=false){
+ startPop(onPop,tapped=false,lead=0){
   const el=this.el,img=el.querySelector('.ts-logo img'),acts=el.querySelector('.ts-actions');
   el.classList.add('popping');el.dataset.popAt=String(Math.round(performance.now()));
-  const delay=tapped?POP.tapDelay:POP.delay;
+  const delay=tapped?(Number(lead)>0?Number(lead):POP.tapDelay):POP.delay;
   img.animate(logoPopFrames(),{duration:POP.dur,delay,easing:'linear',fill:'both'});
   acts.animate([{opacity:0,transform:'translateY(calc(-50% + 1.6em))'},{opacity:1,transform:'translateY(-50%)'}],{duration:POP.buttonsDur,delay:delay+POP.buttonsAt,easing:'ease-out',fill:'both'});
   this.popTimer=setTimeout(()=>{if(this.el!==el)return;el.classList.add('popped');onPop?.();this.burst();},delay);

@@ -10,9 +10,10 @@ export const MUSIC_TRACKS=Object.freeze({
  ready:{label:'聽牌',url:'./assets/music-v1/bgm-ready.mp3',loopStart:18.994,loopEnd:143.824},
  // v1.02 · title theme (Mahjong_Parlour_Night, user's Flow Music): title screen and character select. 120 BPM; the loop
  // runs from the end of the first chorus to the end of the second (40 bars), so the intro and first chorus play once.
- // startAt: the file opens with 0.5 s of silence and a 1.5 s swell; the first downbeat is at 2.02 s. The theme always
- // starts there, so its first hit lands with the logo pop (user).
- title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02,startAt:2.0},
+ // The file opens with 0.5 s of silence and a 1.5 s swell; the first downbeat is at 2.02 s. The theme starts one beat
+ // earlier (startAt), so the tail of the swell leads into the hit instead of cutting in on it (user: starting right on
+ // the hit felt chopped); the title logo pops on the downbeat.
+ title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02,startAt:1.52,downbeat:2.02},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
 export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
@@ -69,7 +70,7 @@ export class MusicPlayer{
   src.buffer=buffer;src.loop=true;src.loopStart=track.loopStart;src.loopEnd=Math.min(track.loopEnd,buffer.duration);
   // A track with startAt (the title theme) begins on its downbeat: from silence with no fade, over another track with
   // a short fade-in while the old one fades out as usual.
-  const at=track.startAt||0,fadeIn=at?(this.active?.15:.02):this.fade;
+  const at=track.startAt||0,fadeIn=at?.12:this.fade;
   gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(1,now+fadeIn);
   src.connect(gain);gain.connect(out);src.start(now,at);
   if(this.active)this.stopActive(this.fade);
