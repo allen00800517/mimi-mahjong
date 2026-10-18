@@ -18,7 +18,7 @@ function reset(){
  stop();stage.className='';stage.style.setProperty('--wl-color',WIN_COLORS[who]||'#c9963c');
  $('wl-video').hidden=true;chroma.clear();
  const anim=kind==='tsumo'?WIN_ANIM[who]:null,L=ANIM_LAYOUTS[$('wl-layout').value];
- const cx=$('wl-layout').value==='B'&&anim?.handoff?anim.handoff.cx:L.cx,h=L.frameH,w=h*16/9;
+ const cx=$('wl-layout').value==='B'&&anim?.handoff?anim.handoff.cx:L.cx,h=$('wl-layout').value!=='A'&&anim?.handoff?.frameH||L.frameH,w=h*16/9;
  Object.assign($('wl-video').style,{left:(cx-w/2)+'px',width:w+'px',height:h+'px',transform:''});
  stage.style.setProperty('--wl-stamp-x',(anim?L.stampX:427)+'px');
  const word=kind==='tsumo'?'自摸':'胡';$('wl-stamp').classList.toggle('art',word==='胡');$('wl-stamp-text').textContent=word;
@@ -54,7 +54,7 @@ function play(){
  const tick=()=>{if(token!==run)return;
   const tx=glide?slideCx(anim,video.currentTime*1000)-427:0;let ty=0;
   // Rise: the figure comes up from below the bottom edge (it is cut at the knees there anyway) in RISE_MS, easing out.
-  if(rise){const now=performance.now();riseStart??=now;const p=Math.min(1,(now-riseStart)/RISE_MS);ty=L.frameH*(1-(1-Math.pow(1-p,3)));}
+  if(rise){const now=performance.now();riseStart??=now;const p=Math.min(1,(now-riseStart)/RISE_MS);ty=(anim.handoff?.frameH||L.frameH)*Math.pow(1-p,3);}
   $('wl-video').style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px)';chroma.draw();if(!stamped&&video.currentTime*1000>=stampAt){stamped=true;showStamp();}if(!video.ended)raf=requestAnimationFrame(tick);};
  video.onended=()=>{if(token!==run)return;chroma.draw();later(150,showSettlement);};
  video.play().then(()=>{if(token!==run)return;stage.classList.add('dim','anim');$('wl-video').hidden=false;raf=requestAnimationFrame(tick);}).catch(()=>{if(token!==run)return;$('wl-state').textContent='影片無法自動播放（可能是低耗電模式）；遊戲裡這時會改用爆發立繪 + 蓋章。';stage.classList.add('dim');later(120,showStamp);later(WIN_TIMING.tsumo,showSettlement);});
