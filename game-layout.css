@@ -316,9 +316,9 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 
 /* v1.00 · 自摸 clip (layout C): keyed video on the dimmed table, stamp lands at the clip's moment on the right */
 #win-cinema .wc-video{position:absolute;bottom:0;pointer-events:none;will-change:transform}
-#win-cinema .wc-stage.anim .wc-stamp,#win-cinema.tsumo .wc-stage.anim .wc-stamp{left:67.3%;top:40%;animation:none;opacity:0}
+#win-cinema .wc-stage.anim .wc-stamp,#win-cinema.tsumo .wc-stage.anim .wc-stamp{left:60%;top:40%;animation:none;opacity:0}
 #win-cinema .wc-stage.anim.stamped .wc-stamp{opacity:1;animation:wc-stamp .38s cubic-bezier(.5,0,.6,1.4) both}
-#win-cinema .wc-stage.anim .wc-caption,#win-cinema.tsumo .wc-stage.anim .wc-caption{left:67.3%;top:72%;animation:none;opacity:0}
+#win-cinema .wc-stage.anim .wc-caption,#win-cinema.tsumo .wc-stage.anim .wc-caption{left:60%;top:72%;animation:none;opacity:0}
 #win-cinema .wc-stage.anim.stamped .wc-caption{opacity:1;animation:wc-fade .3s .2s ease-out both}
 
 /* v1.00 · tai seal set as a carved 朱文 seal: serif numerals + 台, columns right→left, pressed-ink texture */

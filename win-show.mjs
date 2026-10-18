@@ -62,7 +62,7 @@ export const WIN_ANIM=Object.freeze({
 });
 // Where the clip stands on the 854×394 stage: 'B' puts the figure where the settlement portrait will be (no jump at
 // the hand-off; a clip's own handoff.cx wins), 'A' centres it. frameH = height of the 16:9 video frame on the stage.
-export const ANIM_LAYOUTS=Object.freeze({A:{cx:427,frameH:362,stampX:672,label:'A 置中'},B:{cx:205,frameH:394,stampX:575,label:'B 靠左（接結算不跳）'},C:{cx:427,frameH:394,stampX:575,slide:true,label:'C 中間登場→邊動邊滑到左'}});
+export const ANIM_LAYOUTS=Object.freeze({A:{cx:427,frameH:362,stampX:672,label:'A 置中'},B:{cx:205,frameH:394,stampX:512,label:'B 靠左（接結算不跳）'},C:{cx:427,frameH:394,stampX:512,slide:true,label:'C 中間登場→邊動邊滑到左'}});
 // Ease used for the C glide: slow start, slow landing.
 export const easeInOut=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 export function slideCx(anim,ms,from=427){const to=anim?.handoff?.cx??205,sl=anim?.slide;if(!sl)return to;const p=Math.min(1,Math.max(0,(ms-sl.from)/(sl.to-sl.from)));return from+(to-from)*easeInOut(p);}
