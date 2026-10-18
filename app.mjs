@@ -1,5 +1,5 @@
 import {organizeTableMenu} from './table-menu.mjs';
-import {rectOf,viewSize,wantsForcedLandscape,applyScreenSize} from './viewport.mjs';
+import {rectOf,viewSize,wantsForcedLandscape,applyScreenSize,homeScreenApp} from './viewport.mjs';
 import {CharacterActors} from './character-actors.mjs';
 import {SessionStorage} from './session-storage.mjs';
 import {foregroundFor} from './table-layout.mjs';
@@ -221,6 +221,9 @@ function openTitle(){
  render();
 }
 $('back-title').onclick=()=>{$('settings-dialog').close();openTitle();};
+// v1.02 · screen numbers in the menu footer, to diagnose the black band on home-screen copies from a screenshot.
+function screenDiag(){const v=getComputedStyle(document.documentElement),vv=window.visualViewport;return 'win '+innerWidth+'×'+innerHeight+' · scr '+screen.width+'×'+screen.height+' · vv '+(vv?Math.round(vv.width)+'×'+Math.round(vv.height):'-')+' · var '+v.getPropertyValue('--screen-w').trim()+'×'+v.getPropertyValue('--screen-h').trim()+' · app '+(homeScreenApp()?1:0)+(navigator.standalone===true?'s':'');}
+$('settings-toggle').addEventListener('click',()=>{let d=document.getElementById('screen-diag');if(!d){d=document.createElement('small');d.id='screen-diag';d.style.cssText='display:block;opacity:.6;font-size:10px;margin-top:4px';document.querySelector('#settings-dialog footer')?.append(d);}d.textContent=screenDiag();});
 const recovery=sessionStore.recovery();if(recovery!==null){const button=document.createElement('button');button.textContent='下載保留的原始紀錄';button.onclick=()=>saveRecovery();$('feedback').before(button);showToast($('feedback').textContent||'保留了一份無法讀取的原始紀錄。',{action:{label:'保存原始紀錄',run:saveRecovery},persist:true});}
 async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始紀錄.json',recovery);$('feedback').textContent=fileMessage(status,'已存出保留的原始紀錄。');}
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}

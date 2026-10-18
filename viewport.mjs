@@ -5,9 +5,12 @@ export const forcedLandscape=()=>typeof document!=='undefined'&&!!document.docum
 // v0.98 · An iPhone home-screen app sometimes reports innerHeight without the status bar (and fires no resize when it
 // corrects), which left a black band along one edge. A home-screen app always covers the whole screen, so there the
 // screen size wins when it is only slightly larger. navigator.standalone exists only on iOS, so nothing else changes.
+export function homeScreenApp(){const m=q=>{try{return globalThis.matchMedia?.(q).matches===true;}catch{return false;}};return globalThis.navigator?.standalone===true||m('(display-mode: standalone)')||m('(display-mode: fullscreen)');}
 export function screenSize(){
  let w=innerWidth,h=innerHeight;const sw=globalThis.screen?.width,sh=globalThis.screen?.height;
- if(globalThis.navigator?.standalone===true&&sw&&sh){const a=Math.min(sw,sh),b=Math.max(sw,sh),W=w<=h?a:b,H=w<=h?b:a;if(W>=w&&W-w<=120)w=W;if(H>=h&&H-h<=120)h=H;}
+ // v1.02 · an app opened from the home screen may report standalone only through display-mode (manifest apps), so
+ // check both; the black band at the bottom of the GitHub copy came back with navigator.standalone alone.
+ if(homeScreenApp()&&sw&&sh){const a=Math.min(sw,sh),b=Math.max(sw,sh),W=w<=h?a:b,H=w<=h?b:a;if(W>=w&&W-w<=120)w=W;if(H>=h&&H-h<=120)h=H;}
  return {width:w,height:h};
 }
 let applied='';
