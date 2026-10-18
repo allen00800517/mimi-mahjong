@@ -5,6 +5,7 @@ import {CHARACTER_MEDIA} from './character-media.mjs';
 import {WIN_ART,WIN_COLORS,WIN_TIMING,WIN_ANIM,ANIM_LAYOUTS,slideCx} from './win-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
 const $=id=>document.getElementById(id);
+const RISE_MS=320;
 const ROWS={hu:[['門清',1],['中刻',1]],tsumo:[['門清自摸',3],['花牌',1]]};
 let who='ichika',kind='tsumo',timers=[],raf=null,run=0;
 const video=$('wl-video-src'),chroma=new ChromaVideo($('wl-video'),video);
@@ -49,14 +50,19 @@ function play(){
  const stampAt=Number($('wl-stamp-ms').value)||anim.stampAt;let stamped=false;
  if(!video.src.endsWith(anim.video.slice(1)))video.src=anim.video;
  video.muted=!$('wl-sound').checked;video.currentTime=0;
- const glide=ANIM_LAYOUTS[$('wl-layout').value].slide;
- const tick=()=>{if(token!==run)return;if(glide)$('wl-video').style.transform='translateX('+(slideCx(anim,video.currentTime*1000)-427).toFixed(1)+'px)';chroma.draw();if(!stamped&&video.currentTime*1000>=stampAt){stamped=true;showStamp();}if(!video.ended)raf=requestAnimationFrame(tick);};
+ const L=ANIM_LAYOUTS[$('wl-layout').value],glide=L.slide,rise=$('wl-enter').value==='rise';let riseStart=null;
+ const tick=()=>{if(token!==run)return;
+  const tx=glide?slideCx(anim,video.currentTime*1000)-427:0;let ty=0;
+  // Rise: the figure comes up from below the bottom edge (it is cut at the knees there anyway) in RISE_MS, easing out.
+  if(rise){const now=performance.now();riseStart??=now;const p=Math.min(1,(now-riseStart)/RISE_MS);ty=L.frameH*(1-(1-Math.pow(1-p,3)));}
+  $('wl-video').style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px)';chroma.draw();if(!stamped&&video.currentTime*1000>=stampAt){stamped=true;showStamp();}if(!video.ended)raf=requestAnimationFrame(tick);};
  video.onended=()=>{if(token!==run)return;chroma.draw();later(150,showSettlement);};
  video.play().then(()=>{if(token!==run)return;stage.classList.add('dim','anim');$('wl-video').hidden=false;raf=requestAnimationFrame(tick);}).catch(()=>{if(token!==run)return;$('wl-state').textContent='影片無法自動播放（可能是低耗電模式）；遊戲裡這時會改用爆發立繪 + 蓋章。';stage.classList.add('dim');later(120,showStamp);later(WIN_TIMING.tsumo,showSettlement);});
 }
 for(const b of $('wl-kind').children)b.onclick=()=>{kind=b.dataset.kind;play();};
 $('wl-play').onclick=play;
 $('wl-layout').onchange=play;
+$('wl-enter').onchange=play;
 $('wl-stamp-ms').onchange=()=>{$('wl-stamp-ms').dataset.touched='1';play();};
 $('wl-sound').onchange=()=>{video.muted=!$('wl-sound').checked;};
 stage.onclick=()=>{if(stage.classList.contains('anim')||stage.classList.contains('stamp')){stop();stage.classList.remove('anim','stamp','dim');showSettlement();}};
