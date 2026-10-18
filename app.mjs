@@ -209,7 +209,8 @@ function openTitle(){
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),
   onContinue:()=>render(),
   onNew:()=>openCharSelect({onDone:()=>startNewMatch(freshSeed()),onCancel:openTitle}),
-  onSound:async()=>{await $('sound-toggle').onclick();return sound.enabled;}});
+  onSound:async()=>{await $('sound-toggle').onclick();return sound.enabled;},
+  onPop:()=>sound.play('shuffle')});
  render();
 }
 $('back-title').onclick=()=>{$('settings-dialog').close();openTitle();};
