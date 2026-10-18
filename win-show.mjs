@@ -65,13 +65,17 @@ export const ANIM_LAYOUTS=Object.freeze({A:{cx:427,frameH:362,stampX:672,label:'
 export const easeInOut=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 export function slideCx(anim,ms,from=427){const to=anim?.handoff?.cx??205,sl=anim?.slide;if(!sl)return to;const p=Math.min(1,Math.max(0,(ms-sl.from)/(sl.to-sl.from)));return from+(to-from)*easeInOut(p);}
 // v1.00 · The tai seal is set like a real carved seal (朱文): Chinese numerals + 台, read in columns right→left.
-// 2 chars stack; 3 chars: number in the right column, a tall 台 on the left; 4 chars: a 2×2 grid. The hand's own tai
-// tops out around 70 (天胡＋大四喜＋字一色…), so two-digit numbers cover it; the dealer's 連莊 tai are per payment.
+// It shows everything the winner collected this hand, in tai, exactly as the score table adds it up: the sum of every
+// payment's tai (hand tai plus that payment's dealer/連莊 tai). Up to 4 characters fit the square seal (2 stack; 3 =
+// number on the right, a tall 台 on the left; 4 = a 2×2 grid); 5–6 characters (from 一百零一台) switch to a tall seal
+// with a 2×3 grid. 999 tai is out of reach in practice.
 const DIGITS='零一二三四五六七八九';
 export function taiNumeral(n){
  n=Math.max(0,Math.floor(n));if(n<=10)return n===10?'十':DIGITS[n];
  if(n<20)return '十'+DIGITS[n%10];
  if(n<100)return DIGITS[Math.floor(n/10)]+'十'+(n%10?DIGITS[n%10]:'');
+ if(n<1000){const h=Math.floor(n/100),r=n%100;return DIGITS[h]+'百'+(r===0?'':r<10?'零'+DIGITS[r]:DIGITS[Math.floor(r/10)]+'十'+(r%10?DIGITS[r%10]:''));}
  return String(n);
 }
 export function sealChars(n){return [...(taiNumeral(n)+'台')];}
+export function winTaiTotal(result){return (result?.payments??[]).filter(p=>p.to===result.winner).reduce((n,p)=>n+(p.tai||0),0);}

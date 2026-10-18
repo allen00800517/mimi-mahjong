@@ -330,3 +330,9 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 .seal-text.n3,.seal-text.n4{grid-template-rows:1fr 1fr;grid-template-columns:1fr 1fr}
 .seal-text.n3 i:nth-child(3){grid-row:span 2;transform:scaleY(1.85)}
 .seal-text.n1 i{font-size:52px}
+
+/* v1.00 · 5–6 characters (≥101 tai): tall seal, 2 columns × 3 rows, read right→left */
+#result.result-v2 .rv2-seal.tall{height:156px;top:78px}
+#result.result-v2 .rv2-seal.tall img{object-fit:fill}
+.seal-text.n5,.seal-text.n6{grid-template-rows:1fr 1fr 1fr;grid-template-columns:1fr 1fr;inset:14% 20%}
+.seal-text.n5 i:nth-child(5){grid-row:span 2;transform:scaleY(1.85)}
