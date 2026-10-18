@@ -8,12 +8,16 @@ export const MUSIC_TRACKS=Object.freeze({
  west:{label:'西風圈',url:'./assets/music-v1/bgm-west.mp3',loopStart:67.106,loopEnd:155.527},
  north:{label:'北風圈',url:'./assets/music-v1/bgm-north.mp3',loopStart:19.992,loopEnd:162.656},
  ready:{label:'聽牌',url:'./assets/music-v1/bgm-ready.mp3',loopStart:18.994,loopEnd:143.824},
+ // v1.02 · title theme (Mahjong_Parlour_Night, user's Flow Music): title screen and character select. 120 BPM; the loop
+ // runs from the end of the first chorus to the end of the second (40 bars), so the intro and first chorus play once.
+ title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
 export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
 
 // Which track should play right now. choice: 'auto' or a wind track id the player fixed in the menu.
-export function musicTrackFor({phase,players=[],roundWind=0,rounds=null,seed=0,choice='auto'}={}){
+export function musicTrackFor({phase,players=[],roundWind=0,rounds=null,seed=0,choice='auto',title=false}={}){
+ if(title)return 'title';
  const live=!['ended','review'].includes(phase);
  if(live&&players.some(p=>p&&p.state&&p.state!=='S0'))return 'ready';
  if(choice&&choice!=='auto'&&WIND_TRACKS.includes(choice))return choice;
