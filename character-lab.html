@@ -9,7 +9,19 @@
 <label class="timeline-label" for="timeline">播放位置 <output id="time">0 / 0 ms</output></label><input id="timeline" type="range" min="0" max="1000" value="0" aria-label="播放位置"><div id="playback-state" role="status">載入中</div>
 </section>
 <aside class="lab-side"><div class="panel-heading"><h2>放大檢查</h2><select id="backdrop" aria-label="放大檢查背景"><option value="checker">透明格</option><option value="felt">桌面綠</option><option value="light">淺色</option><option value="dark">深色</option></select></div><div id="solo" data-background="checker"><img id="solo-image" alt="角色靜態圖"><canvas id="solo-canvas" width="270" height="336" aria-label="角色動作放大預覽" hidden></canvas></div><p id="asset-state" role="status">載入中</p></aside></div>
+<section class="win-lab" id="win-lab" aria-label="胡牌演出預覽"><div class="panel-heading"><h2>胡牌演出 · <span id="wl-who"></span></h2><span class="muted">選角色用上方名單；點預覽畫面可跳過演出</span></div>
+<div class="wl-controls"><div id="wl-kind" class="action-list"><button data-kind="hu">一般胡</button><button data-kind="tsumo">自摸</button></div>
+<label>自摸動畫版面 <select id="wl-layout"><option value="B">B 靠左（接結算不跳）</option><option value="A">A 置中</option></select></label>
+<label>「自摸」蓋字時間（ms） <input id="wl-stamp-ms" type="number" min="0" max="6000" step="50" value="2600"></label>
+<label><input id="wl-sound" type="checkbox" checked> 影片聲音</label><button id="wl-play" class="primary">重新播放</button></div>
+<div id="wl-window"><div id="wl-stage"><img class="wl-table" src="./assets/win-v1/lab-table.webp" alt=""><div class="wl-dim"></div><canvas id="wl-video" hidden></canvas>
+<div id="wl-stamp" class="wl-stamp"><img src="./assets/win-v1/brush-hu.png" alt=""><span id="wl-stamp-text">胡</span></div><div id="wl-caption" class="wl-caption"></div>
+<div class="wl-settle"><div class="wl-band"></div><img id="wl-portrait" class="wl-portrait" alt=""><div class="wl-panel"><h3 id="wl-title"></h3><div class="wl-tiles" aria-hidden="true"></div><div id="wl-rows"></div></div><div class="wl-seal"><img src="./assets/win-v1/seal-frame.png" alt=""><b id="wl-seal-n">1</b><small>台</small></div></div>
+<div class="wl-label">示意 · 背景為牌桌截圖，結算為簡化版</div></div></div>
+<p id="wl-state" class="muted" role="status"></p>
+<div class="wl-compare"><figure><img id="wl-hu-img" alt="胡牌立繪"><figcaption>一般胡立繪</figcaption></figure><figure><img id="wl-burst-img" alt="自摸爆發立繪"><figcaption>自摸／大牌立繪 · <span id="wl-anim-note"></span></figcaption></figure></div>
+<video id="wl-video-src" playsinline preload="auto" hidden></video></section>
 <section class="lab-settings"><div><h2>動作</h2><div id="action-list" class="action-list" aria-label="選擇演出動作"></div><div id="idle-options" class="action-list" aria-label="待機小動作" hidden><button data-idle="auto">自然隨機</button><button data-idle="blink">眨眼</button><button data-idle="look" disabled>低頭看牌</button><button data-idle="apron" disabled>整理圍裙</button><button data-idle="tilt">歪頭微笑</button></div><p class="muted" id="action-note"></p></div>
 <div class="settings-grid"><label>播放版本 <select id="mode"><option value="live">正式遊戲節奏</option><option value="source">素材原速</option></select></label><label>預覽速度 <select id="speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× 正常</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label><label>動作長度（ms） <input id="duration" type="number" min="250" max="8000" step="50" value="4000"></label><label><input id="voice" type="checkbox" checked> 播放日文語音（自然語速）</label><label><input id="repeat" type="checkbox"> 自動重播 · 間隔 1 秒</label><button id="voice-only">只聽本句語音</button><button id="sequence">依序試播 吃 → 碰 → 槓 → 聽</button><button id="defaults">恢復正式設定</button></div>
 <p class="muted">調速與長度僅影響這個測試台。語音保持自然速度；暫停或拖曳不會重新喊話。角色尚未製作的動作會標示為待製作。</p></section>
-<footer>v0.88 · 使用正式牌桌繪製、角色素材與動作播放器；此頁不讀寫你的牌局與遊戲設定。</footer></div><script type="module" src="./character-lab.mjs"></script></body></html>
+<footer>v0.99 · 使用正式牌桌繪製、角色素材與動作播放器；此頁不讀寫你的牌局與遊戲設定。</footer></div><script type="module" src="./character-lab.mjs"></script><script type="module" src="./win-lab.mjs"></script></body></html>

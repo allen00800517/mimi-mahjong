@@ -42,3 +42,13 @@ export function winPortraits(result,id){
  const burst=result?.method==='tsumo'||(winGrade(result)?.tier??1)>=2;
  return burst?[WIN_ART.burst(id),WIN_ART.portrait(id)]:[WIN_ART.portrait(id)];
 }
+// 自摸 animations (Flow, green screen, 1280×720). stampAt = the moment the character is back facing the camera after
+// the big move; the 自摸 stamp lands there. Characters without a clip yet fall back to the still burst portrait.
+export const WIN_ANIM=Object.freeze({
+ // handoff: where the 1280×720 clip sits in layout B so its last frame lands exactly on the settlement portrait
+ // (cx = frame centre on the 854 stage, frame height 394; portraitH = the figure's height there).
+ ichika:{video:'./assets/win-v1/ichika-tsumo.mp4',stampAt:2600,handoff:{cx:97,portraitH:335}},
+});
+// Where the clip stands on the 854×394 stage: 'B' puts the figure where the settlement portrait will be (no jump at
+// the hand-off; a clip's own handoff.cx wins), 'A' centres it. frameH = height of the 16:9 video frame on the stage.
+export const ANIM_LAYOUTS=Object.freeze({A:{cx:427,frameH:362,stampX:672,label:'A 置中'},B:{cx:205,frameH:394,stampX:575,label:'B 靠左（接結算不跳）'}});
