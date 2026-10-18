@@ -226,17 +226,19 @@ function player(s,id){
 }
 function addButton(label,fn,primary=false,id=''){const b=document.createElement('button');b.textContent=label;b.disabled=presentation!==null;b.onclick=fn;b.dataset.action=id;if(primary)b.className='primary';$('actions').append(b);return b;}
 
+// v0.98 · The settlement waits for the player: it never moves on by itself, only via 「下一手」 (user decision 2026-10-18).
+const SETTLEMENT_AUTO_ADVANCE=false;
 let settlementHeld=false,settlementIdentity=null;
 function resultIdentity(){return game.result?[game.seed,game.revision,match?.handNumber??0,match?.status??'practice'].join(':'):null;}
 const settlementClock=new SettlementClock({onUpdate:state=>{
  const b=$('next-hand'),p=$('settlement-pause'),label=$('settlement-countdown');
  if(b&&b.id==='next-hand')b.textContent=match?.status==='playing'&&match.nextProgress().completed?'查看整場結算':'下一手';
- if(label)label.textContent=state.eligible?(state.hold?'已暫停倒數':state.blocked?'暫停中':state.done?'準備下一手':state.seconds+' 秒後繼續'):(match?.status==='completed'?'整場已完成':game.phase==='review'?'等待規則核對':'練習牌例 · 手動繼續');
+ if(label)label.textContent=state.eligible?(state.hold?'已暫停倒數':state.blocked?'暫停中':state.done?'準備下一手':state.seconds+' 秒後繼續'):(match?.status==='completed'?'整場已完成':game.phase==='review'?'等待規則核對':match?.status==='playing'?'':'練習牌例 · 手動繼續');
  if(p){p.hidden=!state.eligible;p.textContent=state.hold?'繼續倒數':'暫停倒數';}
 },onFinish:key=>{if(key===resultIdentity())advanceResult(game.revision,match?.handNumber);}});
 function syncSettlement(){
  const key=resultIdentity();if(key!==settlementIdentity){settlementIdentity=key;settlementHeld=false;}
- settlementClock.sync(key,{eligible:game.phase==='ended'&&match?.status==='playing',blocked:paused(),hold:settlementHeld});
+ settlementClock.sync(key,{eligible:SETTLEMENT_AUTO_ADVANCE&&game.phase==='ended'&&match?.status==='playing',blocked:paused(),hold:settlementHeld});
 }
 function advanceResult(revision,handNumber){
  if(paused()||revision!==game.revision||!game.result||match?.status==='completed')return;
