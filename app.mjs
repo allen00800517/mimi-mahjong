@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {winGrade,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART} from './win-show.mjs';
+import {winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART} from './win-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -289,7 +289,7 @@ function decorateWinSettlement(el,r,completed){
  const v2=r.kind==='win'&&!completed&&r.winner!==undefined;el.classList.toggle('result-v2',v2);if(!v2)return;
  const id=PORTRAITS[r.winner];el.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
  el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
- const img=el.querySelector('.rv2-portrait');img.onerror=()=>{img.onerror=null;img.src=characterSprite(r.winner,'front');};img.src=WIN_ART.portrait(id);
+ const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
  const body=el.querySelector('.settlement-body'),total=r.score?.tai??0;
  body.insertAdjacentHTML('beforeend','<div class="rv2-seal" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><b>'+total+'</b><small>台</small></div>');
  const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
