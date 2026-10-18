@@ -340,3 +340,7 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 /* v1.00 · rows that complete the seal's sum: dealer tai and the 自摸 ×3 line */
 #result.result-v2 .rv2-row.rv2-mult b{color:#ffe08a;letter-spacing:1px}
 #result.result-v2 .rv2-row.rv2-dealer span{color:#ffd6c8}
+
+/* v1.00 · the left-hand player is mirrored: every chibi clip looks toward screen-left, which is away from the table
+   for that seat (user: they seemed to stare at the floor). Children only, so the stage element keeps its own animations. */
+#table .west .character-stage img,#table .west .character-stage .character-animation{transform:scaleX(-1)}
