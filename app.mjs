@@ -53,8 +53,11 @@ const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new 
 // v0.96 · add ?mem=1 to the address to see how much character art is decoded (for testing on a phone).
 if(/[?&]mem=1/.test(location.search)){const box=document.createElement('div');box.id='mem-debug';box.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.append(box);let peak=0;setInterval(()=>{try{const a=JSON.parse(document.getElementById('table').dataset.characterAudit||'{}'),m=a.memory||[],total=m.reduce((n,x)=>n+(x.mb||0),0);peak=Math.max(peak,total);box.textContent='角色圖 '+total.toFixed(0)+'MB（最高 '+peak.toFixed(0)+'）\n'+m.map(x=>x.id+' '+(x.mb||0)+'MB 等待'+(x.misses||0)).join('\n');}catch{}},1000);}
 const characterActors=new CharacterActors(sound);
-let preferences={speed:750,motion:true,sound:false,flowerSkin:'character',confirmButton:false,music:'auto'};
+let preferences={speed:750,motion:true,sound:true,flowerSkin:'character',confirmButton:false,music:'auto'};
 try{Object.assign(preferences,JSON.parse(localStorage.getItem('mimi-tw-preferences-4')||'{}'));}catch{}
+// v1.02 · sound became on by default (the title tap starts the theme). Older saves stored sound:false even when the
+// player never touched it, so it is switched on once; after that the player's own choice is kept.
+if(preferences.soundDefault!=='v102'){preferences.sound=true;preferences.soundDefault='v102';}
 if(Array.isArray(preferences.characters)&&preferences.characters.length===4&&new Set(preferences.characters).size===4&&preferences.characters.every(k=>typeof k==='string'&&Object.hasOwn(CAST,k)))PORTRAITS=[...preferences.characters];syncCast();
 // Manual computer pause is a temporary debugging control, not a play preference.
 // Ignore legacy saved `auto:false` left behind by a presentation failure.
@@ -63,12 +66,12 @@ $('confirm-button').checked=preferences.confirmButton===true;
 $('music-choice').value=['auto','east','south','west','north','off'].includes(preferences.music)?preferences.music:'auto';
 $('speed').value=[250,750,1300].includes(Number(preferences.speed))?String(preferences.speed):'750';
 $('motion').checked=preferences.motion!==false;
-sound.enabled=preferences.sound===true;
+sound.enabled=preferences.sound!==false;
 $('flower-skin').value=setFlowerSkin(preferences.flowerSkin);
 function renderFlowerPreview(){$('flower-preview').innerHTML=Array.from({length:8},(_,i)=>'<button class="flower-preview-tile" data-flower="'+(i+1)+'f" aria-label="放大'+tileLabel((i+1)+'f')+'">'+tileFace((i+1)+'f')+'</button>').join('');}
 renderFlowerPreview();
 const reduced=()=>!$('motion').checked||matchMedia('(prefers-reduced-motion: reduce)').matches;
-function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
+function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,soundDefault:'v102',flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
 // Background music follows the master sound switch, the menu choice and page visibility.
 const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});
 function syncMusic(){try{music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value,title:titleScreen.open||charSelect.open}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
@@ -202,15 +205,20 @@ let firstLaunch=false;
 try{if(savedSession!==null)restoreSession(JSON.parse(savedSession));else {newMatch(freshSeed());saveLocal();firstLaunch=true;}}catch(e){sessionStore.preserve(savedSession);newMatch(freshSeed());saveLocal();$('feedback').textContent='舊紀錄無法恢復，原始資料已保留。'+(sessionStore.blocked?'目前不會覆寫原存檔，請下載紀錄留存。':'可按「保存原始紀錄」留存。');}
 // v1.02 · Every launch opens on the title screen (deferred until the module has finished setting up). A first visit
 // goes 開始 → character select → first hand; with a saved match the main button is 繼續牌局, plus 開新的一場.
+let titleTapped=false;
 setTimeout(()=>openTitle(),0);
 function openTitle(){
  clearTimeout(timer);clearEffects();
- titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,
+ // Decode the theme while the title waits (silent context), so it starts the instant the player taps.
+ if(sound.enabled){sound.prepare();music.load('title');}else music.prefetch('title');
+ // A fresh launch (audio still locked) waits for one tap: the theme starts and the logo pops with it.
+ titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',
+  onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();return music.whenPlaying('title',1200);},
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),
   onContinue:()=>render(),
   onNew:()=>openCharSelect({onDone:()=>startNewMatch(freshSeed()),onCancel:openTitle}),
   onSound:async()=>{await $('sound-toggle').onclick();return sound.enabled;},
-  onPop:()=>sound.play('shuffle')});
+  onPop:()=>sound.play('titlePop')});
  render();
 }
 $('back-title').onclick=()=>{$('settings-dialog').close();openTitle();};

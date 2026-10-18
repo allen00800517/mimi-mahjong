@@ -29,7 +29,7 @@ export function musicTrackFor({phase,players=[],roundWind=0,rounds=null,seed=0,c
 export class MusicPlayer{
  constructor({context,enabled,fetcher=(...args)=>fetch(...args),fade=1.2}={}){
   this.context=context;this.enabled=enabled;this.fetcher=fetcher;this.fade=fade;
-  this.buffers=new Map();this.loading=new Map();this.current=null;this.wanted=null;this.active=null;this.master=null;this.masterContext=null;this.errors=[];
+  this.buffers=new Map();this.bytes=new Map();this.loading=new Map();this.current=null;this.wanted=null;this.active=null;this.master=null;this.masterContext=null;this.errors=[];
  }
  output(){
   const ctx=this.context();if(!ctx)return null;
@@ -38,13 +38,21 @@ export class MusicPlayer{
  }
  load(id){
   const ctx=this.context(),track=MUSIC_TRACKS[id];if(!ctx||!track)return Promise.resolve(null);
+  this.output(); // bind to this context first, so a track decoded ahead of time is not thrown away by output()
   if(this.buffers.has(id))return Promise.resolve(this.buffers.get(id));
   if(!this.loading.has(id)){
-   const p=this.fetcher(track.url).then(r=>{if(!r.ok)throw Error('Music unavailable');return r.arrayBuffer();}).then(bytes=>ctx.decodeAudioData(bytes)).then(buffer=>{if(this.masterContext===ctx)this.buffers.set(id,buffer);return buffer;}).catch(e=>{this.errors.push(id+': '+(e?.message||e));return null;}).finally(()=>this.loading.delete(id));
+   const fresh=()=>this.fetcher(track.url).then(r=>{if(!r.ok)throw Error('Music unavailable');return r.arrayBuffer();});
+   const got=this.bytes.has(id)?this.bytes.get(id).then(b=>b||fresh()):fresh();
+   const p=got.then(bytes=>ctx.decodeAudioData(bytes.slice(0))).then(buffer=>{if(this.masterContext===ctx)this.buffers.set(id,buffer);return buffer;}).catch(e=>{this.errors.push(id+': '+(e?.message||e));return null;}).finally(()=>this.loading.delete(id));
    this.loading.set(id,p);
   }
   return this.loading.get(id);
  }
+ // v1.02 · Download a track's bytes before audio is allowed (title screen), so it can start right on the first tap.
+ prefetch(id){const track=MUSIC_TRACKS[id];if(!track||this.bytes.has(id)||this.buffers.has(id))return;
+  this.bytes.set(id,this.fetcher(track.url).then(r=>r.ok?r.arrayBuffer():null).catch(()=>null));}
+ // Resolves true once the track is actually playing, or false after timeout ms.
+ whenPlaying(id,timeout=1200){const t0=Date.now();return new Promise(res=>{const tick=()=>{if(this.active?.id===id)res(true);else if(Date.now()-t0>=timeout)res(false);else setTimeout(tick,40);};tick();});}
  // Ask for a track; playback follows whenever audio is enabled. Calling it repeatedly with the same id is cheap.
  want(id){this.wanted=id;this.sync();}
  async sync(){

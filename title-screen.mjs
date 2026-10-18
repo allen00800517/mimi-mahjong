@@ -30,7 +30,7 @@ export function titleLayout(view,rotate,ratio=TITLE_ART.ratio){
 // Logo size and centre in the cover frame (width share, height share); kept in step with .ts-logo in game-layout.css.
 // 76% wide makes it about as tall as the 八百屋篇 logo, which is a wider shape (user: 92% was too big).
 export const TITLE_LOGO=Object.freeze({w:.76,y:.195});
-export const POP=Object.freeze({delay:350,dur:900,buttonsAt:750,buttonsDur:350,tilt:-10.3});
+export const POP=Object.freeze({musicWait:1200,tapDelay:60,delay:350,dur:900,buttonsAt:750,buttonsDur:350,tilt:-10.3});
 export function elastic(t){if(t<=0)return 0;if(t>=1)return 1;return Math.pow(2,-10*t)*Math.sin((t*10-.75)*(2*Math.PI/3))+1;}
 export function logoPopFrames(n=36){const f=[];for(let i=0;i<=n;i++){const k=i/n,sc=elastic(k),rot=(1-Math.min(1,k*1.4))*POP.tilt;f.push({offset:k,transform:'rotate('+rot.toFixed(2)+'deg) scale('+sc.toFixed(4)+')'});}return f;}
 export const BURST_TILES=Object.freeze(['7z','6z','5z','1z','2z','3z','4z','7z','6z','1m','5p','9s']);
@@ -49,7 +49,7 @@ const icon=on=>'<img src="./assets/icons/'+(on?'volume-2':'volume-x')+'.svg" alt
 export class TitleScreen{
  constructor(host,{version=''}={}){this.host=host;this.version=version;this.el=null;this.onResize=()=>requestAnimationFrame(()=>this.layout());}
  get open(){return !!this.el;}
- show({canContinue=false,soundOn=false,lang=titleLang(),onStart,onContinue,onNew,onSound,onPop}={}){
+ show({canContinue=false,soundOn=false,lang=titleLang(),tapFirst=false,onTap,onStart,onContinue,onNew,onSound,onPop}={}){
   this.close();
   const el=document.createElement('section');el.id='title-screen';el.setAttribute('aria-label','標題畫面');
   el.innerHTML='<div class="ts-box"><img class="ts-blur" alt="" draggable="false" src="'+TITLE_ART.bg+'"><div class="ts-frame">'+
@@ -57,33 +57,44 @@ export class TitleScreen{
    '<h1 class="ts-logo"><span class="ts-bob"><img alt="'+TITLE_ALT[lang]+'" draggable="false" src="'+TITLE_ART.logo[lang]+'"></span></h1><div class="ts-burst" aria-hidden="true"></div>'+
    '<div class="ts-actions'+(canContinue?' two':'')+'"><button type="button" class="ts-start">'+(canContinue?'繼續牌局':'開　始')+'</button>'+
    (canContinue?'<button type="button" class="ts-new">開新的一場</button>':'')+'</div>'+
-   (this.version?'<span class="ts-version">'+this.version+'</span>':'')+'</div>'+
+   (tapFirst?'<div class="ts-tap" role="button" tabindex="0">點一下畫面開始</div>':'')+(this.version?'<span class="ts-version">'+this.version+'</span>':'')+'</div>'+
    '<button type="button" class="ts-sound" aria-pressed="'+soundOn+'" aria-label="'+(soundOn?'音效開啟，點擊靜音':'音效關閉，點擊開啟')+'">'+icon(soundOn)+'</button></div>';
   const done=cb=>()=>{this.close();cb?.();};
   el.querySelector('.ts-start').onclick=done(canContinue?onContinue:onStart);
   el.querySelector('.ts-new')?.addEventListener('click',done(onNew));
   const sb=el.querySelector('.ts-sound');
-  sb.onclick=async()=>{const on=!!(await onSound?.());sb.innerHTML=icon(on);sb.setAttribute('aria-pressed',String(on));sb.setAttribute('aria-label',on?'音效開啟，點擊靜音':'音效關閉，點擊開啟');};
+  sb.addEventListener('pointerdown',e=>e.stopPropagation());
+  sb.onclick=async e=>{e.stopPropagation();const on=!!(await onSound?.());sb.innerHTML=icon(on);sb.setAttribute('aria-pressed',String(on));sb.setAttribute('aria-label',on?'音效開啟，點擊靜音':'音效關閉，點擊開啟');};
   this.host.append(el);this.el=el;this.layout();
   addEventListener('resize',this.onResize);addEventListener('orientationchange',this.onResize);
+  // v1.02 · Before audio is allowed (a fresh launch) the title waits for one tap anywhere: that tap starts the theme
+  // and the logo pops with it (user's idea; it also turns the iPhone audio rule into part of the show).
+  if(tapFirst){el.classList.add('await-tap');const box=el.querySelector('.ts-box');
+   const go=()=>{if(!el.classList.contains('await-tap'))return;el.classList.remove('await-tap');removeEventListener('keydown',key);
+    const gate=Promise.race([Promise.resolve(onTap?.()).catch(()=>{}),new Promise(r=>setTimeout(r,POP.musicWait))]);this.pop(onPop,gate);};
+   const key=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
+   box.addEventListener('click',go);addEventListener('keydown',key);this.offKey=()=>removeEventListener('keydown',key);
+   el.querySelector('.ts-tap').focus({preventScroll:true});return;}
   el.querySelector('.ts-start').focus({preventScroll:true});
   this.pop(onPop);
  }
- pop(onPop){
+ pop(onPop,gate=null){
   const el=this.el,reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches,img=el.querySelector('.ts-logo img');
   if(reduced||!img.animate){img.style.transform='none';el.classList.add('popped');return;}
   // Wait until the cover and the logo are decoded (at most 2.5 s) so the pop is never spent on a blank screen;
   // the burst tiles are fetched meanwhile.
   for(const t of new Set(BURST_TILES)){const i=new Image();i.src='./assets/title-v1/burst-'+t+'.webp';}
   const ready=[el.querySelector('.ts-bg'),img].map(i=>i.decode?i.decode().catch(()=>{}):Promise.resolve());
-  Promise.race([Promise.all(ready),new Promise(r=>setTimeout(r,2500))]).then(()=>{if(this.el===el)this.startPop(onPop);});
+  Promise.all([Promise.race([Promise.all(ready),new Promise(r=>setTimeout(r,2500))]),gate||Promise.resolve()]).then(()=>{if(this.el===el)this.startPop(onPop,!!gate);});
  }
- startPop(onPop){
+ // After the first tap the music is already starting, so the logo springs out almost at once.
+ startPop(onPop,tapped=false){
   const el=this.el,img=el.querySelector('.ts-logo img'),acts=el.querySelector('.ts-actions');
   el.classList.add('popping');el.dataset.popAt=String(Math.round(performance.now()));
-  img.animate(logoPopFrames(),{duration:POP.dur,delay:POP.delay,easing:'linear',fill:'both'});
-  acts.animate([{opacity:0,transform:'translateY(calc(-50% + 1.6em))'},{opacity:1,transform:'translateY(-50%)'}],{duration:POP.buttonsDur,delay:POP.delay+POP.buttonsAt,easing:'ease-out',fill:'both'});
-  this.popTimer=setTimeout(()=>{if(this.el!==el)return;el.classList.add('popped');onPop?.();this.burst();},POP.delay);
+  const delay=tapped?POP.tapDelay:POP.delay;
+  img.animate(logoPopFrames(),{duration:POP.dur,delay,easing:'linear',fill:'both'});
+  acts.animate([{opacity:0,transform:'translateY(calc(-50% + 1.6em))'},{opacity:1,transform:'translateY(-50%)'}],{duration:POP.buttonsDur,delay:delay+POP.buttonsAt,easing:'ease-out',fill:'both'});
+  this.popTimer=setTimeout(()=>{if(this.el!==el)return;el.classList.add('popped');onPop?.();this.burst();},delay);
  }
  burst(){
   const el=this.el,box=el.querySelector('.ts-burst'),L=this.L,logo=el.querySelector('.ts-logo img');if(!L)return;
@@ -103,5 +114,5 @@ export class TitleScreen{
   s.setProperty('--ts-bw',L.bw+'px');s.setProperty('--ts-bh',L.bh+'px');s.setProperty('--ts-fw',L.fw+'px');s.setProperty('--ts-fh',L.fh+'px');
   this.L=L;this.el.classList.toggle('turned',L.turn);this.el.classList.toggle('tall',L.tall);this.el.classList.toggle('wide',L.wide);
  }
- close(){if(!this.el)return;clearTimeout(this.popTimer);cancelAnimationFrame(this.raf);removeEventListener('resize',this.onResize);removeEventListener('orientationchange',this.onResize);this.el.remove();this.el=null;}
+ close(){if(!this.el)return;this.offKey?.();this.offKey=null;clearTimeout(this.popTimer);cancelAnimationFrame(this.raf);removeEventListener('resize',this.onResize);removeEventListener('orientationchange',this.onResize);this.el.remove();this.el=null;}
 }

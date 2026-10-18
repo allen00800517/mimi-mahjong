@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},titlepop:{files:1,gain:.6},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
@@ -13,11 +13,16 @@ export const SOUND_PLAN=Object.freeze({
  // v1.00 · with a 自摸 clip the start stays soft so the voice is heard; the hit and jingle come with the stamp.
  win:({method,anim}={})=>anim?[['reveal',0]]:method==='tsumo'?[['strong',0],['reveal',.12],['win',.4]]:[['reveal',0],['win',.3]],
  stamp:()=>[['strong',0],['win',.15]],
+ // v1.02 · title logo pop: a short clack of tiles cut from the shuffle (user: the full shuffle was too long).
+ titlePop:()=>[['titlepop',0]],
  shuffle:()=>[['shuffle',0]], // the old recorded dice ran into the first discards (user); dice now have their own show
  dice:()=>[['dice',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
 });
 export class TableSound{
  constructor({sampleBase=null,fetcher=(...a)=>fetch(...a)}={}){this.enabled=false;this.context=null;this.played=0;this.master=null;this.sampleBase=sampleBase;this.fetcher=fetcher;this.samples=null;}
+ // v1.02 · Create the (still silent) audio context early so tracks and samples can be decoded before the first tap;
+ // browsers allow that, they only refuse to resume it without a gesture.
+ prepare(){try{if(this.context)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(this.context.destination);this.loadSamples();}catch{this.context=null;}}
  async unlock(){try{if(!this.context){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(this.context.destination);}// iOS may report 'interrupted' as well as 'suspended'; resume from any gesture until running.
  this.loadSamples(); if(this.context.state!=='running'&&this.context.state!=='closed')await this.context.resume();}catch{this.context=null;}}
  async toggle(){this.enabled=!this.enabled;if(this.enabled)await this.unlock();return this.enabled;}
@@ -40,7 +45,7 @@ export class TableSound{
   if(!this.enabled||!this.context||this.context.state!=='running')return;
   const now=performance.now(),last=(this.lastPlayed??={})[kind]??-1e9,gap=kind==='place'?300:50;if(now-last<gap)return;this.lastPlayed[kind]=now;
   const plan=SOUND_PLAN[kind]?.(detail);
-  if(!plan||!this.samples?.get(plan[0][0])?.length){this.playTone(kind==='riichi'?'discard':kind==='shuffle'||kind==='flower'?'place':kind);return;}
+  if(!plan||!this.samples?.get(plan[0][0])?.length){this.playTone(kind==='riichi'?'discard':kind==='shuffle'||kind==='flower'||kind==='titlePop'?'place':kind);return;}
   this.played++;for(const [k,d] of plan)this.sample(k,d);
  }
  // Fade out whatever is still playing of one kind (never a hard cut), e.g. the shuffle when the dice are thrown.
