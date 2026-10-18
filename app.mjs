@@ -1,5 +1,5 @@
 import {organizeTableMenu} from './table-menu.mjs';
-import {rectOf,viewSize,wantsForcedLandscape} from './viewport.mjs';
+import {rectOf,viewSize,wantsForcedLandscape,applyScreenSize} from './viewport.mjs';
 import {CharacterActors} from './character-actors.mjs';
 import {SessionStorage} from './session-storage.mjs';
 import {foregroundFor} from './table-layout.mjs';
@@ -132,8 +132,8 @@ function buildWinStamp(r){
  let glow='';
  if(!tsumo){const payer=r.payments?.find(p=>p.to===r.winner)?.from,el=payer!==undefined?$('river-'+payer)?.lastElementChild:null;
   if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
- stage.innerHTML='<div class="wc-dim"></div><div class="wc-band"></div><img class="wc-portrait" alt="" draggable="false">'+glow+(tsumo&&r.tile?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
- const img=stage.querySelector('.wc-portrait');img.onerror=()=>{img.onerror=null;img.src=characterSprite(r.winner,'front');};img.src=WIN_ART.portrait(id);
+ // v0.98 · No portrait here: it only flashed for a moment and the settlement shows the same picture right after.
+ stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
  const st=stage.querySelector('.wc-stamp img');if(word!=='胡')st.remove();else{st.onload=()=>stage.querySelector('.wc-stamp').classList.add('art');st.onerror=()=>st.remove();st.src=WIN_ART.stamp;}
  c.prepend(stage);
 }
@@ -447,7 +447,7 @@ $('save').onclick=async()=>{const text=JSON.stringify(createBackup(sessionSnapsh
 $('load').onchange=async e=>{const input=e.target;try{const f=input.files[0];if(!f)return;if(f.size>10e6)throw Error('紀錄檔過大');const restored=restoreBackup(JSON.parse(await f.text()));let archivesSaved=true;
  if(restored.archives===null)archivesSaved=archiveCurrent();else{archives=restored.archives;try{localStorage.setItem('mimi-tw-archives-5',JSON.stringify(archives));}catch{archivesSaved=false;}}
  adoptSession(restored);clearPracticeLink();lastEffect=null;clearEffects();resultDismissed=false;selected=null;selectedIndex=null;declaring=false;const saved=saveLocal();render();$('feedback').textContent='已恢復牌局'+(restored.archives===null?'':'與 '+archives.length+' 手歷史紀錄')+(saved&&archivesSaved?'':'；無法自動保存，請保留下載的紀錄檔。');}catch(e){$('feedback').textContent='讀取失敗：'+e.message;}finally{input.value='';}};
-function orientationChanged(){document.documentElement.style.setProperty('--screen-w',innerWidth+'px');document.documentElement.style.setProperty('--screen-h',innerHeight+'px');lastPortrait=wantsForcedLandscape();document.documentElement.classList.toggle('force-landscape',lastPortrait);fitPrototypeUI();if(winPresentation)finishWinCinema();clearTimeout(timer);clearEffects();const blocked=portrait();$('rotate-prompt').hidden=!blocked;$('game-shell').inert=blocked;$('settings-dialog').inert=blocked;$('history-dialog').inert=blocked;$('river-dialog').inert=blocked;$('flower-dialog').inert=blocked;$('chow-dialog').inert=blocked;$('meld-dialog').inert=blocked;$('sticker-dialog').inert=blocked;if(blocked||document.hidden){clearTimeout(stickerTimer);$('character-sticker').hidden=true;$('character-sticker').replaceChildren();}document.body.classList.toggle('portrait',blocked);if(blocked||document.hidden)sound.suspend();else sound.resume();render();}
+function orientationChanged(){applyScreenSize();lastPortrait=wantsForcedLandscape();document.documentElement.classList.toggle('force-landscape',lastPortrait);fitPrototypeUI();if(winPresentation)finishWinCinema();clearTimeout(timer);clearEffects();const blocked=portrait();$('rotate-prompt').hidden=!blocked;$('game-shell').inert=blocked;$('settings-dialog').inert=blocked;$('history-dialog').inert=blocked;$('river-dialog').inert=blocked;$('flower-dialog').inert=blocked;$('chow-dialog').inert=blocked;$('meld-dialog').inert=blocked;$('sticker-dialog').inert=blocked;if(blocked||document.hidden){clearTimeout(stickerTimer);$('character-sticker').hidden=true;$('character-sticker').replaceChildren();}document.body.classList.toggle('portrait',blocked);if(blocked||document.hidden)sound.suspend();else sound.resume();render();}
 for(const name of ['settings','history','river']){
  $(name+'-toggle').onclick=()=>{clearTimeout(timer);clearEffects();if(name==='river')$('river-detail').innerHTML=game.players.map((p,s)=>'<section class="all-river"><h3>'+FULL_NAMES[s]+' · '+p.river.length+' 張</h3><div>'+p.river.map(r=>tile(r.tile,r.claimed?'claimed':'')).join('')+'</div></section>').join('');if(name!=='settings')$('settings-dialog').close();$(name+'-dialog').showModal();render();};
  $(name+'-close').onclick=()=>$(name+'-dialog').close();
@@ -456,7 +456,10 @@ for(const name of ['settings','history','river']){
 $('result-toggle').onclick=()=>{$('settings-dialog').close();resultDismissed=false;render();};
 $('result-reopen').onclick=()=>{resultDismissed=false;render();document.querySelector('#next-hand,.close-result')?.focus();};
 let lastPortrait=null;
-window.addEventListener('resize',()=>{document.documentElement.style.setProperty('--screen-w',innerWidth+'px');document.documentElement.style.setProperty('--screen-h',innerHeight+'px');if(wantsForcedLandscape()!==lastPortrait)orientationChanged();else fitTableUI();});
+function viewportChanged(force){const changed=applyScreenSize();if(wantsForcedLandscape()!==lastPortrait)orientationChanged();else if(changed||force===true)fitTableUI();}
+window.addEventListener('resize',()=>viewportChanged(true));window.visualViewport?.addEventListener('resize',viewportChanged);window.addEventListener('pageshow',viewportChanged);window.addEventListener('focus',viewportChanged);
+// iOS can settle the real size without any event (home-screen launch, returning from another app): check once a second.
+setInterval(()=>{if(!document.hidden)viewportChanged();},1000);
 document.addEventListener('visibilitychange',orientationChanged);
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{if(winPresentation&&reduced())finishWinCinema();clearEffects();render();});
 orientationChanged();
