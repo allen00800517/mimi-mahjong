@@ -336,3 +336,7 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #result.result-v2 .rv2-seal.tall img{object-fit:fill}
 .seal-text.n5,.seal-text.n6{grid-template-rows:1fr 1fr 1fr;grid-template-columns:1fr 1fr;inset:14% 20%}
 .seal-text.n5 i:nth-child(5){grid-row:span 2;transform:scaleY(1.85)}
+
+/* v1.00 · rows that complete the seal's sum: dealer tai and the 自摸 ×3 line */
+#result.result-v2 .rv2-row.rv2-mult b{color:#ffe08a;letter-spacing:1px}
+#result.result-v2 .rv2-row.rv2-dealer span{color:#ffd6c8}

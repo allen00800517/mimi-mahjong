@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
@@ -274,7 +274,7 @@ function renderSettlement(){
   const resultFlowers=r.winner!==undefined?game.players[r.winner].flowers:[];
   if(resultFlowers.length)body.innerHTML+='<div class="result-flowers" aria-label="胡牌者花牌"><span>花牌</span>'+resultFlowers.map(t=>'<button class="result-flower" data-flower="'+t+'" aria-label="放大'+tileLabel(t)+'">'+tileFace(t)+'</button>').join('')+'</div>';
   if(r.score&&r.kind!=='review'){
-   if(r.kind==='win')body.innerHTML+='<div class="score-rows rv2-rows">'+r.score.rows.map(x=>'<div class="rv2-row"><span>'+escape(x.name)+'</span><i></i><b>'+x.tai+' 台</b></div>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
+   if(r.kind==='win')body.innerHTML+='<div class="score-rows rv2-rows">'+tallyRows(r,{dealer:game.dealer,repeats:game.repeats,names:NAMES}).map(x=>'<div class="rv2-row'+(x.extra?' rv2-'+x.extra:'')+'"><span>'+escape(x.name)+'</span><i></i><b>'+escape(x.value)+'</b></div>').join('')+'</div><p class="tai-total">合計 '+winTaiTotal(r)+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
    else body.innerHTML+='<div class="score-rows">'+r.score.rows.map(x=>'<span>'+escape(x.name)+' '+x.tai+' 台</span>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
   }
   const delta=[0,0,0,0];for(const x of r.payments??[]){delta[x.from]-=x.amount;delta[x.to]+=x.amount;}

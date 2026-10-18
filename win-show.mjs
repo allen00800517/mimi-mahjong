@@ -79,3 +79,17 @@ export function taiNumeral(n){
 }
 export function sealChars(n){return [...(taiNumeral(n)+'台')];}
 export function winTaiTotal(result){return (result?.payments??[]).filter(p=>p.to===result.winner).reduce((n,p)=>n+(p.tai||0),0);}
+// v1.00 · Settlement rows add up to the seal. After the hand's own rows come, read top to bottom as a running sum:
+// the dealer's tai when a dealer payment is involved (莊家 / 連N拉N), and for 自摸 a "三家各付 ×3" line. A dealer who
+// wins pays-in-all gets the dealer row before ×3 (every payer adds it); a non-dealer's 自摸 puts it after ×3, because
+// only the dealer's own payment carries it.
+export function tallyRows(result,{dealer,repeats=0,names=[]}={}){
+ const rows=(result?.score?.rows??[]).map(r=>({name:r.name,value:r.tai+' 台'}));
+ const paid=(result?.payments??[]).filter(p=>p.to===result.winner),d=paid.reduce((n,p)=>Math.max(n,p.dealerTai||0),0);
+ const label=repeats>0?'莊家　連'+taiNumeral(repeats)+'拉'+taiNumeral(repeats):'莊家';
+ const tsumo=paid.length>1;
+ if(!tsumo){if(d)rows.push({name:label,value:d+' 台',extra:'dealer'});return rows;}
+ if(result.winner===dealer){if(d)rows.push({name:label,value:d+' 台',extra:'dealer'});rows.push({name:'自摸　三家各付',value:'×3',extra:'mult'});}
+ else{rows.push({name:'自摸　三家各付',value:'×3',extra:'mult'});if(d)rows.push({name:label+'（'+(names[dealer]??'莊家')+'付）',value:d+' 台',extra:'dealer'});}
+ return rows;
+}
