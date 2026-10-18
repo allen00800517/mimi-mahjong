@@ -30,7 +30,7 @@ export function titleLayout(view,rotate,ratio=TITLE_ART.ratio){
 // Logo size and centre in the cover frame (width share, height share); kept in step with .ts-logo in game-layout.css.
 // 76% wide makes it about as tall as the 八百屋篇 logo, which is a wider shape (user: 92% was too big).
 export const TITLE_LOGO=Object.freeze({w:.76,y:.195});
-export const POP=Object.freeze({musicWait:1200,tapDelay:60,delay:350,dur:900,buttonsAt:750,buttonsDur:350,tilt:-10.3});
+export const POP=Object.freeze({musicWait:1200,tapDelay:0,delay:350,dur:900,buttonsAt:750,buttonsDur:350,tilt:-10.3});
 export function elastic(t){if(t<=0)return 0;if(t>=1)return 1;return Math.pow(2,-10*t)*Math.sin((t*10-.75)*(2*Math.PI/3))+1;}
 export function logoPopFrames(n=36){const f=[];for(let i=0;i<=n;i++){const k=i/n,sc=elastic(k),rot=(1-Math.min(1,k*1.4))*POP.tilt;f.push({offset:k,transform:'rotate('+rot.toFixed(2)+'deg) scale('+sc.toFixed(4)+')'});}return f;}
 export const BURST_TILES=Object.freeze(['7z','6z','5z','1z','2z','3z','4z','7z','6z','1m','5p','9s']);

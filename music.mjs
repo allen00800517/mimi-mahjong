@@ -10,7 +10,9 @@ export const MUSIC_TRACKS=Object.freeze({
  ready:{label:'聽牌',url:'./assets/music-v1/bgm-ready.mp3',loopStart:18.994,loopEnd:143.824},
  // v1.02 · title theme (Mahjong_Parlour_Night, user's Flow Music): title screen and character select. 120 BPM; the loop
  // runs from the end of the first chorus to the end of the second (40 bars), so the intro and first chorus play once.
- title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02},
+ // startAt: the file opens with 0.5 s of silence and a 1.5 s swell; the first downbeat is at 2.02 s. The theme always
+ // starts there, so its first hit lands with the logo pop (user).
+ title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02,startAt:2.0},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
 export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
@@ -52,7 +54,7 @@ export class MusicPlayer{
  prefetch(id){const track=MUSIC_TRACKS[id];if(!track||this.bytes.has(id)||this.buffers.has(id))return;
   this.bytes.set(id,this.fetcher(track.url).then(r=>r.ok?r.arrayBuffer():null).catch(()=>null));}
  // Resolves true once the track is actually playing, or false after timeout ms.
- whenPlaying(id,timeout=1200){const t0=Date.now();return new Promise(res=>{const tick=()=>{if(this.active?.id===id)res(true);else if(Date.now()-t0>=timeout)res(false);else setTimeout(tick,40);};tick();});}
+ whenPlaying(id,timeout=1200){const t0=Date.now();return new Promise(res=>{const tick=()=>{if(this.active?.id===id)res(true);else if(Date.now()-t0>=timeout)res(false);else setTimeout(tick,15);};tick();});}
  // Ask for a track; playback follows whenever audio is enabled. Calling it repeatedly with the same id is cheap.
  want(id){this.wanted=id;this.sync();}
  async sync(){
@@ -65,8 +67,11 @@ export class MusicPlayer{
   if(!buffer||this.context()!==ctx||!this.enabled()||ctx.state!=='running')return;
   const track=MUSIC_TRACKS[id],src=ctx.createBufferSource(),gain=ctx.createGain(),now=ctx.currentTime;
   src.buffer=buffer;src.loop=true;src.loopStart=track.loopStart;src.loopEnd=Math.min(track.loopEnd,buffer.duration);
-  gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(1,now+this.fade);
-  src.connect(gain);gain.connect(out);src.start(now);
+  // A track with startAt (the title theme) begins on its downbeat: from silence with no fade, over another track with
+  // a short fade-in while the old one fades out as usual.
+  const at=track.startAt||0,fadeIn=at?(this.active?.15:.02):this.fade;
+  gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(1,now+fadeIn);
+  src.connect(gain);gain.connect(out);src.start(now,at);
   if(this.active)this.stopActive(this.fade);
   this.active={id,src,gain};this.current=id;this.prune(id);
  }
