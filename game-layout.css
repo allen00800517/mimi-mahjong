@@ -347,3 +347,24 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 
 /* v1.00 · gold brush 自摸 (generated art) replaces the typeset word */
 #win-cinema .wc-stamp.art.wide img{width:300px;height:163px;filter:drop-shadow(4px 6px 0 #5a3a0a) drop-shadow(0 0 18px rgba(255,214,110,.75))}
+
+/* v1.01 · character select (layout A-1) over the live table */
+#char-select{position:absolute;inset:0;z-index:80;background:radial-gradient(ellipse at 30% 45%,rgba(58,36,24,.86),rgba(14,9,6,.92) 70%);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);overflow:hidden;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#f6ead2}
+#char-select .cs-band{position:absolute;left:-60px;top:0;bottom:0;width:360px;background:linear-gradient(100deg,color-mix(in srgb,var(--cs-color) 78%,transparent),transparent);clip-path:polygon(0 0,100% 0,70% 100%,0 100%);transition:background .25s}
+#char-select .cs-portrait{position:absolute;left:-4px;bottom:0;height:372px;max-width:262px;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+#char-select .cs-title{position:absolute;left:250px;top:16px;font-size:20px;font-weight:900;letter-spacing:4px;color:#ffd98a;text-shadow:0 2px 0 #5a2e0e}
+#char-select .cs-info{position:absolute;left:250px;top:58px;width:250px}
+#char-select .cs-info h2{margin:0;font-size:36px;line-height:1.15;letter-spacing:5px;color:#fff3dc;text-shadow:0 3px 0 color-mix(in srgb,var(--cs-color) 60%,#000)}
+#char-select .cs-role{font-size:12px;color:#e6c79a;margin:4px 0 10px;letter-spacing:1px}
+#char-select .cs-tags span{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;margin-right:5px}
+#char-select .cs-style{background:var(--cs-color);color:#fff}#char-select .cs-hint{background:#3a2a1e;border:1px solid #a07c4a;color:#f3dfb8}
+#char-select .cs-info p{font-size:12.5px;line-height:1.75;margin:12px 0 0;color:#efe1c6}
+#char-select .cs-grid{position:absolute;left:522px;top:44px;display:grid;grid-template-columns:150px 150px;gap:12px}
+#char-select .cs-card{position:relative;width:150px;height:128px;padding:0;border-radius:12px;background:linear-gradient(#3b2a1e,#24170f);border:2px solid #6b5236;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+#char-select .cs-card img{position:absolute;left:50%;top:6px;height:176px;transform:translateX(-50%);pointer-events:none}
+#char-select .cs-card b{position:absolute;left:0;right:0;bottom:0;padding:4px 0;font-size:13px;text-align:center;color:#fff3dc;background:linear-gradient(transparent,rgba(0,0,0,.82) 45%)}
+#char-select .cs-card.on{border-color:#ffd98a;box-shadow:0 0 0 2px #ffd98a,0 0 18px rgba(255,207,106,.55);transform:translateY(-3px)}
+#char-select .cs-go,#char-select .cs-back{position:absolute;bottom:20px;min-height:40px;padding:8px 26px;border-radius:10px;font-weight:900;font-size:15px;letter-spacing:2px}
+#char-select .cs-go{right:22px;background:linear-gradient(#f7d58a,#d9a54a);color:#3a2208;border:0;box-shadow:0 3px 0 #7a4f16,0 6px 14px rgba(0,0,0,.5)}
+#char-select .cs-back{left:522px;background:rgba(42,28,18,.85);color:#f3dfb8;border:1.5px solid #9b7a45}
+#settings-dialog .cast-picker{display:none}

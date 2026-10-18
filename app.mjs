@@ -24,6 +24,7 @@ import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
 import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
+import {CharSelect,rosterFor} from './char-select.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -75,7 +76,7 @@ function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/i
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
 const unlockAudio=()=>{if(sound.enabled&&sound.state!=='running')sound.unlock().then(()=>characterActors.prepareVoices()).then(syncSound);};
 for(const type of ['pointerdown','pointerup','touchend','click','keydown'])document.addEventListener(type,unlockAudio,{passive:true,capture:true});
-const diceShow=new DiceShow($('game-shell'));let pendingDice=false,dealTimer=null;
+const diceShow=new DiceShow($('game-shell')),charSelect=new CharSelect($('game-shell'));let pendingDice=false,dealTimer=null;
 // v0.94 · the deal after the dice: opponents grow through a hand-count mask, your hand flips and sorts in place.
 const dealShow=new DealShow({backSrc:()=>concealedFace().match(/src="([^"]+)"/)[1],onSound:k=>sound.play(k),
  onStep:()=>{document.body.classList.toggle('deal-hide-flowers',dealShow.running&&!dealShow.flowersShown());tableView.update(tableGame(),$('flower-skin').value,lastEffect);}});
@@ -152,7 +153,7 @@ $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
-const paused=()=>diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
+const paused=()=>charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
 function syncCharacters(){if(tableView.ready)tsumoShow.preload(PORTRAITS);try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
@@ -193,7 +194,10 @@ function resumeMatch(){
  }catch(e){$('feedback').textContent='無法返回整場：'+e.message;}
 }
 const savedSession=sessionStore.read();
-try{if(savedSession!==null)restoreSession(JSON.parse(savedSession));else {newMatch(freshSeed());saveLocal();}}catch(e){sessionStore.preserve(savedSession);newMatch(freshSeed());saveLocal();$('feedback').textContent='舊紀錄無法恢復，原始資料已保留。'+(sessionStore.blocked?'目前不會覆寫原存檔，請下載紀錄留存。':'可按「保存原始紀錄」留存。');}
+let firstLaunch=false;
+try{if(savedSession!==null)restoreSession(JSON.parse(savedSession));else {newMatch(freshSeed());saveLocal();firstLaunch=true;}}catch(e){sessionStore.preserve(savedSession);newMatch(freshSeed());saveLocal();$('feedback').textContent='舊紀錄無法恢復，原始資料已保留。'+(sessionStore.blocked?'目前不會覆寫原存檔，請下載紀錄留存。':'可按「保存原始紀錄」留存。');}
+// First visit: choose a character before the first hand (deferred until the module has finished setting up).
+if(firstLaunch)setTimeout(()=>openCharSelect({cancellable:false,onDone:()=>{newMatch(freshSeed());saveLocal();}}),0);
 const recovery=sessionStore.recovery();if(recovery!==null){const button=document.createElement('button');button.textContent='下載保留的原始紀錄';button.onclick=()=>saveRecovery();$('feedback').before(button);showToast($('feedback').textContent||'保留了一份無法讀取的原始紀錄。',{action:{label:'保存原始紀錄',run:saveRecovery},persist:true});}
 async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始紀錄.json',recovery);$('feedback').textContent=fileMessage(status,'已存出保留的原始紀錄。');}
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
@@ -449,7 +453,14 @@ function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;r
 function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s)));}
 $('computer-resume').onclick=()=>{$('auto').checked=true;$('feedback').textContent='';savePreferences();clearEffects();render();};
 $('step').onclick=()=>{if(!portrait()){const s=findComputer();if(s!==null){$('settings-dialog').close();perform(s,chooseAction(game.publicView(s)));}}};$('flower-skin').onchange=()=>{setFlowerSkin($('flower-skin').value);savePreferences();renderFlowerPreview();clearEffects();render();};for(const id of ['auto','speed','motion','confirm-button'])$(id).onchange=()=>{savePreferences();clearEffects();render();};
-$('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);sound.play('shuffle');clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();$('settings-dialog').close();render();};
+// v1.01 · the character select opens over the table first; the old cast picker in this menu is hidden.
+function openCharSelect({cancellable=true,onDone}={}){
+ clearTimeout(timer);clearEffects();
+ charSelect.show({choice:PORTRAITS[0],cancellable,onConfirm:id=>{const roster=rosterFor(id);for(let s=0;s<4;s++)$('character-'+s).value=roster[s];onDone?.(id);render();},onCancel:()=>render()});
+ render();
+}
+$('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}$('settings-dialog').close();openCharSelect({onDone:()=>startNewMatch(n)});};
+function startNewMatch(n){archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);sound.play('shuffle');clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();render();}
 document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));
 document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=async()=>{const scene=b.dataset.scene;if(!['normal','chi','ready'].includes(scene))return;b.disabled=true;try{const r=await fetch('./fixtures/'+scene+'.json');if(!r.ok)throw Error('練習牌例暫時無法載入');enterPractice(Game.restore(await r.json()));}catch(e){$('feedback').textContent='保留目前進度：'+e.message;}finally{b.disabled=false;}});
 $('resume-match').onclick=resumeMatch;
