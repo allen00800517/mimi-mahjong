@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
+import {sealChars,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
@@ -301,7 +301,7 @@ function decorateWinSettlement(el,r,completed){
  el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
  const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id]){img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.style.left=(WIN_ANIM[id].handoff.portraitLeft??-6)+'px';}img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
  const body=el.querySelector('.settlement-body'),total=r.score?.tai??0;
- body.insertAdjacentHTML('beforeend','<div class="rv2-seal" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><b>'+total+'</b><small>台</small></div>');
+ body.insertAdjacentHTML('beforeend','<div class="rv2-seal" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><span class="seal-text n'+sealChars(total).length+'">'+sealChars(total).map(c=>'<i>'+c+'</i>').join('')+'</span></div>');
  const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
  if(settlementRevealed===game.revision||reduced())return;
  // Wait a tick: on the winning action render() runs just before the win stamp hides this panel.

@@ -2,7 +2,7 @@
 // and the settlement hand-off for the selected character, so layouts and timing can be judged side by side.
 // Preview only: the table is a still backdrop and the settlement is a simplified stand-in for the real panel.
 import {CHARACTER_MEDIA} from './character-media.mjs';
-import {WIN_ART,WIN_COLORS,WIN_TIMING,WIN_ANIM,ANIM_LAYOUTS,slideCx} from './win-show.mjs';
+import {WIN_ART,WIN_COLORS,WIN_TIMING,WIN_ANIM,ANIM_LAYOUTS,slideCx,sealChars} from './win-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
 const $=id=>document.getElementById(id);
 const RISE_MS=320;
@@ -28,7 +28,7 @@ function reset(){
  const hand=burst&&anim?.handoff&&$('wl-layout').value!=='A';img.style.height=(hand?anim.handoff.portraitH:372)+'px';img.style.left=(hand?anim.handoff.portraitLeft??-6:-6)+'px';
  $('wl-title').textContent=CHARACTER_MEDIA[who].name+' '+(burst?'自摸':'胡牌');
  const rows=ROWS[kind];$('wl-rows').replaceChildren(...rows.map(([n,t])=>{const r=document.createElement('div');r.className='wl-row';r.innerHTML='<span>'+n+'</span><i></i><b>'+t+' 台</b>';return r;}));
- $('wl-seal-n').textContent=rows.reduce((n,r)=>n+r[1],0);
+ {const ch=sealChars(rows.reduce((n,r)=>n+r[1],0));$('wl-seal-n').className='seal-text n'+ch.length;$('wl-seal-n').innerHTML=ch.map(c=>'<i>'+c+'</i>').join('');}
  $('wl-stamp-ms').disabled=!anim;$('wl-layout').disabled=!anim;
  if(anim&&!$('wl-stamp-ms').dataset.touched)$('wl-stamp-ms').value=anim.stampAt;
  $('wl-state').textContent=kind==='hu'?'一般胡：蓋章 '+WIN_TIMING.ron+' ms → 結算（胡牌立繪）。':anim?'自摸：動畫 → 約 '+$('wl-stamp-ms').value+' ms 蓋「自摸」→ 播完接結算（爆發立繪）。'+(chroma.keyed?'':'此瀏覽器無 WebGL，綠幕未去背。'):'自摸：這個角色的動畫還沒做，目前遊戲用爆發立繪 + 蓋章。';

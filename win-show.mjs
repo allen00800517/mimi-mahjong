@@ -64,3 +64,14 @@ export const ANIM_LAYOUTS=Object.freeze({A:{cx:427,frameH:362,stampX:672,label:'
 // Ease used for the C glide: slow start, slow landing.
 export const easeInOut=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 export function slideCx(anim,ms,from=427){const to=anim?.handoff?.cx??205,sl=anim?.slide;if(!sl)return to;const p=Math.min(1,Math.max(0,(ms-sl.from)/(sl.to-sl.from)));return from+(to-from)*easeInOut(p);}
+// v1.00 · The tai seal is set like a real carved seal (朱文): Chinese numerals + 台, read in columns right→left.
+// 2 chars stack; 3 chars: number in the right column, a tall 台 on the left; 4 chars: a 2×2 grid. The hand's own tai
+// tops out around 70 (天胡＋大四喜＋字一色…), so two-digit numbers cover it; the dealer's 連莊 tai are per payment.
+const DIGITS='零一二三四五六七八九';
+export function taiNumeral(n){
+ n=Math.max(0,Math.floor(n));if(n<=10)return n===10?'十':DIGITS[n];
+ if(n<20)return '十'+DIGITS[n%10];
+ if(n<100)return DIGITS[Math.floor(n/10)]+'十'+(n%10?DIGITS[n%10]:'');
+ return String(n);
+}
+export function sealChars(n){return [...(taiNumeral(n)+'台')];}

@@ -320,3 +320,13 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-stage.anim.stamped .wc-stamp{opacity:1;animation:wc-stamp .38s cubic-bezier(.5,0,.6,1.4) both}
 #win-cinema .wc-stage.anim .wc-caption,#win-cinema.tsumo .wc-stage.anim .wc-caption{left:67.3%;top:72%;animation:none;opacity:0}
 #win-cinema .wc-stage.anim.stamped .wc-caption{opacity:1;animation:wc-fade .3s .2s ease-out both}
+
+/* v1.00 · tai seal set as a carved 朱文 seal: serif numerals + 台, columns right→left, pressed-ink texture */
+@font-face{font-family:"MimiSeal";src:url("./assets/win-v1/seal-numerals.woff") format("woff");font-display:block}
+.rv2-seal .seal-text,.wl-seal .seal-text{position:absolute;inset:19% 20%;display:grid;grid-auto-flow:column;direction:rtl;gap:2px;font-family:"MimiSeal","Noto Serif TC","Songti TC",serif;font-weight:700;color:#c8281e;line-height:1;
+ -webkit-mask-image:url("./assets/win-v1/seal-ink.png");mask-image:url("./assets/win-v1/seal-ink.png");-webkit-mask-size:64px;mask-size:64px}
+.seal-text i{font-style:normal;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:30px}
+.seal-text.n2{grid-template-rows:1fr 1fr}.seal-text.n2 i{transform:scaleX(1.45)}
+.seal-text.n3,.seal-text.n4{grid-template-rows:1fr 1fr;grid-template-columns:1fr 1fr}
+.seal-text.n3 i:nth-child(3){grid-row:span 2;transform:scaleY(1.85)}
+.seal-text.n1 i{font-size:52px}
