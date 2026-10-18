@@ -7,8 +7,10 @@ import {viewSize,screenSize} from './viewport.mjs';
 export const TITLE_ART=Object.freeze({bg:'./assets/title-v1/title-bg.webp',ratio:941/1672,
  logo:Object.freeze({zh:'./assets/title-v1/logo-zh.webp',ja:'./assets/title-v1/logo-ja.webp'})});
 export const TITLE_ALT=Object.freeze({zh:'蜜蜜的牌桌大勝負！麻雀珍篇',ja:'ミーミーの雀卓大勝負！麻雀珍篇'});
-// Logo language: Japanese for a Japanese browser, otherwise the Traditional Chinese release logo.
-export function titleLang(langs=globalThis.navigator?.languages||[globalThis.navigator?.language]){return /^ja\b/i.test(String(langs?.[0]||''))?'ja':'zh';}
+// Logo language. For now every player sees the Japanese logo (user, 2026-10-19); the Chinese one is ready for the
+// multilingual release, when Japanese browsers get 'ja' and everyone else 'zh'.
+export const TITLE_LANG_FIXED='ja';
+export function titleLang(langs=globalThis.navigator?.languages||[globalThis.navigator?.language],fixed=TITLE_LANG_FIXED){if(fixed)return fixed;return /^ja\b/i.test(String(langs?.[0]||''))?'ja':'zh';}
 // Phones (touch, small screen) keep the title portrait; computers and tablets do not rotate.
 export function titleRotates(coarse,screen){return !!coarse&&Math.min(screen.width,screen.height)<700;}
 // box = the portrait area the title is laid out in; frame = the cover image fitted inside it.
