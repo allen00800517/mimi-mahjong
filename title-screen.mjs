@@ -69,6 +69,8 @@ export class TitleScreen{
   addEventListener('resize',this.onResize);addEventListener('orientationchange',this.onResize);
   // v1.02 · Before audio is allowed (a fresh launch) the title waits for one tap anywhere: that tap starts the theme
   // and the logo pops with it (user's idea; it also turns the iPhone audio rule into part of the show).
+  // The prompt appears only once the cover is on screen, never over an empty background.
+  {const bg=el.querySelector('.ts-bg'),show=()=>el.classList.add('ready');if(bg.complete&&bg.naturalWidth)show();else{bg.addEventListener('load',show,{once:true});setTimeout(show,5000);}}
   if(tapFirst){el.classList.add('await-tap');const box=el.querySelector('.ts-box');
    const go=()=>{if(!el.classList.contains('await-tap'))return;el.classList.remove('await-tap');removeEventListener('keydown',key);
     // onTap resolves to how long until the music's downbeat (ms), so the logo pops on the hit.
