@@ -22,7 +22,8 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART} from './win-show.mjs';
+import {winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
+import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -46,7 +47,7 @@ const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['�
 const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+'.png';
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
-const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});
+const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new TsumoShow({sound});
 // v0.96 · add ?mem=1 to the address to see how much character art is decoded (for testing on a phone).
 if(/[?&]mem=1/.test(location.search)){const box=document.createElement('div');box.id='mem-debug';box.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.append(box);let peak=0;setInterval(()=>{try{const a=JSON.parse(document.getElementById('table').dataset.characterAudit||'{}'),m=a.memory||[],total=m.reduce((n,x)=>n+(x.mb||0),0);peak=Math.max(peak,total);box.textContent='角色圖 '+total.toFixed(0)+'MB（最高 '+peak.toFixed(0)+'）\n'+m.map(x=>x.id+' '+(x.mb||0)+'MB 等待'+(x.misses||0)).join('\n');}catch{}},1000);}
 const characterActors=new CharacterActors(sound);
@@ -114,28 +115,37 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;clearTimeout(cinemaTimer);winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
+ if(!winPresentation)return;clearTimeout(cinemaTimer);tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
 }
 // v0.97 · tier-1 win moment: table dims, the winning tile lights up, the winner's portrait slides in on a colour band
 // and the 胡／自摸 stamp lands. 自摸 is a stronger version (gold, bigger, longer). Tap anywhere to skip.
 function startWinCinema(){
  const r=game.result;if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return;
  winPresentation={revision:game.revision,winner:r.winner};clearTimeout(timer);clearEffects();
- buildWinStamp(r);
+ // v1.00 · 自摸 with a clip: rise, glide left, stamp at the clip's moment, hand off to the settlement portrait.
+ const id=PORTRAITS[r.winner],anim=r.method==='tsumo'&&tsumoShow.canPlay(id);
+ const stage=buildWinStamp(r,anim);
  $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;
- $('cinema-skip').focus();syncSettlement();cinemaTimer=setTimeout(finishWinCinema,r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
+ $('cinema-skip').focus();syncSettlement();
+ if(anim&&tsumoShow.start({id,stage,before:stage.querySelector('.wc-stamp'),
+  onStamp:()=>{stage.classList.add('stamped');sound.play('stamp');},
+  onEnd:()=>{clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,150);},
+  onFail:()=>{if(!winPresentation)return;buildWinStamp(r,false);sound.play('stamp');clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,3000);}})){
+  cinemaTimer=setTimeout(finishWinCinema,CLIP_MAX_MS+500);return;}
+ if(anim)buildWinStamp(r,false);
+ cinemaTimer=setTimeout(finishWinCinema,r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
 }
-function buildWinStamp(r){
+function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special');c.classList.toggle('tsumo',tsumo);c.dataset.tier=winGrade(r)?.tier??1;
- const stage=document.createElement('div');stage.className='wc-stage';stage.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
+ const stage=document.createElement('div');stage.className='wc-stage'+(anim?' anim':'');stage.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
  let glow='';
  if(!tsumo){const payer=r.payments?.find(p=>p.to===r.winner)?.from,el=payer!==undefined?$('river-'+payer)?.lastElementChild:null;
   if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
  // v0.98 · No portrait here: it only flashed for a moment and the settlement shows the same picture right after.
- stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
+ stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile&&!anim?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
  const st=stage.querySelector('.wc-stamp img');if(word!=='胡')st.remove();else{st.onload=()=>stage.querySelector('.wc-stamp').classList.add('art');st.onerror=()=>st.remove();st.src=WIN_ART.stamp;}
- c.prepend(stage);
+ c.prepend(stage);return stage;
 }
 $('win-cinema').addEventListener('click',e=>{if(winPresentation&&e.target.id!=='cinema-skip')finishWinCinema();});
 $('cinema-skip').onclick=finishWinCinema;
@@ -143,7 +153,7 @@ $('cinema-skip').onclick=finishWinCinema;
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready)tsumoShow.preload(PORTRAITS);try{characterActors.sync(game,PORTRAITS,{blocked:!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 
@@ -187,9 +197,9 @@ try{if(savedSession!==null)restoreSession(JSON.parse(savedSession));else {newMat
 const recovery=sessionStore.recovery();if(recovery!==null){const button=document.createElement('button');button.textContent='下載保留的原始紀錄';button.onclick=()=>saveRecovery();$('feedback').before(button);showToast($('feedback').textContent||'保留了一份無法讀取的原始紀錄。',{action:{label:'保存原始紀錄',run:saveRecovery},persist:true});}
 async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始紀錄.json',recovery);$('feedback').textContent=fileMessage(status,'已存出保留的原始紀錄。');}
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
-function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
+function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
-function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){sound.play('win',{method:game.result.method});syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
+function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){sound.play('win',{method:game.result.method,anim:game.result.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[game.result.winner])});syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
 function player(s,id){
  const p=game.players[s],acts=game.actions(s),active=(game.phase==='turn'&&game.turn===s)||(game.phase==='response'&&acts.length>0)||(game.phase==='flower'&&game.flowerEvent.winner===s);
  const cue=game.phase==='turn'?'出牌':game.phase==='response'?'可回應':'花胡機會';
@@ -289,7 +299,7 @@ function decorateWinSettlement(el,r,completed){
  const v2=r.kind==='win'&&!completed&&r.winner!==undefined;el.classList.toggle('result-v2',v2);if(!v2)return;
  const id=PORTRAITS[r.winner];el.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
  el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
- const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
+ const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id])img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
  const body=el.querySelector('.settlement-body'),total=r.score?.tai??0;
  body.insertAdjacentHTML('beforeend','<div class="rv2-seal" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><b>'+total+'</b><small>台</small></div>');
  const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
@@ -426,7 +436,7 @@ function renderMatchSummary(){
 }
 // v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
 function startDice(){
- pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);
+ pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);tsumoShow.preload(PORTRAITS);
  const still=reduced();
  if(!still)dealShow.prepare(game,game.dealer);else dealShow.finish({silent:true});
  diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:still,

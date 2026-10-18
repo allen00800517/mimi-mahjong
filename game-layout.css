@@ -313,3 +313,10 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #result.result-v2[hidden]{display:none!important}
 #win-cinema .wc-stamp.art img{filter:drop-shadow(4px 6px 0 #7a1d12) drop-shadow(0 0 16px rgba(255,190,90,.65))}
 #result.result-v2 .rv2-seal::before{content:"";position:absolute;inset:11%;background:rgba(255,243,226,.94);border-radius:6px}
+
+/* v1.00 · 自摸 clip (layout C): keyed video on the dimmed table, stamp lands at the clip's moment on the right */
+#win-cinema .wc-video{position:absolute;bottom:0;pointer-events:none;will-change:transform}
+#win-cinema .wc-stage.anim .wc-stamp,#win-cinema.tsumo .wc-stage.anim .wc-stamp{left:67.3%;top:40%;animation:none;opacity:0}
+#win-cinema .wc-stage.anim.stamped .wc-stamp{opacity:1;animation:wc-stamp .38s cubic-bezier(.5,0,.6,1.4) both}
+#win-cinema .wc-stage.anim .wc-caption,#win-cinema.tsumo .wc-stage.anim .wc-caption{left:67.3%;top:72%;animation:none;opacity:0}
+#win-cinema .wc-stage.anim.stamped .wc-caption{opacity:1;animation:wc-fade .3s .2s ease-out both}
