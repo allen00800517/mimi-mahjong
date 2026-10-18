@@ -311,7 +311,7 @@ function revealSettlement(rows,seal){
  const plan=revealPlan(rows.map((_,i)=>({i})));
  rows.forEach((row,i)=>row.animate([{opacity:0,transform:'translateX(-10px)'},{opacity:1,transform:'translateX(0)'}],{duration:220,delay:plan.items[i].at,fill:'backwards',easing:'ease-out'}));
  plan.items.forEach(it=>setTimeout(()=>{if(settlementRevealed===game.revision)sound.play('select');},it.at));
- seal?.animate([{opacity:0,transform:'scale(1.8) rotate(-14deg)'},{opacity:1,transform:'scale(.94) rotate(-8deg)',offset:.75},{opacity:1,transform:'scale(1) rotate(-8deg)'}],{duration:320,delay:plan.sealAt,fill:'backwards',easing:'ease-in'});
+ seal?.animate([{opacity:0,transform:'scale(1.8) rotate(14deg)'},{opacity:1,transform:'scale(.94) rotate(8deg)',offset:.75},{opacity:1,transform:'scale(1) rotate(8deg)'}],{duration:320,delay:plan.sealAt,fill:'backwards',easing:'ease-in'});
  setTimeout(()=>{if(settlementRevealed===game.revision)sound.play('place');},plan.sealAt+240);
 }
 function signed(n){return n>0?'+'+n:String(n);}
