@@ -21,7 +21,7 @@ function reset(){
  const cx=$('wl-layout').value==='B'&&anim?.handoff?anim.handoff.cx:L.cx,h=$('wl-layout').value!=='A'&&anim?.handoff?.frameH||L.frameH,w=h*16/9;
  Object.assign($('wl-video').style,{left:(cx-w/2)+'px',width:w+'px',height:h+'px',transform:''});
  stage.style.setProperty('--wl-stamp-x',(anim?L.stampX:427)+'px');
- const word=kind==='tsumo'?'自摸':'胡';$('wl-stamp').classList.toggle('art',word==='胡');$('wl-stamp-text').textContent=word;
+ const word=kind==='tsumo'?'自摸':'胡';$('wl-stamp').classList.add('art');$('wl-stamp').classList.toggle('wide',word==='自摸');$('wl-stamp').querySelector('img').src=word==='胡'?WIN_ART.stamp:WIN_ART.stampTsumo;$('wl-stamp-text').textContent=word;
  $('wl-caption').textContent=CHARACTER_MEDIA[who].name+(kind==='tsumo'?' 自摸　·　三家各付':' 胡牌　·　放槍：權藤');
  // Settlement stand-in.
  const burst=kind==='tsumo',img=$('wl-portrait');img.src=burst?WIN_ART.burst(who):WIN_ART.portrait(who);

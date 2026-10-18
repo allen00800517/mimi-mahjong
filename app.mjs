@@ -144,7 +144,7 @@ function buildWinStamp(r,anim=false){
   if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
  // v0.98 · No portrait here: it only flashed for a moment and the settlement shows the same picture right after.
  stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile&&!anim?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
- const st=stage.querySelector('.wc-stamp img');if(word!=='胡')st.remove();else{st.onload=()=>stage.querySelector('.wc-stamp').classList.add('art');st.onerror=()=>st.remove();st.src=WIN_ART.stamp;}
+ const st=stage.querySelector('.wc-stamp img'),art=word==='胡'?WIN_ART.stamp:word==='自摸'?WIN_ART.stampTsumo:null;if(!art)st.remove();else{const box=stage.querySelector('.wc-stamp');box.classList.toggle('wide',word==='自摸');st.onload=()=>box.classList.add('art');st.onerror=()=>st.remove();st.src=art;}
  c.prepend(stage);return stage;
 }
 $('win-cinema').addEventListener('click',e=>{if(winPresentation&&e.target.id!=='cinema-skip')finishWinCinema();});

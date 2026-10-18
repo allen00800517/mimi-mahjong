@@ -4,7 +4,7 @@
 // presentation falls back to the existing half-body portrait and a typeset character, so nothing ever shows blank.
 export const WIN_TIMING=Object.freeze({ron:1500,tsumo:2000,rowGap:260,rowFirst:350,sealAfter:220});
 export const WIN_COLORS=Object.freeze({mimi:'#e0566f',ichika:'#c8323a',harumi:'#7b3fb0',gondo:'#b8892e'});
-export const WIN_ART=Object.freeze({portrait:id=>'./assets/win-v1/'+id+'-hu.webp',burst:id=>'./assets/win-v1/'+id+'-tsumo.webp',stamp:'./assets/win-v1/brush-hu.png',seal:'./assets/win-v1/seal-frame.png'});
+export const WIN_ART=Object.freeze({portrait:id=>'./assets/win-v1/'+id+'-hu.webp',burst:id=>'./assets/win-v1/'+id+'-tsumo.webp',stamp:'./assets/win-v1/brush-hu.png',stampTsumo:'./assets/win-v1/brush-tsumo.webp',seal:'./assets/win-v1/seal-frame.png'});
 
 // Rarity grades agreed with the user (2026-10-18). Row names are the scoring engine's.
 const TIER2=['碰碰胡','混一色','小三元','四暗刻','全求人','槓上開花','海底撈月','河底撈魚','搶槓'];

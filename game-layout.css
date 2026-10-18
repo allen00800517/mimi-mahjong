@@ -344,3 +344,6 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 /* v1.00 · the left-hand player is mirrored: every chibi clip looks toward screen-left, which is away from the table
    for that seat (user: they seemed to stare at the floor). Children only, so the stage element keeps its own animations. */
 #table .west .character-stage img,#table .west .character-stage .character-animation{transform:scaleX(-1)}
+
+/* v1.00 · gold brush 自摸 (generated art) replaces the typeset word */
+#win-cinema .wc-stamp.art.wide img{width:300px;height:163px;filter:drop-shadow(4px 6px 0 #5a3a0a) drop-shadow(0 0 18px rgba(255,214,110,.75))}
