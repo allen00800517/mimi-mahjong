@@ -215,7 +215,7 @@ export class Game {
  }
  publicView(s){
   const p=this.players[s];
-  return {seat:s,hand:[...p.hand],state:p.state,melds:copy(p.melds),flowers:[...p.flowers],legal:copy(this.actions(s)),rivers:this.players.map(p=>copy(p.river)),exposed:this.players.map((p,i)=>p.melds.map(m=>i!==s&&m.kind==='concealedKan'?{kind:m.kind,tiles:['hidden','hidden','hidden','hidden']}:copy(m))),states:this.players.map(p=>p.state),event:this.event?{type:this.event.type,from:this.event.from,tile:this.event.tile}:null,live:this.live};
+  return {seat:s,hand:[...p.hand],state:p.state,melds:copy(p.melds),flowers:[...p.flowers],seatWind:this.wind(s),roundWind:this.roundWind,drawn:this.phase==='turn'&&this.turn===s?this.drawn:null,legal:copy(this.actions(s)),rivers:this.players.map(p=>copy(p.river)),exposed:this.players.map((p,i)=>p.melds.map(m=>i!==s&&m.kind==='concealedKan'?{kind:m.kind,tiles:['hidden','hidden','hidden','hidden']}:copy(m))),states:this.players.map(p=>p.state),event:this.event?{type:this.event.type,from:this.event.from,tile:this.event.tile}:null,live:this.live};
  }
  assertInvariant(){
   const a=[...this.wall];

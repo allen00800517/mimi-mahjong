@@ -453,7 +453,7 @@ function render(){
  if(pendingDice&&game.deal&&game.phase==='turn'&&!game.result){startDice();return;}
  pendingDice=false;
  if(forced)timer=setTimeout(()=>perform(0,a[0].id,revision),reduced()?250:600);
- else if($('auto').checked){const seat=findComputer();if(seat!==null){const id=chooseAction(game.publicView(seat));timer=setTimeout(()=>perform(seat,id,revision),computerDelay({id,speed:Number($('speed').value)}));}}
+ else if($('auto').checked){const seat=findComputer();if(seat!==null){const id=chooseAction(game.publicView(seat),PORTRAITS[seat]);timer=setTimeout(()=>perform(seat,id,revision),computerDelay({id,speed:Number($('speed').value)}));}}
 }
 function renderMatchSummary(){
  const el=$('match-summary');el.hidden=!match;if(!match)return;
@@ -476,9 +476,9 @@ function startDice(){
  dealShow.apply();
 }
 function findComputer(){for(let s=1;s<4;s++)if(game.actions(s).length)return s;return null;}
-function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s)));}
+function step(){if(paused())return;const s=findComputer();if(s!==null)perform(s,chooseAction(game.publicView(s),PORTRAITS[s]));}
 $('computer-resume').onclick=()=>{$('auto').checked=true;$('feedback').textContent='';savePreferences();clearEffects();render();};
-$('step').onclick=()=>{if(!portrait()){const s=findComputer();if(s!==null){$('settings-dialog').close();perform(s,chooseAction(game.publicView(s)));}}};$('flower-skin').onchange=()=>{setFlowerSkin($('flower-skin').value);savePreferences();renderFlowerPreview();clearEffects();render();};for(const id of ['auto','speed','motion','confirm-button'])$(id).onchange=()=>{savePreferences();clearEffects();render();};
+$('step').onclick=()=>{if(!portrait()){const s=findComputer();if(s!==null){$('settings-dialog').close();perform(s,chooseAction(game.publicView(s),PORTRAITS[s]));}}};$('flower-skin').onchange=()=>{setFlowerSkin($('flower-skin').value);savePreferences();renderFlowerPreview();clearEffects();render();};for(const id of ['auto','speed','motion','confirm-button'])$(id).onchange=()=>{savePreferences();clearEffects();render();};
 // v1.01 · the character select opens over the table first; the old cast picker in this menu is hidden.
 function openCharSelect({cancellable=true,onDone,onCancel}={}){
  clearTimeout(timer);clearEffects();
