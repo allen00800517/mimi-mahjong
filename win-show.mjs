@@ -48,6 +48,7 @@ export const WIN_ANIM=Object.freeze({
  // handoff: where the 1280×720 clip sits in layout B so its last frame lands exactly on the settlement portrait
  // v1.02 · every end spot moved 24px right (cx and portraitLeft together, so the hand-off stays seamless): on an iPhone
  // held sideways the Dynamic Island covered the left edge of the character.
+ // 權藤 moves only 12px and is a little smaller (frameH 324) so his open fan still stops short of the score column (x 318).
  // (cx = frame centre on the 854 stage, frameH = the clip's height on the stage, portraitH = the figure's height there).
  // v1.00 · all clips share one scale (frameH 394) so the four look the same size; only 權藤 is smaller (337) because his
  // open fan would otherwise cover the score rows.
@@ -60,7 +61,7 @@ export const WIN_ANIM=Object.freeze({
  // 珍美: take 1 (the tile leaves her hand during the turn; accepted by the user 2026-10-18). Stamp with the laugh.
  harumi:{video:'./assets/win-v1/harumi-tsumo.mp4',stampAt:2000,handoff:{cx:115,frameH:394,portraitH:341,portraitLeft:18},slide:{from:1000,to:2000}},
  // 權藤: motion from take A, voice from take B (the fan snaps line up within ~50 ms); the stamp lands with 「ツモじゃ」.
- gondo:{video:'./assets/win-v1/gondo-tsumo.mp4',stampAt:3050,handoff:{cx:151,frameH:337,portraitH:314,portraitLeft:18},slide:{from:1800,to:2900}},
+ gondo:{video:'./assets/win-v1/gondo-tsumo.mp4',stampAt:3050,handoff:{cx:134,frameH:324,portraitH:302,portraitLeft:6},slide:{from:1800,to:2900}},
 });
 // Where the clip stands on the 854×394 stage: 'B' puts the figure where the settlement portrait will be (no jump at
 // the hand-off; a clip's own handoff.cx wins), 'A' centres it. frameH = height of the 16:9 video frame on the stage.

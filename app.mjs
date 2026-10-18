@@ -137,6 +137,9 @@ function startWinCinema(){
  if(anim)buildWinStamp(r,false);
  cinemaTimer=setTimeout(finishWinCinema,r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
 }
+// v1.02 · The brush stamps are fetched once at start-up and kept, so the stamp shows the brush art from its first
+// frame; while an image is still loading the typeset fallback stays hidden (it used to flash 胡 before the art).
+const STAMP_CACHE=[WIN_ART.stamp,WIN_ART.stampTsumo].map(u=>{const i=new Image();i.decoding='async';i.src=u;return i;});
 function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special');c.classList.toggle('tsumo',tsumo);c.dataset.tier=winGrade(r)?.tier??1;
@@ -146,7 +149,7 @@ function buildWinStamp(r,anim=false){
   if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
  // v0.98 · No portrait here: it only flashed for a moment and the settlement shows the same picture right after.
  stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile&&!anim?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
- const st=stage.querySelector('.wc-stamp img'),art=word==='胡'?WIN_ART.stamp:word==='自摸'?WIN_ART.stampTsumo:null;if(!art)st.remove();else{const box=stage.querySelector('.wc-stamp');box.classList.toggle('wide',word==='自摸');st.onload=()=>box.classList.add('art');st.onerror=()=>st.remove();st.src=art;}
+ const st=stage.querySelector('.wc-stamp img'),art=word==='胡'?WIN_ART.stamp:word==='自摸'?WIN_ART.stampTsumo:null;if(!art)st.remove();else{const box=stage.querySelector('.wc-stamp');box.classList.toggle('wide',word==='自摸');box.classList.add('loading');const ready=()=>{box.classList.remove('loading');box.classList.add('art');};st.onload=ready;st.onerror=()=>{box.classList.remove('loading');st.remove();};st.src=art;if(st.complete&&st.naturalWidth)ready();}
  c.prepend(stage);return stage;
 }
 $('win-cinema').addEventListener('click',e=>{if(winPresentation&&e.target.id!=='cinema-skip')finishWinCinema();});
@@ -315,7 +318,7 @@ function decorateWinSettlement(el,r,completed){
  const v2=r.kind==='win'&&!completed&&r.winner!==undefined;el.classList.toggle('result-v2',v2);if(!v2)return;
  const id=PORTRAITS[r.winner];el.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
  el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
- const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id]){img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.style.left=(WIN_ANIM[id].handoff.portraitLeft??-6)+'px';}img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
+ const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id]){img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.style.left=(WIN_ANIM[id].handoff.portraitLeft??18)+'px';}img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
  const body=el.querySelector('.settlement-body'),total=winTaiTotal(r);
  body.insertAdjacentHTML('beforeend','<div class="rv2-seal'+(sealChars(total).length>4?' tall':'')+'" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><span class="seal-text n'+sealChars(total).length+'">'+sealChars(total).map(c=>'<i>'+c+'</i>').join('')+'</span></div>');
  const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
