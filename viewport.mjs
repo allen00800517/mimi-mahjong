@@ -15,7 +15,7 @@ export function screenSize(){
 }
 let applied='';
 // Writes --screen-w/--screen-h; true when they changed.
-export function applyScreenSize(){const {width,height}=screenSize(),key=width+'x'+height;if(key===applied)return false;applied=key;const d=document.documentElement.style;d.setProperty('--screen-w',width+'px');d.setProperty('--screen-h',height+'px');return true;}
+export function applyScreenSize(){document.documentElement.classList.toggle('home-app',homeScreenApp());const {width,height}=screenSize(),key=width+'x'+height;if(key===applied)return false;applied=key;const d=document.documentElement.style;d.setProperty('--screen-w',width+'px');d.setProperty('--screen-h',height+'px');return true;}
 export const wantsForcedLandscape=()=>{const v=screenSize();return v.height>v.width&&matchMedia('(pointer: coarse)').matches;};
 // Physical width of the screen = virtual height (body is 100vw tall when rotated).
 const screenWidth=()=>document.body.getBoundingClientRect().right;

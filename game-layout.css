@@ -200,6 +200,10 @@ body.moving-tiles .controls,body.moving-tiles .turn-cue{visibility:hidden;pointe
    layer outside body, so they rotate on their own and take their limits from the swapped screen size. */
 html.force-landscape,html.force-landscape body{overflow:hidden}
 html.force-landscape body{position:fixed;top:0;left:0;width:var(--screen-h,100vh);height:var(--screen-w,100vw);box-sizing:border-box;padding:0;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)}
+/* v1.03 · home-screen app on iPhone: the page viewport is the screen minus the status bar (894 of 956), and a fixed
+   body is clipped to it, leaving a dark band along the bottom. Positioned absolutely the body is ordinary page content,
+   which iOS paints over the whole screen. */
+html.home-app.force-landscape body{position:absolute}
 html.force-landscape dialog[open]{transform:rotate(90deg)}
 html.force-landscape dialog{width:min(700px,calc(var(--screen-h) * .9));max-height:calc(var(--screen-w) * .88)}
 html.force-landscape #settings-dialog{width:min(580px,calc(var(--screen-h) * .9));max-height:calc(var(--screen-w) * .9)}
