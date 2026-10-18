@@ -368,3 +368,23 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #char-select .cs-go{right:22px;background:linear-gradient(#f7d58a,#d9a54a);color:#3a2208;border:0;box-shadow:0 3px 0 #7a4f16,0 6px 14px rgba(0,0,0,.5)}
 #char-select .cs-back{left:522px;background:rgba(42,28,18,.85);color:#f3dfb8;border:1.5px solid #9b7a45}
 #settings-dialog .cast-picker{display:none}
+/* v1.02 · Title screen: portrait cover; on phones it counter-rotates so it stays upright (see title-screen.mjs). */
+#title-screen{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#141a3c;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#title-screen .ts-box{position:absolute;left:50%;top:50%;width:var(--ts-bw);height:var(--ts-bh);transform:translate(-50%,-50%);overflow:hidden}
+#title-screen.turned .ts-box{transform:translate(-50%,-50%) rotate(-90deg)}
+#title-screen .ts-blur{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(22px) brightness(.8) saturate(1.1)}
+#title-screen .ts-frame{position:absolute;left:50%;top:50%;width:var(--ts-fw);height:var(--ts-fh);transform:translate(-50%,-50%);font-size:calc(var(--ts-fw) / 22)}
+#title-screen .ts-bg{position:absolute;inset:0;width:100%;height:100%;display:block}#title-screen.tall .ts-bg{-webkit-mask-image:linear-gradient(transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(transparent,#000 5%,#000 95%,transparent)}#title-screen.wide .ts-bg{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+#title-screen .ts-logo{position:absolute;margin:0;left:4%;width:92%;top:20%;transform:translateY(-50%);line-height:0}
+#title-screen .ts-logo img{width:100%;height:auto;filter:drop-shadow(0 .25em .35em rgba(30,10,40,.45));animation:ts-logo-in .7s cubic-bezier(.2,1.5,.4,1) both}
+#title-screen .ts-actions{position:absolute;left:0;right:0;top:92.6%;display:flex;align-items:center;justify-content:center;gap:.6em;transform:translateY(-50%)}#title-screen .ts-actions.two .ts-start{font-size:1.15em;padding:.55em 1.3em}
+#title-screen .ts-start{font:900 1.35em/1 system-ui,"Noto Sans TC",sans-serif;letter-spacing:.12em;color:#fff3d6;background:linear-gradient(#c3243f,#8f1228);border:.13em solid #f4cf78;border-radius:999px;padding:.55em 2.1em;box-shadow:0 .2em 0 #5a0816,0 .35em .8em rgba(0,0,0,.45);text-shadow:0 .08em 0 #4a0010;animation:ts-pulse 2.2s ease-in-out .8s infinite;cursor:pointer}
+#title-screen .ts-start:active{transform:translateY(.12em);box-shadow:0 .08em 0 #5a0816,0 .2em .5em rgba(0,0,0,.45)}
+#title-screen .ts-new{font:700 .82em/1 system-ui,"Noto Sans TC",sans-serif;color:#ffe7b8;background:rgba(20,14,40,.62);border:.1em solid rgba(244,207,120,.8);border-radius:999px;padding:.55em 1.4em;cursor:pointer}
+#title-screen .ts-version{position:absolute;right:6.5%;bottom:1.4%;font:600 .5em/1 system-ui,sans-serif;color:rgba(255,255,255,.55)}
+#title-screen .ts-sound{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(10,10,30,.5);display:grid;place-items:center;padding:0;cursor:pointer}
+#title-screen .ts-sound img{width:22px;height:22px;filter:invert(1)}
+#title-screen.wide .ts-blur{filter:blur(22px) brightness(.5) saturate(1.05)}
+@keyframes ts-logo-in{from{opacity:0;transform:scale(.6) translateY(-8%)}to{opacity:1;transform:none}}
+@keyframes ts-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@media (prefers-reduced-motion:reduce){#title-screen .ts-logo img,#title-screen .ts-start{animation:none}}
