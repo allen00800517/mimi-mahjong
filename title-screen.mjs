@@ -27,6 +27,9 @@ export function titleLayout(view,rotate,ratio=TITLE_ART.ratio){
 // with an elastic overshoot over 0.9 s, tilted about -10° and straightening as it lands; then it floats gently.
 // At the pop, mahjong tiles (mostly honours, same art as the table) and two dice fly out of it under gravity with
 // a few sparkles. The buttons slide up 0.75 s into the pop.
+// Logo size and centre in the cover frame (width share, height share); kept in step with .ts-logo in game-layout.css.
+// 76% wide makes it about as tall as the 八百屋篇 logo, which is a wider shape (user: 92% was too big).
+export const TITLE_LOGO=Object.freeze({w:.76,y:.195});
 export const POP=Object.freeze({delay:350,dur:900,buttonsAt:750,buttonsDur:350,tilt:-10.3});
 export function elastic(t){if(t<=0)return 0;if(t>=1)return 1;return Math.pow(2,-10*t)*Math.sin((t*10-.75)*(2*Math.PI/3))+1;}
 export function logoPopFrames(n=36){const f=[];for(let i=0;i<=n;i++){const k=i/n,sc=elastic(k),rot=(1-Math.min(1,k*1.4))*POP.tilt;f.push({offset:k,transform:'rotate('+rot.toFixed(2)+'deg) scale('+sc.toFixed(4)+')'});}return f;}
@@ -84,8 +87,8 @@ export class TitleScreen{
  }
  burst(){
   const el=this.el,box=el.querySelector('.ts-burst'),L=this.L,logo=el.querySelector('.ts-logo img');if(!L)return;
-  const ar=(logo.naturalWidth&&logo.naturalHeight)?logo.naturalWidth/logo.naturalHeight:1.5,lw=L.fw*.92,lh=lw/ar;
-  const ps=burstParticles({fw:L.fw,cx:L.fw/2,cy:L.fh*.186,lw,lh}).map(p=>{const n=document.createElement(p.kind==='tile'?'img':'div');n.className='ts-p '+p.kind;
+  const ar=(logo.naturalWidth&&logo.naturalHeight)?logo.naturalWidth/logo.naturalHeight:1.5,lw=L.fw*TITLE_LOGO.w,lh=lw/ar;
+  const ps=burstParticles({fw:L.fw,cx:L.fw/2,cy:L.fh*TITLE_LOGO.y,lw,lh}).map(p=>{const n=document.createElement(p.kind==='tile'?'img':'div');n.className='ts-p '+p.kind;
    if(p.kind==='tile'){n.src='./assets/title-v1/burst-'+p.t+'.webp';n.alt='';n.draggable=false;}else if(p.kind==='die')n.innerHTML=faceSVG(p.v);
    n.style.width=p.w+'px';n.style.height=p.h+'px';box.append(n);return {p,n};});
   const t0=performance.now();let live=ps;
