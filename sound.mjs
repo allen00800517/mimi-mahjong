@@ -13,6 +13,8 @@ export const SOUND_PLAN=Object.freeze({
  // v1.00 · with a 自摸 clip the start stays soft so the voice is heard; the hit and jingle come with the stamp.
  win:({method,anim}={})=>anim?[['reveal',0]]:method==='tsumo'?[['strong',0],['reveal',.12],['win',.4]]:[['reveal',0],['win',.3]],
  stamp:()=>[['strong',0],['win',.15]],
+ // v1.12 · the cut-in swoosh when a tier-2+ win is declared (the stamp hit follows when the stamp lands).
+ cutin:()=>[['reveal',0]],
  shuffle:()=>[['shuffle',0]], // the old recorded dice ran into the first discards (user); dice now have their own show
  dice:()=>[['dice',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
 });

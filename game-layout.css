@@ -417,3 +417,27 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 @keyframes wc-yaku{0%{scale:2.3;opacity:0}70%{scale:.94;opacity:1}100%{scale:1;opacity:1}}
 @keyframes wc-yaku-last{0%{scale:3;opacity:0}65%{scale:.88;opacity:1}100%{scale:1;opacity:1}}
 @keyframes wc-out{to{opacity:0}}
+/* v1.12 · cut-in (tier 2+, before the stamp): dim + rotating speed lines; the shape slides in (band from the left,
+   wedge from the right), the face pushes in slowly, a glint flashes in the eye, then the shape slides out. */
+#win-cinema .wc-ci .ci-dim{position:absolute;inset:0;overflow:hidden;background:rgba(8,5,3,.72);animation:wc-fade .15s ease-out both}
+#win-cinema .wc-ci .ci-dim::after{content:"";position:absolute;inset:-40%;background:repeating-conic-gradient(from 3deg at 50% 50%,rgba(255,255,255,.22) 0 .8deg,transparent .8deg 9deg);-webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 22%,#000 44%);mask-image:radial-gradient(circle at 50% 50%,transparent 22%,#000 44%);animation:ci-spin 1.3s linear both}
+#win-cinema .wc-ci .ci-slide{position:absolute;inset:0;animation:ci-in-l .2s cubic-bezier(.2,.8,.3,1) both,ci-out-r .2s 1.1s ease-in forwards}
+#win-cinema .wc-ci.ci-wedge .ci-slide{animation:ci-in-r .2s cubic-bezier(.2,.8,.3,1) both,ci-out-l .2s 1.1s ease-in forwards}
+#win-cinema .wc-ci .ci-edge,#win-cinema .wc-ci .ci-frame{position:absolute;inset:0}
+#win-cinema .wc-ci .ci-frame{background:#22150d}
+#win-cinema .wc-ci .ci-edge{background:linear-gradient(180deg,#fff,#f0cf7f 50%,#fff)}
+#win-cinema .ci-band .ci-frame{clip-path:polygon(-2% 38%,102% 26.6%,102% 64.7%,-2% 76%)}
+#win-cinema .ci-band .ci-edge{clip-path:polygon(-2% 35.4%,102% 24%,102% 67.3%,-2% 78.6%)}
+#win-cinema .ci-wedge .ci-frame{clip-path:polygon(35.1% 101%,101% 101%,101% -1%,65.6% -1%)}
+#win-cinema .ci-wedge .ci-edge{clip-path:polygon(33.7% 101%,101% 101%,101% -1%,64.2% -1%)}
+#win-cinema .wc-ci .ci-face{position:absolute;inset:0;background-repeat:no-repeat;animation:ci-push 1.3s ease-out both}
+#win-cinema .wc-ci .ci-frame::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(176deg,transparent 0 17px,rgba(255,255,255,.16) 17px 18px);animation:ci-streak 1.3s linear both}
+#win-cinema .wc-ci .ci-glint{position:absolute;width:76px;height:76px;margin:-38px 0 0 -38px;background:radial-gradient(circle,#fff 0 7%,rgba(255,255,255,.55) 13%,transparent 36%),linear-gradient(90deg,transparent 47%,rgba(255,255,255,.95) 50%,transparent 53%),linear-gradient(0deg,transparent 47%,rgba(255,255,255,.95) 50%,transparent 53%);opacity:0;animation:ci-glint .38s .42s ease-out both}
+@keyframes ci-in-l{from{translate:-110% 0}}
+@keyframes ci-in-r{from{translate:110% 0}}
+@keyframes ci-out-r{to{translate:110% 0}}
+@keyframes ci-out-l{to{translate:-110% 0}}
+@keyframes ci-push{from{scale:1}to{scale:1.08}}
+@keyframes ci-spin{to{rotate:5deg}}
+@keyframes ci-streak{from{translate:-30px 0}to{translate:30px 0}}
+@keyframes ci-glint{0%{scale:0;opacity:0}45%{scale:1.3;opacity:1}100%{scale:.2;opacity:0;rotate:45deg}}
