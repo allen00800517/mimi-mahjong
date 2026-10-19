@@ -5,14 +5,16 @@
 // the table, so playback never waits on the network. A character without a clip keeps the still placeholder cut-in.
 import {VOICE_GAIN} from './voice-player.mjs';
 // open = ms into the clip when the band opens to full screen (the camera starts pulling back); ms = clip length.
+// v1.24 · the clips are re-cut to the stage's own shape (-w): the whole 16:9 picture shows at full height (no more heads
+// cut off at the top) and the narrow strips left and right are a blurred, darkened copy of the same picture.
 export const CUTIN_CLIPS=Object.freeze({
- ichika:{video:'./assets/cutin-v1/ichika-cutin.mp4',audio:'./assets/cutin-v1/ichika-cutin.mp3',open:1750,ms:6040},
+ ichika:{video:'./assets/cutin-v1/ichika-cutin-w.mp4',audio:'./assets/cutin-v1/ichika-cutin.mp3',open:1750,ms:6040},
  // 珍美: eyes + golden glint, the band opens as the camera pulls back to her ohoho laugh (1.25 s); 8.5 s. v1.17 · the
  // sound fades out where her line ends (a second laugh during the pull-back was cut off mid-way).
- harumi:{video:'./assets/cutin-v1/harumi-cutin.mp4',audio:'./assets/cutin-v1/harumi-cutin-2.mp3',open:1250,ms:8500},
+ harumi:{video:'./assets/cutin-v1/harumi-cutin-w.mp4',audio:'./assets/cutin-v1/harumi-cutin-2.mp3',open:1250,ms:8500},
  // v1.18 · 權藤: glare + golden sparkles and かくごせい, the band opens as the camera pulls back (1.7 s), a short
  // settled hold, the heavy slam under his ringed palm, white; 6.83 s.
- gondo:{video:'./assets/cutin-v1/gondo-cutin.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
+ gondo:{video:'./assets/cutin-v1/gondo-cutin-w.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
  // v1.19 · 蜜蜜: eyes + いっただきまーす, the band opens as the camera pulls back to her crouch (2.1 s), she blasts out
  // of the top of the frame, bursts through the clouds, dives down yelling and lands superhero-style (negative-film
  // impact frame), white; 9.7 s. v1.20 · no sped-up sound anywhere (her yell plays at its own speed) and the negative
@@ -20,7 +22,7 @@ export const CUTIN_CLIPS=Object.freeze({
  // on unbroken through the negative flash (only the picture changes); the impact boom is layered under it. v1.22 · the
  // stray "hey" at the peak of the leap is muted (a silent beat before the dive). v1.23 · final cut (the user's join): the
  // dive cuts away just before touchdown to the take whose landing, negative flash and burst all run on in one piece; 9.79 s.
- mimi:{video:'./assets/cutin-v1/mimi-cutin-5.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
+ mimi:{video:'./assets/cutin-v1/mimi-cutin-w.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{

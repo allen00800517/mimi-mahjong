@@ -457,14 +457,14 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 @keyframes ci-spin{to{rotate:5deg}}
 @keyframes ci-streak{from{translate:-30px 0}to{translate:30px 0}}
 @keyframes ci-glint{0%{scale:0;opacity:0}45%{scale:1.3;opacity:1}100%{scale:.2;opacity:0;rotate:45deg}}
-/* v1.13 · cut-in clip: the video fills the stage (16:9 over the wider stage, cropped top and bottom); it starts
+/* v1.13 · cut-in clip: the video fills the stage (v1.24: clips are cut to the stage shape, so nothing is cropped); it starts
    clipped to the band (or wedge) and snaps open to the full screen when the camera pulls back. The stamp stage that
    follows starts from white (the clip ends on a white flash). */
 #win-cinema .wc-ci .ci-clip{position:absolute;inset:0;animation:ci-in-l .2s cubic-bezier(.2,.8,.3,1) both}
 #win-cinema .wc-ci.ci-wedge .ci-clip{animation-name:ci-in-r}
 #win-cinema .wc-ci .ci-clip .ci-frame{background:#000}
 #win-cinema .wc-ci .ci-clip .ci-frame::after{content:none}
-#win-cinema .ci-clip video{position:absolute;left:0;top:-43px;width:854px;height:480px;object-fit:cover}
+#win-cinema .ci-clip video{position:absolute;left:0;top:0;width:854px;height:394px;object-fit:cover}
 #win-cinema .wc-ci .ci-clip .ci-frame,#win-cinema .wc-ci .ci-clip .ci-edge{transition:clip-path .26s cubic-bezier(.6,0,.3,1),opacity .2s}
 #win-cinema .ci-band .ci-clip .ci-frame{clip-path:polygon(-2% 47%,102% 36%,102% 74%,-2% 85%)}
 #win-cinema .ci-band .ci-clip .ci-edge{clip-path:polygon(-2% 44.4%,102% 33.4%,102% 76.6%,-2% 87.6%)}
