@@ -15,8 +15,9 @@ export const CUTIN_CLIPS=Object.freeze({
  gondo:{video:'./assets/cutin-v1/gondo-cutin.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
  // v1.19 · 蜜蜜: eyes + いっただきまーす, the band opens as the camera pulls back to her crouch (2.1 s), she blasts out
  // of the top of the frame, bursts through the clouds, dives down yelling and lands superhero-style (negative-film
- // impact frame), white; 9.29 s.
- mimi:{video:'./assets/cutin-v1/mimi-cutin.mp4',audio:'./assets/cutin-v1/mimi-cutin.mp3',open:2100,ms:9290},
+ // impact frame), white; 9.7 s. v1.20 · no sped-up sound anywhere (her yell plays at its own speed) and the negative
+ // flash is made from the landing shot itself, so it no longer jumps between two takes.
+ mimi:{video:'./assets/cutin-v1/mimi-cutin-2.mp4',audio:'./assets/cutin-v1/mimi-cutin-2.mp3',open:2100,ms:9700},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
