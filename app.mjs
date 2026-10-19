@@ -250,7 +250,7 @@ $('cinema-skip').onclick=finishWinCinema;
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){if(tableView.ready){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 
@@ -301,8 +301,10 @@ function openTitle(){
  // Decode the theme while the title waits (silent context), so it starts the instant the player taps.
  if(sound.enabled){sound.prepare();music.load('title');}else music.prefetch('title');
  // A fresh launch (audio still locked) waits for one tap: the theme starts and the logo pops with it.
- // v1.26 · …but not before the theme and the table sounds have loaded (at most 15 s, so a bad connection still gets in).
- const audioWait=sound.enabled&&!titleTapped?Promise.race([Promise.all([music.load('title'),sound.ready()]),new Promise(r=>setTimeout(r,15000))]):null;
+ // v1.26 · …but not before the theme and the table sounds have loaded (at most 10 s, so a bad connection still gets in).
+ // v1.27 · the win clips (自摸 + cut-in, ~11 MB) wait until the title and character select are closed, so they no longer
+ // compete with the theme, the table sounds and the table art while the player is still on the title.
+ const audioWait=sound.enabled&&!titleTapped?Promise.race([Promise.all([music.load('title'),sound.ready()]),new Promise(r=>setTimeout(r,10000))]):null;
  titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',wait:audioWait,
   onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();const t=MUSIC_TRACKS.title;return (await music.whenPlaying('title',1200))?Math.round((t.downbeat-t.startAt)*1000):0;},
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),
