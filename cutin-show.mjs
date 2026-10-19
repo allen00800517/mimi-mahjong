@@ -10,6 +10,9 @@ export const CUTIN_CLIPS=Object.freeze({
  // 珍美: eyes + golden glint, the band opens as the camera pulls back to her ohoho laugh (1.25 s); 8.5 s. v1.17 · the
  // sound fades out where her line ends (a second laugh during the pull-back was cut off mid-way).
  harumi:{video:'./assets/cutin-v1/harumi-cutin.mp4',audio:'./assets/cutin-v1/harumi-cutin-2.mp3',open:1250,ms:8500},
+ // v1.18 · 權藤: glare + golden sparkles and かくごせい, the band opens as the camera pulls back (1.7 s), a short
+ // settled hold, the heavy slam under his ringed palm, white; 6.83 s.
+ gondo:{video:'./assets/cutin-v1/gondo-cutin.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
