@@ -13,6 +13,10 @@ export const CUTIN_CLIPS=Object.freeze({
  // v1.18 · 權藤: glare + golden sparkles and かくごせい, the band opens as the camera pulls back (1.7 s), a short
  // settled hold, the heavy slam under his ringed palm, white; 6.83 s.
  gondo:{video:'./assets/cutin-v1/gondo-cutin.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
+ // v1.19 · 蜜蜜: eyes + いっただきまーす, the band opens as the camera pulls back to her crouch (2.1 s), she blasts out
+ // of the top of the frame, bursts through the clouds, dives down yelling and lands superhero-style (negative-film
+ // impact frame), white; 9.29 s.
+ mimi:{video:'./assets/cutin-v1/mimi-cutin.mp4',audio:'./assets/cutin-v1/mimi-cutin.mp3',open:2100,ms:9290},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
