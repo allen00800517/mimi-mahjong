@@ -13,7 +13,7 @@ export const SELECT_INFO=Object.freeze({
 export const SELECT_ORDER=Object.freeze(['mimi','ichika','harumi','gondo']);
 // Roster for the match: you first, then everyone else (seats are drawn afterwards).
 export function rosterFor(self,order=SELECT_ORDER){if(!order.includes(self))self=order[0];return [self,...order.filter(id=>id!==self)];}
-const sprite=id=>'./assets/cast-v23/'+id+'-chibi.png';
+const sprite=id=>'./assets/cast-v23/'+id+'-chibi.webp';
 export class CharSelect{
  constructor(host){this.host=host;this.el=null;this.choice=SELECT_ORDER[0];this.onConfirm=null;}
  get open(){return !!this.el;}

@@ -26,7 +26,7 @@ import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCapti
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
-import {TitleScreen} from './title-screen.mjs';
+import {TitleScreen,TITLE_ART,titleLang} from './title-screen.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
@@ -42,12 +42,16 @@ new MutationObserver(()=>{const text=$('feedback').textContent.trim();if(!text||
 $('settings-dialog').addEventListener('close',()=>{const text=toast.pending;toast.pending=null;if(text&&performance.now()-toast.pendingAt<2000)showToast(text);});
 $('table-toast').addEventListener('click',e=>{if(!e.target.closest('#table-toast-action'))showToast('');});
 // Practice layouts load in memory from the menu; they never overwrite the saved match.
+// v1.28 · Title first. The table art (~13 MB) and the opponents' motion sheets (~20 MB) used to start downloading at once
+// with the title, so on a phone the title cover, logo, theme and sounds queued behind ~50 MB (blank title, long waits).
+// They now wait for the start gate: opened once the title has its cover, logo, theme and table sounds (at most 8 s).
+let openStartGate;globalThis.mimiStartGate=new Promise(r=>{openStartGate=()=>{if(globalThis.mimiStartGateOpen)return;globalThis.mimiStartGateOpen=true;r();};setTimeout(()=>openStartGate(),8000);});
 const tableView=new PlayableTable($('table-canvas'),$('table-motion-canvas'));
-tableView.onReady=()=>render();tableView.onUnavailable=()=>{clearTimeout(timer);clearEffects();syncCharacters();};$('table-retry').onclick=()=>location.reload();
+tableView.onReady=()=>{globalThis.mimiTableReady=true;render();};tableView.onUnavailable=()=>{clearTimeout(timer);clearEffects();syncCharacters();};$('table-retry').onclick=()=>location.reload();
 const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['莓香','春日莓香'],harumi:['珍美','金田珍美']};
 // The resident table cast uses the approved full-body chibis. Cinematic callers
 // explicitly request 'front', keeping the original-proportion performance assets.
-const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+'.png';
+const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+(variant==='chibi'?'.webp':'.png'); // v1.28 · chibi as WebP (1.1 MB → 0.2 MB)
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
 const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new TsumoShow({sound});const cutinShow=new CutinShow({sound});
@@ -305,6 +309,8 @@ function openTitle(){
  // v1.27 · the win clips (自摸 + cut-in, ~11 MB) wait until the title and character select are closed, so they no longer
  // compete with the theme, the table sounds and the table art while the player is still on the title.
  const audioWait=sound.enabled&&!titleTapped?Promise.race([Promise.all([music.load('title'),sound.ready()]),new Promise(r=>setTimeout(r,10000))]):null;
+ if(!globalThis.mimiStartGateOpen){const art=[TITLE_ART.bg,TITLE_ART.logo[titleLang()]].map(u=>new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=u;}));
+  Promise.all([...art,audioWait]).then(()=>{openStartGate();syncCharacters();});}
  titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',wait:audioWait,
   onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();const t=MUSIC_TRACKS.title;return (await music.whenPlaying('title',1200))?Math.round((t.downbeat-t.startAt)*1000):0;},
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),

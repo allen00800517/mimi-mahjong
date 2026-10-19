@@ -21,14 +21,14 @@ return '<svg viewBox="0 0 48 68" role="img" aria-label="'+tileLabel(t)+'">'+face
 let flowerSkin='character',faceImages=new Map();
 export function setFaceImages(images){for(const url of faceImages.values())URL.revokeObjectURL(url);faceImages=images;}
 export function setFlowerSkin(value){flowerSkin=value==='botanical'?'botanical':'character';return flowerSkin;}
-export function concealedFace(){return '<img class="tile-art tile-back" src="'+(faceImages.get('back')||'./assets/table-v52/back-plain.png')+'" alt="玉綠素面牌背" draggable="false">';}
+export function concealedFace(){return '<img class="tile-art tile-back" src="'+(faceImages.get('back')||'./assets/table-v52/back-plain.webp')+'" alt="玉綠素面牌背" draggable="false">';}
 
 export function tileFace(t,{compact=false}={}){
  const label=tileLabel(t);
  if(compact&&/^[1-8]f$/.test(t))return '<img class="tile-art" src="'+(faceImages.get('compact/'+t)||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(compactFlowerSVG(t)))+'" alt="'+label+'" draggable="false">';
  const src=faceImages.get(t.endsWith('f')?flowerSkin+'/'+t:t);if(src)return '<img class="tile-art" src="'+src+'" alt="'+label+'" draggable="false">';
- if(/^[1-8]f$/.test(t))return '<img class="tile-art flower-art" src="./assets/flower-art/'+flowerSkin+'/'+t+'.png" alt="'+label+'" draggable="false">';
- if(/^(?:[1-9][mps]|[1-7]z)$/.test(t))return '<img class="tile-art" src="./assets/tile-art/'+t+'.png" alt="'+label+'" draggable="false">';
+ if(/^[1-8]f$/.test(t))return '<img class="tile-art flower-art" src="./assets/flower-art/'+flowerSkin+'/'+t+'.webp" alt="'+label+'" draggable="false">';
+ if(/^(?:[1-9][mps]|[1-7]z)$/.test(t))return '<img class="tile-art" src="./assets/tile-art/'+t+'.webp" alt="'+label+'" draggable="false">';
  const legacy=legacyTileFace(t),inner=legacy.slice(legacy.indexOf('>')+1,legacy.lastIndexOf('</svg>'));
- return '<svg viewBox="0 0 48 68" role="img" aria-label="'+label+'"><image href="./assets/tile-art/tile-body.png" x="0" y="0" width="48" height="68"/><g transform="translate(2.5 3) scale(.895 .895)">'+inner+'</g></svg>';
+ return '<svg viewBox="0 0 48 68" role="img" aria-label="'+label+'"><image href="./assets/tile-art/tile-body.webp" x="0" y="0" width="48" height="68"/><g transform="translate(2.5 3) scale(.895 .895)">'+inner+'</g></svg>';
 }

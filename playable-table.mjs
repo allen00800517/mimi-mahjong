@@ -16,7 +16,8 @@ export class PlayableTable{
    surface.addEventListener("webglcontextlost",e=>{e.preventDefault();this.lostSurfaces.add(surface);this.resources.invalidate();this.ready=false;document.getElementById("table").classList.remove("table-3d-ready");document.getElementById("table-loading").hidden=false;document.getElementById("table-loading-text").textContent="正在恢復牌桌…";this.onUnavailable?.();});
    surface.addEventListener("webglcontextrestored",()=>{this.lostSurfaces.delete(surface);if(!this.lostSurfaces.size)this.loading=this.start();});
   }
-  this.loading=this.start();
+  // v1.28 · wait for the title to load first (app.mjs start gate); without a gate (labs, tests) start at once.
+  this.loading=(globalThis.mimiStartGate||Promise.resolve()).then(()=>this.start());
  }
  async start(){
   const generation=this.resources.begin();this.ready=false;this.onUnavailable?.();

@@ -1,7 +1,7 @@
 
 /* 已選 v0.5 構圖的可玩整合：完整人物、無椅、獨立河區、固定操作帶。 */
 :root{--tile-w:min(64px,calc((100vw - 190px)/17));--tile-h:calc(var(--tile-w)*1.375);--river-w:26px;--river-h:calc(var(--river-w)*1.375);--flowers-w:22px;--header-h:44px;--controls-h:58px}
-#game-shell{position:relative;isolation:isolate;grid-template-rows:var(--header-h) 1fr;background:#302116 url("./assets/room.png") center/cover}
+#game-shell{position:relative;isolation:isolate;grid-template-rows:var(--header-h) 1fr;background:#302116 url("./assets/room.webp") center/cover}
 .scene-shade{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,#180f080b,#150e0933 48%,#0f1c169c)}
 header{position:relative;background:linear-gradient(180deg,#140e0866,transparent);border:0;box-shadow:none;padding:0 14px}
 #round-label{position:absolute;left:50%;transform:translateX(-50%);font-size:12px;text-shadow:0 1px 3px #000}

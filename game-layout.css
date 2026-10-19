@@ -1,6 +1,6 @@
 /* One 854 × 394 stage. Only the outer stage scales, uniformly. */
 html,body{width:100%;height:100%;overflow:clip;background:#201810}
-#game-shell{position:fixed;left:50%;top:50%;width:854px;height:394px;display:block;padding:0;transform:translate(-50%,-50%) scale(var(--stage-scale,1));transform-origin:center;background:#201810 url('./assets/room.png') center 46%/cover;overflow:hidden}
+#game-shell{position:fixed;left:50%;top:50%;width:854px;height:394px;display:block;padding:0;transform:translate(-50%,-50%) scale(var(--stage-scale,1));transform-origin:center;background:#201810 url('./assets/room.webp') center 46%/cover;overflow:hidden}
 #game-shell header{position:absolute;inset:0 0 auto;height:36px;display:flex;align-items:center;gap:12px;padding:0 10px;background:none;border:0;box-shadow:none;z-index:10}
 #round-label{font-size:11px;position:static;white-space:nowrap;color:#fff0d7;text-shadow:0 1px 2px #000}
 #header-count{font-size:11px;margin-left:auto;white-space:nowrap;text-shadow:0 1px 2px #000}

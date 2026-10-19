@@ -59,6 +59,6 @@ const number=n=>Number(n.toFixed(3));
 export function standingMarkup(layout){
  const {rect,face,top,side,standing,faceId}=layout,local=p=>[p[0]-rect.x,p[1]-rect.y],pts=ps=>ps.map(p=>local(p).map(number).join(',')).join(' '),f=face.map(local);
  const matrix=[f[1][0]-f[0][0],f[1][1]-f[0][1],f[3][0]-f[0][0],f[3][1]-f[0][1],...f[0]].map(number).join(' ');
- const art=!faceId?'./assets/table-v52/back-plain.png':faceId.includes('/')?'./assets/table-v37/'+faceId+'.png':'./assets/table-v34/glyphs/'+faceId+'.png';
+ const art=!faceId?'./assets/table-v52/back-plain.webp':faceId.includes('/')?'./assets/table-v37/'+faceId+'.webp':'./assets/table-v34/glyphs/'+faceId+'.webp';
  return '<svg class="standing-display" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+number(rect.width)+' '+number(rect.height)+'" aria-hidden="true">'+(top.length?'<polygon points="'+pts(top)+'" fill="#f6edce" stroke="#d4d0af" stroke-width=".45" stroke-linejoin="round"/>':'')+'<polygon points="'+pts(side)+'" fill="#d7ccb0" stroke="#9e9d84" stroke-width=".45" stroke-linejoin="round"/><polygon points="'+pts(face)+'" fill="'+(!faceId?'#006b40':'#fff5d9')+'"/><image href="'+art+'" width="1" height="1" preserveAspectRatio="none" transform="matrix('+matrix+')"/><polygon points="'+pts(face)+'" fill="none" stroke="'+(!faceId?'#003e29':'#c9bb96')+'" stroke-width=".5" stroke-linejoin="round"/></svg>';
 }

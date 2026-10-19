@@ -16,6 +16,8 @@ export class CharacterActors{
   this.loading=Promise.allSettled(pending).then(()=>{if(this.disabled)return;this.ready=this.assets.size>0;this.reconcile();this.schedule();this.audit();});
  }
  ensureMotion(id){
+  // v1.28 · opponents' motion sheets (~20 MB) load after the title and after the table art, so the table is ready first.
+  if(globalThis.mimiStartGate&&!(globalThis.mimiStartGateOpen&&globalThis.mimiTableReady))return;
   if(this.disabled||!CHARACTER_MEDIA[id]?.motion||this.pending.has(id)||this.assets.has(id)||this.failed.has(id))return;
   // The local player's body is not displayed: load only visible opponents' atlases.
   const pending=loadCharacterClips(id).then(assets=>{this.pending.delete(id);if(this.disabled)return;if(!this.wanted.has(id)){releaseImages(assets);return;}this.assets.set(id,assets);this.ready=true;this.reconcile();this.schedule();this.audit();}).catch(()=>{this.pending.delete(id);this.failed.add(id);});
