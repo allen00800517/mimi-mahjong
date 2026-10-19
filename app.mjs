@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,yakuWords,yakuUrl} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen} from './title-screen.mjs';
@@ -129,20 +129,29 @@ function startWinCinema(){
  winPresentation={revision:game.revision,winner:r.winner};clearTimeout(timer);clearEffects();
  // v1.00 · 自摸 with a clip: rise, glide left, stamp at the clip's moment, hand off to the settlement portrait.
  const id=PORTRAITS[r.winner],anim=r.method==='tsumo'&&tsumoShow.canPlay(id);
- const stage=buildWinStamp(r,anim);
+ const stage=buildWinStamp(r,anim),yaku=stage.classList.contains('has-yaku');let stampedAt=null;
+ // v1.06 · with pattern words the moment lasts until the words have been on screen for YAKU_SHOW.hold.
+ const yakuWait=()=>yaku&&stampedAt!==null?Math.max(150,stampedAt+YAKU_SHOW.after+YAKU_SHOW.hold-performance.now()):150;
  $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;
  $('cinema-skip').focus();syncSettlement();
  if(anim&&tsumoShow.start({id,stage,before:stage.querySelector('.wc-stamp'),
-  onStamp:()=>{stage.classList.add('stamped');sound.play('stamp');},
-  onEnd:()=>{clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,150);},
-  onFail:()=>{if(!winPresentation)return;buildWinStamp(r,false);sound.play('stamp');clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,3000);}})){
-  cinemaTimer=setTimeout(finishWinCinema,CLIP_MAX_MS+500);return;}
+  onStamp:()=>{stampedAt=performance.now();stage.classList.add('stamped');sound.play('stamp');},
+  onEnd:()=>{clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,yakuWait());},
+  onFail:()=>{if(!winPresentation)return;buildWinStamp(r,false);sound.play('stamp');clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,yaku?WIN_TIMING.yaku:3000);}})){
+  cinemaTimer=setTimeout(finishWinCinema,CLIP_MAX_MS+500+(yaku?YAKU_SHOW.after+YAKU_SHOW.hold:0));return;}
  if(anim)buildWinStamp(r,false);
- cinemaTimer=setTimeout(finishWinCinema,r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
+ cinemaTimer=setTimeout(finishWinCinema,yaku?WIN_TIMING.yaku:r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
 }
 // v1.02 · The brush stamps are fetched once at start-up and kept, so the stamp shows the brush art from its first
 // frame; while an image is still loading the typeset fallback stays hidden (it used to flash 胡 before the art).
 const STAMP_CACHE=[WIN_ART.stamp,WIN_ART.stampTsumo].map(u=>{const i=new Image();i.decoding='async';i.src=u;return i;});
+// v1.06 · pattern words under the stamp (tier 2+). Art is fetched a few seconds after start-up so it is cached by the
+// first big hand; a word without art (or whose art fails) is typeset in the same gold.
+setTimeout(()=>Object.keys(YAKU_ART).forEach(n=>{const i=new Image();i.decoding='async';i.src=yakuUrl(n);STAMP_CACHE.push(i);}),6000);
+function yakuRow(r,anim){
+ const words=yakuWords(r,{anim});if(!words.length)return '';
+ return '<div class="wc-yaku">'+words.map(w=>'<span class="wc-yw'+(w.url?' art':'')+'" style="height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+w.height+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
+}
 function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special');c.classList.toggle('tsumo',tsumo);c.dataset.tier=winGrade(r)?.tier??1;
@@ -151,7 +160,9 @@ function buildWinStamp(r,anim=false){
  if(!tsumo){const payer=r.payments?.find(p=>p.to===r.winner)?.from,el=payer!==undefined?$('river-'+payer)?.lastElementChild:null;
   if(el&&el.style.display!=='none'){const sr=rectOf($('game-shell')),b=rectOf(el),k=sr.width/854||1;glow='<div class="wc-glow" style="left:'+((b.left+b.width/2-sr.left)/k).toFixed(1)+'px;top:'+((b.top+b.height/2-sr.top)/k).toFixed(1)+'px"></div>';}}
  // v0.98 · No portrait here: it only flashed for a moment and the settlement shows the same picture right after.
- stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile&&!anim?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div><div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
+ stage.innerHTML='<div class="wc-dim"></div>'+glow+(tsumo&&r.tile&&!anim?'<div class="wc-tile">'+tileFace(r.tile)+'</div>':'')+'<div class="wc-stamp"><img alt="" draggable="false"><span>'+word+'</span></div>'+yakuRow(r,anim)+'<div class="wc-caption">'+escape(winCaption(r,NAMES))+'</div>';
+ if(stage.querySelector('.wc-yaku'))stage.classList.add('has-yaku');
+ stage.querySelectorAll('.wc-yw img').forEach(im=>{im.onerror=()=>{im.parentNode.classList.remove('art');im.remove();};});
  const st=stage.querySelector('.wc-stamp img'),art=word==='胡'?WIN_ART.stamp:word==='自摸'?WIN_ART.stampTsumo:null;if(!art)st.remove();else{const box=stage.querySelector('.wc-stamp');box.classList.toggle('wide',word==='自摸');box.classList.add('loading');const ready=()=>{box.classList.remove('loading');box.classList.add('art');};st.onload=ready;st.onerror=()=>{box.classList.remove('loading');st.remove();};st.src=art;if(st.complete&&st.naturalWidth)ready();}
  c.prepend(stage);return stage;
 }

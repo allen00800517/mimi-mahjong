@@ -2,7 +2,7 @@
 // the total tai (many small tai can add up without the hand being special). Higher tiers reuse this skeleton.
 // Art (generated, keyed): assets/win-v1/<id>-hu.webp portraits, brush-hu.png, seal-frame.png. Until a file exists the
 // presentation falls back to the existing half-body portrait and a typeset character, so nothing ever shows blank.
-export const WIN_TIMING=Object.freeze({ron:1500,tsumo:2000,rowGap:260,rowFirst:350,sealAfter:220});
+export const WIN_TIMING=Object.freeze({ron:1500,tsumo:2000,yaku:3000,rowGap:260,rowFirst:350,sealAfter:220});
 export const WIN_COLORS=Object.freeze({mimi:'#e0566f',ichika:'#c8323a',harumi:'#7b3fb0',gondo:'#b8892e'});
 export const WIN_ART=Object.freeze({portrait:id=>'./assets/win-v1/'+id+'-hu.webp',burst:id=>'./assets/win-v1/'+id+'-tsumo.webp',stamp:'./assets/win-v1/brush-hu.png',stampTsumo:'./assets/win-v1/brush-tsumo.webp',seal:'./assets/win-v1/seal-frame.png'});
 
@@ -22,6 +22,25 @@ export function winGrade(result){
  const patterns=names.filter(n=>TIER2.includes(n)||TIER3.includes(n)||TIER4.includes(n)).map(n=>SHOWN[n]||n);
  if(result.method==='flower')patterns.unshift(result.flower?.kind==='eight'?'八仙過海':'七搶一');
  return {tier,tsumo,patterns};
+}
+// v1.06 · Pattern words (tier 2 brush calligraphy, gold like 自摸). About 0.6 s after the stamp lands, the stamp shrinks
+// up and the pattern words land under it. Temporary until the big-hand effects exist; a pattern without art yet is
+// typeset instead, so nothing is ever blank. ratio = width/height of the keyed art (height 200).
+export const YAKU_ART=Object.freeze({
+ 碰碰胡:{file:'pengpeng',ratio:2.41},混一色:{file:'hunyise',ratio:2.35},小三元:{file:'xiaosanyuan',ratio:2.6},
+ 四暗刻:{file:'siankee',ratio:2.33},全求人:{file:'quanqiuren',ratio:2.39},槓上開花:{file:'gangshang',ratio:2.9},
+ 海底撈月:{file:'haidi',ratio:2.675},河底撈魚:{file:'hedi',ratio:2.835},
+});
+export const yakuUrl=name=>YAKU_ART[name]?'./assets/win-v1/yaku/'+YAKU_ART[name].file+'.webp':null;
+export const YAKU_SHOW=Object.freeze({after:600,hold:1800,gap:18,height:[92,78,64],maxWidth:{anim:420,still:600}});
+// Words for the win moment with their stage height: one word big, two side by side, three smaller; the row never
+// grows past maxWidth (so it stays clear of the character on the left during a 自摸 clip).
+export function yakuWords(result,{anim=false}={}){
+ const names=winGrade(result)?.patterns??[];if(!names.length)return [];
+ const list=names.slice(0,3).map(name=>({name,url:yakuUrl(name),ratio:YAKU_ART[name]?.ratio??name.length*.95}));
+ const max=anim?YAKU_SHOW.maxWidth.anim:YAKU_SHOW.maxWidth.still,gaps=YAKU_SHOW.gap*(list.length-1);
+ const h=Math.min(YAKU_SHOW.height[list.length-1],(max-gaps)/list.reduce((a,w)=>a+w.ratio,0));
+ return list.map(w=>({...w,height:Math.floor(h)}));
 }
 export function stampWord(result){return result.method==='tsumo'?'自摸':result.method==='flower'?'花胡':'胡';}
 export function winCaption(result,names){
