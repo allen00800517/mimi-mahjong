@@ -30,7 +30,10 @@ export const YAKU_ART=Object.freeze({
  四暗刻:{file:'siankee',ratio:2.33},全求人:{file:'quanqiuren',ratio:2.39},槓上開花:{file:'gangshang',ratio:2.9},
  海底撈月:{file:'haidi',ratio:2.675},河底撈魚:{file:'hedi',ratio:2.835},搶槓:{file:'qianggang',ratio:1.865},
 });
-export const yakuUrl=name=>YAKU_ART[name]?'./assets/win-v1/yaku/'+YAKU_ART[name].file+'.webp':null;
+// v1.11 · the shadow and glow are baked into the art (yaku2/, PAD of the glyph height added on every side): a CSS
+// drop-shadow on an animated word was sometimes clipped to a visible rectangle on iPhone.
+export const YAKU_PAD=36/200;
+export const yakuUrl=name=>YAKU_ART[name]?'./assets/win-v1/yaku2/'+YAKU_ART[name].file+'.webp':null;
 // v1.08 · The 胡／自摸 stamp always comes first; once it has been seen it flies off and the pattern words take the
 // whole stage, stamped one at a time (each with its own thud), smallest first so the biggest pattern lands last.
 // Words stack in a column; times are ms from the moment the 胡／自摸 stamp lands.

@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,yakuWords,yakuUrl,yakuSpan} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen} from './title-screen.mjs';
@@ -179,7 +179,7 @@ function yakuBeats(stage,offset){
 }
 function yakuRow(r,anim){
  const words=yakuWords(r,{anim});if(!words.length)return '';
- return '<div class="wc-yaku">'+words.map((w,i)=>'<span class="wc-yw'+(w.url?' art':'')+(w.last?' last':'')+'" data-delay="'+w.delay+'" style="--d:'+w.delay+'ms;--r:'+(i%2?2.5:-4)+'deg;height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+w.height+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
+ return '<div class="wc-yaku">'+words.map((w,i)=>'<span class="wc-yw'+(w.url?' art':'')+(w.last?' last':'')+'" data-delay="'+w.delay+'" style="--d:'+w.delay+'ms;--r:'+(i%2?2.5:-4)+'deg;height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+(w.height*(1+2*YAKU_PAD)).toFixed(1)+'px;margin:'+(-w.height*YAKU_PAD).toFixed(1)+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
 }
 function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);

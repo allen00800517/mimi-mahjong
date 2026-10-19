@@ -408,12 +408,12 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-yw{display:block;position:relative;line-height:1;opacity:0;rotate:var(--r);animation:wc-yaku .38s calc(var(--d) + var(--wc-off)) cubic-bezier(.5,0,.6,1.4) both}
 #win-cinema .wc-yw.last{animation-name:wc-yaku-last;animation-duration:.42s}
 #win-cinema .wc-stage.anim:not(.stamped) .wc-yw{animation:none}
-#win-cinema .wc-yw img{display:block;width:auto;filter:drop-shadow(4px 5px 0 #5a3a0a) drop-shadow(0 0 16px rgba(255,214,110,.75))}
+#win-cinema .wc-yw img{display:block;width:auto;max-width:none}
 #win-cinema .wc-yw b{display:block;font-weight:900;white-space:nowrap;letter-spacing:-.04em;color:#fff6d6;text-shadow:0 0 2px #2a1206,4px 5px 0 #7a5410,0 0 24px rgba(255,214,110,.9)}
 #win-cinema .wc-yw.art b{display:none}
 #win-cinema .wc-stage.has-yaku .wc-caption{z-index:1}
 #win-cinema .wc-stage.has-yaku:not(.anim) .wc-tile{animation:wc-tile .45s .15s cubic-bezier(.3,1.4,.5,1) both,wc-out .25s 1.2s forwards}
-@keyframes wc-away{to{scale:1.35;opacity:0;filter:blur(3px)}}
+@keyframes wc-away{to{scale:1.35;opacity:0}}
 @keyframes wc-yaku{0%{scale:2.3;opacity:0}70%{scale:.94;opacity:1}100%{scale:1;opacity:1}}
-@keyframes wc-yaku-last{0%{scale:3;opacity:0;filter:brightness(2.2)}65%{scale:.9;opacity:1;filter:brightness(1.6)}100%{scale:1;opacity:1;filter:none}}
+@keyframes wc-yaku-last{0%{scale:3;opacity:0}65%{scale:.88;opacity:1}100%{scale:1;opacity:1}}
 @keyframes wc-out{to{opacity:0}}
