@@ -7,6 +7,8 @@ import {VOICE_GAIN} from './voice-player.mjs';
 // open = ms into the clip when the band opens to full screen (the camera starts pulling back); ms = clip length.
 export const CUTIN_CLIPS=Object.freeze({
  ichika:{video:'./assets/cutin-v1/ichika-cutin.mp4',audio:'./assets/cutin-v1/ichika-cutin.mp3',open:1750,ms:6040},
+ // 珍美: eyes + golden glint, the band opens as the camera pulls back to her ohoho laugh (1.25 s); 8.5 s.
+ harumi:{video:'./assets/cutin-v1/harumi-cutin.mp4',audio:'./assets/cutin-v1/harumi-cutin.mp3',open:1250,ms:8500},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
