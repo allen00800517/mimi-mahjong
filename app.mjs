@@ -24,6 +24,7 @@ import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
 import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
+import {CutinShow} from './cutin-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen} from './title-screen.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
@@ -49,7 +50,7 @@ const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['�
 const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+'.png';
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
 function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
-const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new TsumoShow({sound});
+const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new TsumoShow({sound});const cutinShow=new CutinShow({sound});
 // v0.96 · add ?mem=1 to the address to see how much character art is decoded (for testing on a phone).
 if(/[?&]mem=1/.test(location.search)){const box=document.createElement('div');box.id='mem-debug';box.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.append(box);let peak=0;setInterval(()=>{try{const a=JSON.parse(document.getElementById('table').dataset.characterAudit||'{}'),m=a.memory||[],total=m.reduce((n,x)=>n+(x.mb||0),0);peak=Math.max(peak,total);box.textContent='角色圖 '+total.toFixed(0)+'MB（最高 '+peak.toFixed(0)+'）\n'+m.map(x=>x.id+' '+(x.mb||0)+'MB 等待'+(x.misses||0)).join('\n');}catch{}},1000);}
 const characterActors=new CharacterActors(sound);
@@ -120,7 +121,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.08 · a 牌型演出預覽 returns to the menu, on the preview button, so the next sample is one tap away.
  if(preview&&!portrait()){$('settings-toggle').click();$('yaku-preview').focus();return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -131,11 +132,19 @@ function startWinCinema(r=game.result,preview=false){
  if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return false;
  winPresentation={revision:game.revision,winner:r.winner,preview};clearTimeout(timer);clearEffects();
  // v1.12 · tier 2+: the cut-in comes first (eyes + line), then the 胡／自摸 stamp and the pattern words; no 自摸 clip.
- const ci=cutinFor(r);
- if(ci&&showCutin(PORTRAITS[r.winner],ci.shape)){
+ // v1.13 · a character with a cut-in clip plays it (band opening to full screen, ending on a white flash); the
+ // others keep the still placeholder. Either way the stamp and the pattern words follow.
+ const ci=cutinFor(r),cid=PORTRAITS[r.winner],clip=!!ci&&cutinShow.canPlay(cid);
+ if(ci&&showCutin(cid,ci.shape,clip)){
   $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;$('cinema-skip').focus();syncSettlement();
-  cinemaTimer=setTimeout(()=>{if(!winPresentation)return;sound.play('win',{method:r.method});const still=buildWinStamp(r,false),sp=yakuSpan(yakuWords(r));yakuBeats(still,STILL_LAND);
-   cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:WIN_TIMING.ron);},CUTIN_TIMING.ms);
+  let went=false;
+  const toStamp=white=>{if(went||!winPresentation)return;went=true;cutinShow.stop();clearTimeout(cinemaTimer);sound.play('win',{method:r.method});
+   const still=buildWinStamp(r,false),sp=yakuSpan(yakuWords(r));if(white)still.insertAdjacentHTML('beforeend','<div class="wc-white"></div>');yakuBeats(still,STILL_LAND);
+   cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:WIN_TIMING.ron);};
+  const placeholder=()=>{showCutin(cid,ci.shape,false);clearTimeout(cinemaTimer);cinemaTimer=setTimeout(()=>toStamp(false),CUTIN_TIMING.ms);};
+  if(clip&&cutinShow.start({id:cid,stage:$('win-cinema').querySelector('.wc-stage'),onEnd:()=>toStamp(true),onFail:()=>{if(winPresentation){sound.play('cutin');placeholder();}}}))
+   cinemaTimer=setTimeout(()=>toStamp(true),cutinShow.clip(cid).ms+2000);
+  else cinemaTimer=setTimeout(()=>toStamp(false),CUTIN_TIMING.ms);
   return true;}
  // v1.00 · 自摸 with a clip: rise, glide left, stamp at the clip's moment, hand off to the settlement portrait.
  const id=PORTRAITS[r.winner],anim=r.method==='tsumo'&&tsumoShow.canPlay(id);
@@ -153,15 +162,17 @@ function startWinCinema(r=game.result,preview=false){
  cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);return true;
 }
 function playWinSound(r){
- if(cutinFor(r)&&!reduced()){sound.play('cutin');return;}
+ // a cut-in clip carries its own sound; the placeholder cut-in gets the swoosh
+ if(cutinFor(r)&&!reduced()){if(!cutinShow.canPlay(PORTRAITS[r.winner]))sound.play('cutin');return;}
  sound.play('win',{method:r.method,anim:r.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[r.winner])});
 }
 // The cut-in stage: dimmed table with speed lines, the shape (band or wedge) slides in with the face slowly pushing
 // in and a glint in the eye, then slides out. buildWinStamp replaces it when the stamp comes.
-function showCutin(id,shape){
- const crop=cutinCrop(id,shape);if(!crop)return false;
+function showCutin(id,shape,clip=false){
+ const crop=cutinCrop(id,shape);if(!crop&&!clip)return false;
  const c=$('win-cinema');c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');
  const st=document.createElement('div');st.className='wc-stage wc-ci ci-'+shape;
+ if(clip){st.innerHTML='<div class="ci-dim"></div>';c.prepend(st);return true;} // cutinShow.start fills it
  const px=n=>n.toFixed(1)+'px';
  st.innerHTML='<div class="ci-dim"></div><div class="ci-slide"><div class="ci-edge"></div><div class="ci-frame"><div class="ci-face" style="background-image:url('+crop.url+');background-size:'+px(crop.size[0])+' '+px(crop.size[1])+';background-position:'+px(crop.pos[0])+' '+px(crop.pos[1])+';transform-origin:'+px(crop.at[0])+' '+px(crop.at[1])+'"></div></div><div class="ci-glint" style="left:'+px(crop.glint[0])+';top:'+px(crop.glint[1])+'"></div></div>';
  c.prepend(st);return true;
@@ -177,7 +188,9 @@ const YAKU_PREVIEWS=[
 ];let yakuPreviewIndex=0;
 function previewYaku(){
  if(winPresentation||portrait())return;const p=YAKU_PREVIEWS[yakuPreviewIndex++%YAKU_PREVIEWS.length];
- const r={kind:'win',winner:0,method:p.method,tile:null,payments:[],score:{rows:p.rows.map(([name,tai])=>({name,tai}))}};
+ // the sample is played by a character who has a cut-in clip, when one is at the table
+ const seat=Math.max(0,PORTRAITS.findIndex(id=>cutinShow.canPlay(id)));
+ const r={kind:'win',winner:seat,method:p.method,tile:null,payments:[],score:{rows:p.rows.map(([name,tai])=>({name,tai}))}};
  $('settings-dialog').close();playWinSound(r);
  if(!startWinCinema(r,true))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
 }
@@ -223,7 +236,7 @@ $('cinema-skip').onclick=finishWinCinema;
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){if(tableView.ready)tsumoShow.preload(PORTRAITS);try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready)tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 
@@ -289,7 +302,7 @@ $('settings-toggle').addEventListener('click',()=>{let d=document.getElementById
 const recovery=sessionStore.recovery();if(recovery!==null){const button=document.createElement('button');button.textContent='下載保留的原始紀錄';button.onclick=()=>saveRecovery();$('feedback').before(button);showToast($('feedback').textContent||'保留了一份無法讀取的原始紀錄。',{action:{label:'保存原始紀錄',run:saveRecovery},persist:true});}
 async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始紀錄.json',recovery);$('feedback').textContent=fileMessage(status,'已存出保留的原始紀錄。');}
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
-function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
+function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
 function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
 function player(s,id){
@@ -528,7 +541,7 @@ function renderMatchSummary(){
 }
 // v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
 function startDice(){
- pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);tsumoShow.preload(PORTRAITS);
+ pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);
  const still=reduced();
  if(!still)dealShow.prepare(game,game.dealer);else dealShow.finish({silent:true});
  diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:still,
