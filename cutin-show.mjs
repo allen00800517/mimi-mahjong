@@ -18,8 +18,9 @@ export const CUTIN_CLIPS=Object.freeze({
  // impact frame), white; 9.7 s. v1.20 · no sped-up sound anywhere (her yell plays at its own speed) and the negative
  // flash is made from the landing shot itself, so it no longer jumps between two takes. v1.21 · the dive's sound runs
  // on unbroken through the negative flash (only the picture changes); the impact boom is layered under it. v1.22 · the
- // stray "hey" at the peak of the leap is muted (a silent beat before the dive).
- mimi:{video:'./assets/cutin-v1/mimi-cutin-4.mp4',audio:'./assets/cutin-v1/mimi-cutin-4.mp3',open:2100,ms:9540},
+ // stray "hey" at the peak of the leap is muted (a silent beat before the dive). v1.23 · final cut (the user's join): the
+ // dive cuts away just before touchdown to the take whose landing, negative flash and burst all run on in one piece; 9.79 s.
+ mimi:{video:'./assets/cutin-v1/mimi-cutin-5.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
