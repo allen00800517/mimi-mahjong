@@ -49,7 +49,7 @@ const icon=on=>'<img src="./assets/icons/'+(on?'volume-2':'volume-x')+'.svg" alt
 export class TitleScreen{
  constructor(host,{version=''}={}){this.host=host;this.version=version;this.el=null;this.onResize=()=>requestAnimationFrame(()=>this.layout());}
  get open(){return !!this.el;}
- show({canContinue=false,soundOn=false,lang=titleLang(),tapFirst=false,onTap,onStart,onContinue,onNew,onSound,onPop}={}){
+ show({canContinue=false,soundOn=false,lang=titleLang(),tapFirst=false,wait=null,onTap,onStart,onContinue,onNew,onSound,onPop}={}){
   this.close();
   const el=document.createElement('section');el.id='title-screen';el.setAttribute('aria-label','標題畫面');
   el.innerHTML='<div class="ts-box"><img class="ts-blur" alt="" draggable="false" src="'+TITLE_ART.bg+'"><div class="ts-frame">'+
@@ -71,8 +71,12 @@ export class TitleScreen{
   // and the logo pops with it (user's idea; it also turns the iPhone audio rule into part of the show).
   // The prompt appears only once the cover is on screen, never over an empty background.
   {const bg=el.querySelector('.ts-bg'),show=()=>el.classList.add('ready');if(bg.complete&&bg.naturalWidth)show();else{bg.addEventListener('load',show,{once:true});setTimeout(show,5000);}}
+  // v1.26 · The tap that starts the game also starts the theme, so it waits until the music and the table sounds have
+  // loaded (wait, capped by the caller): until then the prompt reads 準備音效中… and taps are ignored.
+  if(tapFirst&&wait){const tap=el.querySelector('.ts-tap');el.classList.add('loading');tap.textContent='準備音效中…';
+   Promise.resolve(wait).catch(()=>{}).then(()=>{if(this.el!==el)return;el.classList.remove('loading');tap.textContent='點一下畫面開始';});}
   if(tapFirst){el.classList.add('await-tap');const box=el.querySelector('.ts-box');
-   const go=()=>{if(!el.classList.contains('await-tap'))return;el.classList.remove('await-tap');removeEventListener('keydown',key);
+   const go=()=>{if(!el.classList.contains('await-tap')||el.classList.contains('loading'))return;el.classList.remove('await-tap');removeEventListener('keydown',key);
     // onTap resolves to how long until the music's downbeat (ms), so the logo pops on the hit.
     const gate=Promise.race([Promise.resolve(onTap?.()).catch(()=>0),new Promise(r=>setTimeout(()=>r(0),POP.musicWait))]);this.pop(onPop,gate);};
    const key=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};

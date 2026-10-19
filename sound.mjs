@@ -35,9 +35,13 @@ export class TableSound{
  loadSamples(){
   if(!this.sampleBase||!this.context||this.samples)return;const ctx=this.context;this.samples=new Map();
   this.bus=ctx.createGain();this.bus.gain.value=SFX_VOLUME;this.bus.connect(ctx.destination);
+  const all=[];
   for(const [kind,{files}] of Object.entries(SFX))for(let i=1;i<=files;i++)
-   this.fetcher(this.sampleBase+kind+'-'+i+'.mp3').then(r=>{if(!r.ok)throw Error(kind);return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b)).then(buf=>{if(this.context!==ctx)return;const list=this.samples.get(kind)||[];list.push(buf);this.samples.set(kind,list);}).catch(()=>{});
+   all.push(this.fetcher(this.sampleBase+kind+'-'+i+'.mp3').then(r=>{if(!r.ok)throw Error(kind);return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b)).then(buf=>{if(this.context!==ctx)return;const list=this.samples.get(kind)||[];list.push(buf);this.samples.set(kind,list);}).catch(()=>{}));
+  this.samplesReady=Promise.all(all);
  }
+ // v1.26 · Resolves once every recorded sound has loaded (or failed), so the title can hold the first tap until then.
+ ready(){return this.samplesReady||Promise.resolve();}
  sample(kind,delay=0){
   const list=this.samples?.get(kind),ctx=this.context;if(!list?.length||!ctx)return false;
   let i=Math.floor(Math.random()*list.length);if(list.length>1&&i===this.lastIndex?.[kind])i=(i+1)%list.length;(this.lastIndex??={})[kind]=i;

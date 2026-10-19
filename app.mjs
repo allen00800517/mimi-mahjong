@@ -301,7 +301,9 @@ function openTitle(){
  // Decode the theme while the title waits (silent context), so it starts the instant the player taps.
  if(sound.enabled){sound.prepare();music.load('title');}else music.prefetch('title');
  // A fresh launch (audio still locked) waits for one tap: the theme starts and the logo pops with it.
- titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',
+ // v1.26 · …but not before the theme and the table sounds have loaded (at most 15 s, so a bad connection still gets in).
+ const audioWait=sound.enabled&&!titleTapped?Promise.race([Promise.all([music.load('title'),sound.ready()]),new Promise(r=>setTimeout(r,15000))]):null;
+ titleScreen.show({canContinue:!firstLaunch,soundOn:sound.enabled,tapFirst:!titleTapped&&sound.state!=='running',wait:audioWait,
   onTap:async()=>{titleTapped=true;if(!sound.enabled)return;await sound.unlock();syncSound();characterActors.prepareVoices?.();const t=MUSIC_TRACKS.title;return (await music.whenPlaying('title',1200))?Math.round((t.downbeat-t.startAt)*1000):0;},
   onStart:()=>openCharSelect({onDone:()=>{newMatch(freshSeed());firstLaunch=false;saveLocal();},onCancel:openTitle}),
   onContinue:()=>render(),
