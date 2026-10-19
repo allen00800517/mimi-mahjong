@@ -24,7 +24,7 @@ import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
 import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
-import {CutinShow} from './cutin-show.mjs';
+import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen} from './title-screen.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
@@ -122,8 +122,8 @@ $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
  if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
- // v1.08 · a 牌型演出預覽 returns to the menu, on the preview button, so the next sample is one tap away.
- if(preview&&!portrait()){$('settings-toggle').click();$('yaku-preview').focus();return;}
+ // v1.14 · a show played from the character menu returns to it, on the same character and button.
+ if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
 }
 // v0.97 · tier-1 win moment: table dims, the winning tile lights up, the winner's portrait slides in on a colour band
@@ -177,22 +177,36 @@ function showCutin(id,shape,clip=false){
  st.innerHTML='<div class="ci-dim"></div><div class="ci-slide"><div class="ci-edge"></div><div class="ci-frame"><div class="ci-face" style="background-image:url('+crop.url+');background-size:'+px(crop.size[0])+' '+px(crop.size[1])+';background-position:'+px(crop.pos[0])+' '+px(crop.pos[1])+';transform-origin:'+px(crop.at[0])+' '+px(crop.at[1])+'"></div></div><div class="ci-glint" style="left:'+px(crop.glint[0])+';top:'+px(crop.glint[1])+'"></div></div>';
  c.prepend(st);return true;
 }
-// v1.08 · 牌型演出預覽 (menu → 練習牌例): plays the win moment with sample patterns for the player's own character, so the
-// show can be checked without waiting for a real big hand. Nothing in the game changes; each press shows the next sample.
-const YAKU_PREVIEWS=[
- {method:'tsumo',rows:[['混一色',4]]},
- {method:'tsumo',rows:[['碰碰胡',4],['混一色',4]]},
- {method:'ron',rows:[['河底撈魚',1],['混一色',4]]},
- {method:'tsumo',rows:[['槓上開花',1],['碰碰胡',4],['四暗刻',5]]},
- {method:'tsumo',rows:[['碰碰胡',4],['清一色',8]]},
-];let yakuPreviewIndex=0;
-function previewYaku(){
- if(winPresentation||portrait())return;const p=YAKU_PREVIEWS[yakuPreviewIndex++%YAKU_PREVIEWS.length];
- // the sample is played by a character who has a cut-in clip, when one is at the table
- const seat=Math.max(0,PORTRAITS.findIndex(id=>cutinShow.canPlay(id)));
- const r={kind:'win',winner:seat,method:p.method,tile:null,payments:[],score:{rows:p.rows.map(([name,tai])=>({name,tai}))}};
- $('settings-dialog').close();playWinSound(r);
- if(!startWinCinema(r,true))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
+// v1.14 · 角色演出 menu (the ☺ button): one place to see every character's win shows — pick a character, then a
+// show. Each sample is played by that character's seat, nothing in the game changes, and the menu comes back after.
+// New shows (big-hand illustrations, more clips) are added to ACTOR_SHOWS as they are made.
+const ACTOR_SHOWS=[
+ {group:'胡牌',items:[
+  {key:'ron',label:'放槍胡',method:'ron',rows:[['門清',1]]},
+  {key:'tsumo',label:'自摸',method:'tsumo',rows:[['門清自摸',3]],art:id=>WIN_ANIM[id]?'動畫':'靜態'}]},
+ {group:'牌型（第 2 級）',items:[
+  {key:'y1',label:'混一色',method:'tsumo',rows:[['混一色',4]]},
+  {key:'y2',label:'碰碰胡＋混一色',method:'ron',rows:[['碰碰胡',4],['混一色',4]]},
+  {key:'y3',label:'三個牌型',method:'tsumo',rows:[['槓上開花',1],['碰碰胡',4],['四暗刻',5]]}],art:id=>CUTIN_CLIPS[id]?'cut-in 動畫':'cut-in 暫代'},
+ {group:'大牌（第 3、4 級）',items:[
+  {key:'t3',label:'清一色＋碰碰胡',method:'tsumo',rows:[['碰碰胡',4],['清一色',8]]}],art:id=>CUTIN_CLIPS[id]?'cut-in 動畫 · 大圖未做':'暫代 · 大圖未做'},
+];
+let actorSel=null;
+function openActorMenu(id=PORTRAITS[0],focusKey=null){
+ if(portrait()||winPresentation)return;actorSel=PORTRAITS.includes(id)?id:PORTRAITS[0];
+ const seat=PORTRAITS.indexOf(actorSel);
+ $('actor-tabs').innerHTML=PORTRAITS.map((pid,s)=>'<button role="tab" data-actor="'+pid+'" aria-selected="'+(pid===actorSel)+'"><img src="'+characterSprite(s,'chibi')+'" alt=""><span>'+escape(FULL_NAMES[s])+(s===0?'<small>你</small>':'')+'</span></button>').join('');
+ $('actor-own').hidden=seat!==0;
+ $('actor-shows').innerHTML=ACTOR_SHOWS.map(g=>'<section><h3>'+escape(g.group)+'</h3><div>'+g.items.map(it=>{const tag=(it.art||g.art)?.(actorSel);return '<button data-show="'+it.key+'">'+escape(it.label)+(tag?'<small>'+escape(tag)+'</small>':'')+'</button>';}).join('')+'</div></section>').join('');
+ const d=$('sticker-dialog');if(!d.open){clearTimeout(timer);clearEffects();d.showModal();}
+ (focusKey&&d.querySelector('[data-show="'+focusKey+'"]')||d.querySelector('[aria-selected="true"]'))?.focus();
+}
+function playActorShow(key){
+ const it=ACTOR_SHOWS.flatMap(g=>g.items).find(x=>x.key===key);if(!it||winPresentation)return;
+ const seat=PORTRAITS.indexOf(actorSel);if(seat<0)return;
+ const r={kind:'win',winner:seat,method:it.method,tile:null,payments:[],score:{rows:it.rows.map(([name,tai])=>({name,tai}))}};
+ $('sticker-dialog').close();playWinSound(r);
+ if(!startWinCinema(r,{id:actorSel,key}))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
 }
 // v1.02 · The brush stamps are fetched once at start-up and kept, so the stamp shows the brush art from its first
 // frame; while an image is still loading the typeset fallback stays hidden (it used to flash 胡 before the art).
@@ -562,7 +576,7 @@ function openCharSelect({cancellable=true,onDone,onCancel}={}){
 }
 $('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}$('settings-dialog').close();openCharSelect({onDone:()=>startNewMatch(n)});};
 function startNewMatch(n){archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);sound.play('shuffle');clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();render();}
-document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));$('yaku-preview').onclick=previewYaku;
+document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));
 document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=async()=>{const scene=b.dataset.scene;if(!['normal','chi','ready'].includes(scene))return;b.disabled=true;try{const r=await fetch('./fixtures/'+scene+'.json');if(!r.ok)throw Error('練習牌例暫時無法載入');enterPractice(Game.restore(await r.json()));}catch(e){$('feedback').textContent='保留目前進度：'+e.message;}finally{b.disabled=false;}});
 $('resume-match').onclick=resumeMatch;
 $('save').onclick=async()=>{const text=JSON.stringify(createBackup(sessionSnapshot(),archives),null,2),status=await offerFile('蜜蜜麻將-牌局'+game.seed+'-步驟'+game.revision+'.json',text);$('feedback').textContent=fileMessage(status,'已存出目前場次與測試紀錄（含暗牌），可讀取續玩。');};
@@ -608,9 +622,11 @@ function renderPrototypeState(){
  {const side=$('action-band-side'),inBand=!$('action-band').hidden&&!preview.hidden&&!$('action-band').dataset.choice;side.hidden=!inBand;side.innerHTML=inBand?preview.innerHTML:'';if(inBand)preview.hidden=true;}
  document.querySelector('.controls').classList.toggle('waits-only',!preview.hidden&&$('actions').childElementCount===0&&$('play-hint').hidden&&$('computer-resume').hidden);
  $('sticker-image').src=characterSprite(0,'chibi');$('sticker-image').alt=FULL_NAMES[0]+'全身Q版';
- $('sticker-title').textContent=FULL_NAMES[0]+' · 角色貼圖';
+ 
 }
-$('sticker-toggle').onclick=()=>{if(portrait()||winPresentation)return;clearTimeout(timer);clearEffects();$('sticker-dialog').showModal();render();};
+$('sticker-toggle').onclick=()=>openActorMenu(PORTRAITS[0]);
+$('actor-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-actor]');if(b)openActorMenu(b.dataset.actor);});
+$('actor-shows').addEventListener('click',e=>{const b=e.target.closest('[data-show]');if(b)playActorShow(b.dataset.show);});
 $('sticker-close').onclick=()=>$('sticker-dialog').close();
 $('sticker-dialog').addEventListener('close',render);
 $('send-sticker').onclick=()=>{const el=$('character-sticker');clearTimeout(stickerTimer);el.innerHTML='<img src="'+characterSprite(0,'chibi')+'" alt="'+FULL_NAMES[0]+'貼圖">';el.hidden=false;$('sticker-dialog').close();stickerTimer=setTimeout(()=>{el.hidden=true;el.replaceChildren();},2400);};

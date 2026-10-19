@@ -69,7 +69,23 @@ html,body{width:100%;height:100%;overflow:clip;background:#201810}
 #flower-large{display:block;max-height:65vh;max-width:100%;margin:auto}#flower-dialog{width:max-content;max-width:90vw}
 #meld-summary{display:flex;gap:8px;flex-wrap:wrap}#meld-summary .tile{width:35px!important;height:48px!important;flex-basis:35px!important}
 .prototype-scenes{display:flex;gap:8px;flex-wrap:wrap}.prototype-scenes a{color:#ffe0a5}.cast-picker{display:flex;flex-wrap:wrap;gap:10px;width:100%;border-color:#aa8d6155}.cast-picker label{font-size:12px}
-#sticker-dialog{width:330px}#send-sticker{display:flex;flex-direction:column;align-items:center;margin:auto}#sticker-image{height:170px;width:140px;object-fit:contain}
+/* v1.14 · 角色演出 menu: characters on the left, their shows on the right (亮相 sticker only for your own character). */
+#sticker-dialog{width:640px;max-width:calc(100vw - 24px);max-height:calc(var(--screen-h,100vh) - 24px)}
+#sticker-dialog .actor-menu{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start}
+#actor-tabs{display:flex;flex-direction:column;gap:6px}
+#actor-tabs button{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:10px;text-align:left;min-height:52px}
+#actor-tabs button img{width:40px;height:44px;object-fit:contain;object-position:top}
+#actor-tabs button span{display:flex;flex-direction:column;font-weight:700;font-size:13px;line-height:1.2}
+#actor-tabs button small{font-weight:400;font-size:11px;opacity:.7}
+#actor-tabs button[aria-selected="true"]{background:#f0d9a0;color:#3a2410;box-shadow:inset 0 0 0 2px #b8892e}
+#sticker-dialog .actor-body{display:flex;flex-direction:column;gap:8px;min-width:0}
+#actor-own{display:flex;justify-content:flex-start}
+#send-sticker{display:flex;align-items:center;gap:8px;padding:4px 12px}
+#sticker-image{height:56px;width:48px;object-fit:contain}
+#actor-shows section h3{margin:4px 0;font-size:13px}
+#actor-shows section div{display:flex;flex-wrap:wrap;gap:6px}
+#actor-shows button{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px;border-radius:10px;font-weight:700;font-size:13px}
+#actor-shows button small{font-weight:400;font-size:10.5px;opacity:.7;margin-top:2px}
 #win-cinema{position:fixed;inset:0;z-index:50}.cinema-shade{position:absolute;inset:0;background:#000b}#cinema-character{position:absolute;left:20%;bottom:15%;width:32%;height:70%;object-fit:contain}.cinema-copy{position:absolute;left:55%;top:30%;color:#ffe3a7}#cinema-title{font-size:65px}#cinema-skip{position:absolute;right:8%;bottom:15%}
 #table>#dealer,#table>#deal-info{display:none!important}
 #header-count{position:static;margin:0 0 0 auto;display:flex;align-items:center;gap:8px}
