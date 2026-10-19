@@ -250,7 +250,7 @@ $('cinema-skip').onclick=finishWinCinema;
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){if(tableView.ready)tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 

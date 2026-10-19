@@ -27,10 +27,12 @@ export const CUTIN_CLIPS=Object.freeze({
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
  constructor({sound,fetcher=(...a)=>fetch(...a)}={}){this.sound=sound;this.fetcher=fetcher;this.urls=new Map();this.pending=new Set();this.bytes=new Map();this.buffers=new Map();this.run=0;this.timers=[];this.src=null;this.video=null;}
+ // v1.25 · one clip at a time, after the table is ready (the caller gates it): four clips at once used to crowd out the
+ // table's own art and the title music on a phone connection, leaving 「正在準備牌桌」 up for a long time.
  preload(ids){
   for(const id of new Set(ids)){const c=CUTIN_CLIPS[id];if(!c||this.pending.has(id))continue;this.pending.add(id);
-   this.fetcher(c.video).then(r=>{if(!r.ok)throw Error('clip');return r.blob();}).then(b=>this.urls.set(id,URL.createObjectURL(b))).catch(()=>this.pending.delete(id));
-   this.fetcher(c.audio).then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)this.bytes.set(id,b);}).catch(()=>{});
+   this.queue=(this.queue||Promise.resolve()).then(()=>this.fetcher(c.video).then(r=>{if(!r.ok)throw Error('clip');return r.blob();}).then(b=>this.urls.set(id,URL.createObjectURL(b))).catch(()=>this.pending.delete(id)))
+    .then(()=>this.fetcher(c.audio).then(r=>r.ok?r.arrayBuffer():null).then(b=>{if(b)this.bytes.set(id,b);}).catch(()=>{}));
   }
  }
  canPlay(id){return !!CUTIN_CLIPS[id]&&this.urls.has(id);}
