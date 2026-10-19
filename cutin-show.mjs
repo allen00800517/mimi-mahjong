@@ -5,16 +5,15 @@
 // the table, so playback never waits on the network. A character without a clip keeps the still placeholder cut-in.
 import {VOICE_GAIN} from './voice-player.mjs';
 // open = ms into the clip when the band opens to full screen (the camera starts pulling back); ms = clip length.
-// v1.24 · the clips are re-cut to the stage's own shape (-w): the whole 16:9 picture shows at full height (no more heads
-// cut off at the top) and the narrow strips left and right are a blurred, darkened copy of the same picture.
+// v1.29 · clean 16:9 clips (-c): once open the picture shows whole between the 龍鳳柱 (the blurred -w versions are retired).
 export const CUTIN_CLIPS=Object.freeze({
- ichika:{video:'./assets/cutin-v1/ichika-cutin-w.mp4',audio:'./assets/cutin-v1/ichika-cutin.mp3',open:1750,ms:6040},
+ ichika:{video:'./assets/cutin-v1/ichika-cutin-c.mp4',audio:'./assets/cutin-v1/ichika-cutin.mp3',open:1750,ms:6040},
  // 珍美: eyes + golden glint, the band opens as the camera pulls back to her ohoho laugh (1.25 s); 8.5 s. v1.17 · the
  // sound fades out where her line ends (a second laugh during the pull-back was cut off mid-way).
- harumi:{video:'./assets/cutin-v1/harumi-cutin-w.mp4',audio:'./assets/cutin-v1/harumi-cutin-2.mp3',open:1250,ms:8500},
+ harumi:{video:'./assets/cutin-v1/harumi-cutin-c.mp4',audio:'./assets/cutin-v1/harumi-cutin-2.mp3',open:1250,ms:8500},
  // v1.18 · 權藤: glare + golden sparkles and かくごせい, the band opens as the camera pulls back (1.7 s), a short
  // settled hold, the heavy slam under his ringed palm, white; 6.83 s.
- gondo:{video:'./assets/cutin-v1/gondo-cutin-w.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
+ gondo:{video:'./assets/cutin-v1/gondo-cutin-c.mp4',audio:'./assets/cutin-v1/gondo-cutin.mp3',open:1700,ms:6830},
  // v1.19 · 蜜蜜: eyes + いっただきまーす, the band opens as the camera pulls back to her crouch (2.1 s), she blasts out
  // of the top of the frame, bursts through the clouds, dives down yelling and lands superhero-style (negative-film
  // impact frame), white; 9.7 s. v1.20 · no sped-up sound anywhere (her yell plays at its own speed) and the negative
@@ -22,7 +21,7 @@ export const CUTIN_CLIPS=Object.freeze({
  // on unbroken through the negative flash (only the picture changes); the impact boom is layered under it. v1.22 · the
  // stray "hey" at the peak of the leap is muted (a silent beat before the dive). v1.23 · final cut (the user's join): the
  // dive cuts away just before touchdown to the take whose landing, negative flash and burst all run on in one piece; 9.79 s.
- mimi:{video:'./assets/cutin-v1/mimi-cutin-w.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
+ mimi:{video:'./assets/cutin-v1/mimi-cutin-c.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
@@ -53,14 +52,20 @@ export class CutinShow{
   const c=CUTIN_CLIPS[id],url=this.urls.get(id);if(!c||!url)return false;
   const token=++this.run;
   const wrap=document.createElement('div');wrap.className='ci-clip';
-  wrap.innerHTML='<div class="ci-edge"></div><div class="ci-frame"></div>';
+  // v1.29 · 龍鳳柱 (dragon left, phoenix right) with eye after-glows and landing sparks; see game-layout.css.
+  const sparks=up=>'<b class="ci-sparks">'+[[-26,-14],[-16,-24],[-6,-30],[6,-28],[16,-22],[26,-12],[-20,-6],[20,-4]].map(([x,y])=>'<s style="--dx:'+x+'px;--dy:'+(up?-y:y)+'px"></s>').join('')+'</b>';
+  wrap.innerHTML='<div class="ci-edge"></div><div class="ci-frame"></div><div class="ci-pillar l"><i class="ci-eye"><em></em></i>'+sparks(false)+'</div><div class="ci-pillar r"><i class="ci-eye"><em></em></i>'+sparks(true)+'</div>';
   const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';v.src=url;
   wrap.querySelector('.ci-frame').append(v);stage.append(wrap);this.video=v;
   let done=false;const end=()=>{if(done||token!==this.run)return;done=true;onEnd?.();};
   v.onended=end;
   v.play().then(()=>{
    if(token!==this.run)return;this.playSound(id,v.currentTime,token);
-   this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('open');},Math.max(0,c.open-v.currentTime*1000)));
+   const at=Math.max(0,c.open-v.currentTime*1000);
+   this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('open');},at));
+   // the pillars land 0.25 s (dragon) and 0.33 s (phoenix) after the band opens: a heavy thud and a jolt each
+   for(const d of [250,330])this.timers.push(setTimeout(()=>{if(token!==this.run)return;this.sound?.play?.('yaku');wrap.classList.remove('hit');void wrap.offsetWidth;wrap.classList.add('hit');},at+d));
+   this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('ending');},Math.max(0,c.ms-420-v.currentTime*1000)));
    this.timers.push(setTimeout(end,c.ms+600)); // safety if 'ended' never fires
   }).catch(()=>{if(token!==this.run)return;wrap.remove();onFail?.();});
   return true;

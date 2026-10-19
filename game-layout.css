@@ -465,7 +465,46 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-ci.ci-wedge .ci-clip{animation-name:ci-in-r}
 #win-cinema .wc-ci .ci-clip .ci-frame{background:#000}
 #win-cinema .wc-ci .ci-clip .ci-frame::after{content:none}
-#win-cinema .ci-clip video{position:absolute;left:0;top:0;width:854px;height:394px;object-fit:cover}
+#win-cinema .ci-clip video{position:absolute;left:0;top:-43px;width:854px;height:480px;object-fit:cover;transition:transform .26s cubic-bezier(.6,0,.3,1)}
+/* v1.29 · 龍鳳柱: when the band opens the picture settles to its full 16:9 between two carved pillars — the dragon pillar
+   slams down from above, the phoenix pillar shoots up from below a beat later; each lands with a heavy thud, a jolt and
+   gold sparks; their eyes leave coloured after-glows (dragon cyan, phoenix magenta). They fade into the closing white. */
+#win-cinema .ci-clip.open video{transform:scale(.8197)}
+#win-cinema .ci-pillar{position:absolute;top:0;width:77px;height:394px;background:center/100% 100% no-repeat;z-index:3;pointer-events:none;opacity:0}
+#win-cinema .ci-pillar.l{left:0;background-image:url('./assets/cutin-v1/pillar-dragon.webp');--eye:#52f4ff}
+#win-cinema .ci-pillar.r{right:0;background-image:url('./assets/cutin-v1/pillar-phoenix.webp');--eye:#ff52dc}
+#win-cinema .ci-clip.open .ci-pillar.l{animation:ci-drop .32s forwards}
+#win-cinema .ci-clip.open .ci-pillar.r{animation:ci-rise .32s .08s forwards}
+@keyframes ci-drop{0%{transform:translateY(-105%);opacity:1;animation-timing-function:cubic-bezier(.55,0,1,.45)}78%{transform:translateY(0);animation-timing-function:ease-out}88%{transform:translateY(-2.5%);animation-timing-function:ease-in}100%{transform:translateY(0);opacity:1}}
+@keyframes ci-rise{0%{transform:translateY(105%);opacity:1;animation-timing-function:cubic-bezier(.55,0,1,.45)}78%{transform:translateY(0);animation-timing-function:ease-out}88%{transform:translateY(2.5%);animation-timing-function:ease-in}100%{transform:translateY(0);opacity:1}}
+#win-cinema .ci-pillar::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .42s ease-in}
+#win-cinema .ci-clip.ending .ci-pillar::after{opacity:1}
+#win-cinema .ci-eye{position:absolute;width:0;height:0}
+#win-cinema .ci-pillar.l .ci-eye{left:71.4%;top:66.5%}
+#win-cinema .ci-pillar.r .ci-eye{left:47.7%;top:14%}
+#win-cinema .ci-eye::before{content:"";position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,var(--eye) 30%,transparent 72%);box-shadow:0 0 14px 4px color-mix(in srgb,var(--eye) 55%,transparent);mix-blend-mode:screen;opacity:.95;animation:ci-eye 1.2s ease-in-out .5s infinite}
+#win-cinema .ci-eye em{position:absolute;left:-26px;top:-1.5px;width:52px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--eye),#fff,var(--eye),transparent);mix-blend-mode:screen;opacity:0}
+#win-cinema .ci-clip.open .ci-pillar.l .ci-eye em{animation:ci-flare .5s .25s ease-out forwards}
+#win-cinema .ci-clip.open .ci-pillar.r .ci-eye em{animation:ci-flare .5s .33s ease-out forwards}
+@keyframes ci-flare{0%{opacity:0;transform:scaleX(.2)}25%{opacity:1;transform:scaleX(1.6)}100%{opacity:0;transform:scaleX(.6)}}
+#win-cinema .ci-eye::after{content:"";position:absolute;left:-2.5px;width:5px;height:150px;border-radius:2px;mix-blend-mode:screen;opacity:0}
+#win-cinema .ci-pillar.l .ci-eye::after{bottom:0;background:linear-gradient(to top,var(--eye),transparent)}
+#win-cinema .ci-pillar.r .ci-eye::after{top:0;background:linear-gradient(to bottom,var(--eye),transparent)}
+#win-cinema .ci-clip.open .ci-eye::after{animation:ci-trail .75s ease-out forwards}
+#win-cinema .ci-clip.open .ci-pillar.r .ci-eye::after{animation-delay:.08s}
+@keyframes ci-trail{0%{opacity:.95;transform:scaleY(1)}35%{opacity:.95}100%{opacity:0;transform:scaleY(.25)}}
+#win-cinema .ci-pillar.l .ci-eye::after{transform-origin:50% 100%}
+#win-cinema .ci-pillar.r .ci-eye::after{transform-origin:50% 0}
+@keyframes ci-eye{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.6);opacity:1}}
+#win-cinema .ci-sparks{position:absolute;left:50%;width:0;height:0}
+#win-cinema .ci-pillar.l .ci-sparks{bottom:6px}
+#win-cinema .ci-pillar.r .ci-sparks{top:6px}
+#win-cinema .ci-sparks s{position:absolute;left:-2px;top:-2px;width:5px;height:5px;border-radius:50%;background:#ffe6a0;box-shadow:0 0 6px 2px #ffc23d;opacity:0}
+#win-cinema .ci-clip.open .ci-pillar.l .ci-sparks s{animation:ci-spark .5s .25s ease-out forwards}
+#win-cinema .ci-clip.open .ci-pillar.r .ci-sparks s{animation:ci-spark .5s .33s ease-out forwards}
+@keyframes ci-spark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+#win-cinema .ci-clip.hit{animation:ci-jolt .22s ease-out}
+@keyframes ci-jolt{0%{transform:translate(0,0)}25%{transform:translate(-3px,4px)}50%{transform:translate(3px,-3px)}75%{transform:translate(-1px,2px)}100%{transform:translate(0,0)}}
 #win-cinema .wc-ci .ci-clip .ci-frame,#win-cinema .wc-ci .ci-clip .ci-edge{transition:clip-path .26s cubic-bezier(.6,0,.3,1),opacity .2s}
 #win-cinema .ci-band .ci-clip .ci-frame{clip-path:polygon(-2% 47%,102% 36%,102% 74%,-2% 85%)}
 #win-cinema .ci-band .ci-clip .ci-edge{clip-path:polygon(-2% 44.4%,102% 33.4%,102% 76.6%,-2% 87.6%)}
