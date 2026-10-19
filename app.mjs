@@ -120,13 +120,16 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
+ if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ // v1.08 · a 牌型演出預覽 returns to the menu, on the preview button, so the next sample is one tap away.
+ if(preview&&!portrait()){$('settings-toggle').click();$('yaku-preview').focus();return;}
+ if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
 }
 // v0.97 · tier-1 win moment: table dims, the winning tile lights up, the winner's portrait slides in on a colour band
 // and the 胡／自摸 stamp lands. 自摸 is a stronger version (gold, bigger, longer). Tap anywhere to skip.
-function startWinCinema(r=game.result){
+function startWinCinema(r=game.result,preview=false){
  if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return false;
- winPresentation={revision:game.revision,winner:r.winner};clearTimeout(timer);clearEffects();
+ winPresentation={revision:game.revision,winner:r.winner,preview};clearTimeout(timer);clearEffects();
  // v1.00 · 自摸 with a clip: rise, glide left, stamp at the clip's moment, hand off to the settlement portrait.
  const id=PORTRAITS[r.winner],anim=r.method==='tsumo'&&tsumoShow.canPlay(id);
  const stage=buildWinStamp(r,anim),span=yakuSpan(yakuWords(r,{anim}));let stampedAt=null;
@@ -154,7 +157,7 @@ function previewYaku(){
  if(winPresentation||portrait())return;const p=YAKU_PREVIEWS[yakuPreviewIndex++%YAKU_PREVIEWS.length];
  const r={kind:'win',winner:0,method:p.method,tile:null,payments:[],score:{rows:p.rows.map(([name,tai])=>({name,tai}))}};
  $('settings-dialog').close();sound.play('win',{method:r.method,anim:r.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[0])});
- if(!startWinCinema(r))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
+ if(!startWinCinema(r,true))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
 }
 // v1.02 · The brush stamps are fetched once at start-up and kept, so the stamp shows the brush art from its first
 // frame; while an image is still loading the typeset fallback stays hidden (it used to flash 胡 before the art).
