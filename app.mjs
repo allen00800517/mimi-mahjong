@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,yakuWords,yakuUrl} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,yakuWords,yakuUrl,yakuSpan} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen} from './title-screen.mjs';
@@ -120,27 +120,41 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;clearTimeout(cinemaTimer);tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
+ if(!winPresentation)return;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
 }
 // v0.97 · tier-1 win moment: table dims, the winning tile lights up, the winner's portrait slides in on a colour band
 // and the 胡／自摸 stamp lands. 自摸 is a stronger version (gold, bigger, longer). Tap anywhere to skip.
-function startWinCinema(){
- const r=game.result;if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return;
+function startWinCinema(r=game.result){
+ if(r?.kind!=='win'||reduced()||portrait()||document.hidden)return false;
  winPresentation={revision:game.revision,winner:r.winner};clearTimeout(timer);clearEffects();
  // v1.00 · 自摸 with a clip: rise, glide left, stamp at the clip's moment, hand off to the settlement portrait.
  const id=PORTRAITS[r.winner],anim=r.method==='tsumo'&&tsumoShow.canPlay(id);
- const stage=buildWinStamp(r,anim),yaku=stage.classList.contains('has-yaku');let stampedAt=null;
- // v1.06 · with pattern words the moment lasts until the words have been on screen for YAKU_SHOW.hold.
- const yakuWait=()=>yaku&&stampedAt!==null?Math.max(150,stampedAt+YAKU_SHOW.after+YAKU_SHOW.hold-performance.now()):150;
+ const stage=buildWinStamp(r,anim),span=yakuSpan(yakuWords(r,{anim}));let stampedAt=null;
+ // v1.08 · with pattern words the moment lasts until the last word has landed and been seen (YAKU_SHOW.hold).
+ const yakuWait=()=>span&&stampedAt!==null?Math.max(150,stampedAt+span-performance.now()):150;
  $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;
  $('cinema-skip').focus();syncSettlement();
  if(anim&&tsumoShow.start({id,stage,before:stage.querySelector('.wc-stamp'),
-  onStamp:()=>{stampedAt=performance.now();stage.classList.add('stamped');sound.play('stamp');},
+  onStamp:()=>{stampedAt=performance.now();stage.classList.add('stamped');sound.play('stamp');yakuBeats(stage,0);},
   onEnd:()=>{clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,yakuWait());},
-  onFail:()=>{if(!winPresentation)return;buildWinStamp(r,false);sound.play('stamp');clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,yaku?WIN_TIMING.yaku:3000);}})){
-  cinemaTimer=setTimeout(finishWinCinema,CLIP_MAX_MS+500+(yaku?YAKU_SHOW.after+YAKU_SHOW.hold:0));return;}
- if(anim)buildWinStamp(r,false);
- cinemaTimer=setTimeout(finishWinCinema,yaku?WIN_TIMING.yaku:r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);
+  onFail:()=>{if(!winPresentation)return;const still=buildWinStamp(r,false);sound.play('stamp');const sp=yakuSpan(yakuWords(r));yakuBeats(still,STILL_LAND);clearTimeout(cinemaTimer);cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:3000);}})){
+  cinemaTimer=setTimeout(finishWinCinema,CLIP_MAX_MS+500+span);return true;}
+ const still=anim?buildWinStamp(r,false):stage,sp=yakuSpan(yakuWords(r));yakuBeats(still,STILL_LAND);
+ cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:r.method==='tsumo'?WIN_TIMING.tsumo:WIN_TIMING.ron);return true;
+}
+// v1.08 · 牌型演出預覽 (menu → 練習牌例): plays the win moment with sample patterns for the player's own character, so the
+// show can be checked without waiting for a real big hand. Nothing in the game changes; each press shows the next sample.
+const YAKU_PREVIEWS=[
+ {method:'tsumo',rows:[['混一色',4]]},
+ {method:'tsumo',rows:[['碰碰胡',4],['混一色',4]]},
+ {method:'ron',rows:[['河底撈魚',1],['混一色',4]]},
+ {method:'tsumo',rows:[['槓上開花',1],['碰碰胡',4],['四暗刻',5]]},
+];let yakuPreviewIndex=0;
+function previewYaku(){
+ if(winPresentation||portrait())return;const p=YAKU_PREVIEWS[yakuPreviewIndex++%YAKU_PREVIEWS.length];
+ const r={kind:'win',winner:0,method:p.method,tile:null,payments:[],score:{rows:p.rows.map(([name,tai])=>({name,tai}))}};
+ $('settings-dialog').close();sound.play('win',{method:r.method,anim:r.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[0])});
+ if(!startWinCinema(r))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
 }
 // v1.02 · The brush stamps are fetched once at start-up and kept, so the stamp shows the brush art from its first
 // frame; while an image is still loading the typeset fallback stays hidden (it used to flash 胡 before the art).
@@ -148,9 +162,18 @@ const STAMP_CACHE=[WIN_ART.stamp,WIN_ART.stampTsumo].map(u=>{const i=new Image()
 // v1.06 · pattern words under the stamp (tier 2+). Art is fetched a few seconds after start-up so it is cached by the
 // first big hand; a word without art (or whose art fails) is typeset in the same gold.
 setTimeout(()=>Object.keys(YAKU_ART).forEach(n=>{const i=new Image();i.decoding='async';i.src=yakuUrl(n);STAMP_CACHE.push(i);}),6000);
+// v1.08 · each word lands on its own beat with a stamp thud and a small shake of the stage; the last one hits harder.
+// Times come from the word list (ms after the 胡／自摸 stamp lands; the still stamp lands STILL_LAND after it appears).
+const STILL_LAND=500;let yakuTimers=[];
+function clearYakuBeats(){yakuTimers.forEach(clearTimeout);yakuTimers=[];}
+function yakuBeats(stage,offset){
+ clearYakuBeats();const words=[...stage.querySelectorAll('.wc-yw')];
+ words.forEach(el=>{const at=offset+(+el.dataset.delay)+YAKU_SHOW.land,last=el.classList.contains('last');yakuTimers.push(setTimeout(()=>{if(!stage.isConnected)return;sound.play('stamp');
+  const k=last?5:3;stage.animate([{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}],{duration:last?260:170,easing:'ease-out'});},at));});
+}
 function yakuRow(r,anim){
  const words=yakuWords(r,{anim});if(!words.length)return '';
- return '<div class="wc-yaku">'+words.map(w=>'<span class="wc-yw'+(w.url?' art':'')+'" style="height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+w.height+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
+ return '<div class="wc-yaku">'+words.map((w,i)=>'<span class="wc-yw'+(w.url?' art':'')+(w.last?' last':'')+'" data-delay="'+w.delay+'" style="--d:'+w.delay+'ms;--r:'+(i%2?2.5:-4)+'deg;height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+w.height+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
 }
 function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
@@ -238,7 +261,7 @@ $('settings-toggle').addEventListener('click',()=>{let d=document.getElementById
 const recovery=sessionStore.recovery();if(recovery!==null){const button=document.createElement('button');button.textContent='下載保留的原始紀錄';button.onclick=()=>saveRecovery();$('feedback').before(button);showToast($('feedback').textContent||'保留了一份無法讀取的原始紀錄。',{action:{label:'保存原始紀錄',run:saveRecovery},persist:true});}
 async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始紀錄.json',recovery);$('feedback').textContent=fileMessage(status,'已存出保留的原始紀錄。');}
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
-function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
+function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
 function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){sound.play('win',{method:game.result.method,anim:game.result.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[game.result.winner])});syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
 function player(s,id){
@@ -498,7 +521,7 @@ function openCharSelect({cancellable=true,onDone,onCancel}={}){
 }
 $('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}$('settings-dialog').close();openCharSelect({onDone:()=>startNewMatch(n)});};
 function startNewMatch(n){archiveCurrent();clearEffects();lastEffect=null;resultDismissed=false;newMatch(n);sound.play('shuffle');clearPracticeLink();$('seed').value='';selected=null;selectedIndex=null;declaring=false;saveLocal();render();}
-document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));
+document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>enterPractice(trainingGame(b.dataset.demo)));$('yaku-preview').onclick=previewYaku;
 document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=async()=>{const scene=b.dataset.scene;if(!['normal','chi','ready'].includes(scene))return;b.disabled=true;try{const r=await fetch('./fixtures/'+scene+'.json');if(!r.ok)throw Error('練習牌例暫時無法載入');enterPractice(Game.restore(await r.json()));}catch(e){$('feedback').textContent='保留目前進度：'+e.message;}finally{b.disabled=false;}});
 $('resume-match').onclick=resumeMatch;
 $('save').onclick=async()=>{const text=JSON.stringify(createBackup(sessionSnapshot(),archives),null,2),status=await offerFile('蜜蜜麻將-牌局'+game.seed+'-步驟'+game.revision+'.json',text);$('feedback').textContent=fileMessage(status,'已存出目前場次與測試紀錄（含暗牌），可讀取續玩。');};
