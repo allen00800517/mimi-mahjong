@@ -29,7 +29,7 @@ export function winGrade(result){
 export const YAKU_ART=Object.freeze({
  碰碰胡:{file:'pengpeng',ratio:2.41},混一色:{file:'hunyise',ratio:2.35},小三元:{file:'xiaosanyuan',ratio:2.6},
  四暗刻:{file:'siankee',ratio:2.33},全求人:{file:'quanqiuren',ratio:2.39},槓上開花:{file:'gangshang',ratio:2.9},
- 海底撈月:{file:'haidi',ratio:2.675},河底撈魚:{file:'hedi',ratio:2.835},
+ 海底撈月:{file:'haidi',ratio:2.675},河底撈魚:{file:'hedi',ratio:2.835},搶槓:{file:'qianggang',ratio:1.865},
 });
 export const yakuUrl=name=>YAKU_ART[name]?'./assets/win-v1/yaku/'+YAKU_ART[name].file+'.webp':null;
 export const YAKU_SHOW=Object.freeze({after:600,hold:1800,gap:18,height:[92,78,64],maxWidth:{anim:420,still:600}});
