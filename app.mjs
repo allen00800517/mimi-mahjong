@@ -172,7 +172,10 @@ function clearYakuBeats(){yakuTimers.forEach(clearTimeout);yakuTimers=[];}
 function yakuBeats(stage,offset){
  clearYakuBeats();const words=[...stage.querySelectorAll('.wc-yw')];
  words.forEach(el=>{const at=offset+(+el.dataset.delay)+YAKU_SHOW.land,last=el.classList.contains('last');yakuTimers.push(setTimeout(()=>{if(!stage.isConnected)return;sound.play('stamp');
-  const k=last?5:3;stage.animate([{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}],{duration:last?260:170,easing:'ease-out'});},at));});
+  // v1.09 · shake only what floats over the table (words, character clip, caption): moving the whole stage let the
+  // table's edge show at the screen border.
+  const k=last?5:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];
+  stage.querySelectorAll('.wc-yaku,.wc-video,.wc-caption').forEach(t=>t.animate(frames,{duration:last?260:170,easing:'ease-out'}));},at));});
 }
 function yakuRow(r,anim){
  const words=yakuWords(r,{anim});if(!words.length)return '';
