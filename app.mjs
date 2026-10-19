@@ -220,7 +220,7 @@ const STILL_LAND=500;let yakuTimers=[];
 function clearYakuBeats(){yakuTimers.forEach(clearTimeout);yakuTimers=[];}
 function yakuBeats(stage,offset){
  clearYakuBeats();const words=[...stage.querySelectorAll('.wc-yw')];
- words.forEach(el=>{const at=offset+(+el.dataset.delay)+YAKU_SHOW.land,last=el.classList.contains('last');yakuTimers.push(setTimeout(()=>{if(!stage.isConnected)return;sound.play('stamp');
+ words.forEach(el=>{const at=offset+(+el.dataset.delay)+YAKU_SHOW.land,last=el.classList.contains('last');yakuTimers.push(setTimeout(()=>{if(!stage.isConnected)return;sound.play('yaku');
   // v1.09 · shake only what floats over the table (words, character clip, caption): moving the whole stage let the
   // table's edge show at the screen border.
   const k=last?5:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];

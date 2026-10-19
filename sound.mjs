@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3},thud:{files:2,gain:1}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
@@ -15,6 +15,8 @@ export const SOUND_PLAN=Object.freeze({
  stamp:()=>[['strong',0],['win',.15]],
  // v1.12 · the cut-in swoosh when a tier-2+ win is declared (the stamp hit follows when the stamp lands).
  cutin:()=>[['reveal',0]],
+ // v1.15 · each pattern word lands with a dull, heavy thud (a weight pressed down), no ringing tone (user).
+ yaku:()=>[['thud',0]],
  shuffle:()=>[['shuffle',0]], // the old recorded dice ran into the first discards (user); dice now have their own show
  dice:()=>[['dice',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
 });
