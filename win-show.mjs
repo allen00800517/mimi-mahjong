@@ -150,7 +150,7 @@ export function tallyRows(result,{dealer,repeats=0,names=[]}={}){
 // The leading pattern: highest tier, then most tai, then this fixed order (only one main effect is ever shown).
 export const BIG_ART=Object.freeze({bg:t=>'./assets/bigwin-v1/bg'+(t>=4?4:3)+'.webp',portrait:id=>'./assets/bigwin-v1/'+id+'-bigwin.webp',crash:id=>'./assets/bigwin-v1/'+id+'-crash.webp'});
 // where each winner's figure stands on the 854×394 stage (px), tuned with the user on the mockups
-export const BIG_POSE=Object.freeze({mimi:{left:58,top:-4,h:412},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436}});
+export const BIG_POSE=Object.freeze({mimi:{left:66,top:4,h:400},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436}});
 export const BIG_PRIORITY=Object.freeze(['天胡','地胡','大四喜','八仙過海','七搶一','大三元','字一色','小四喜','五暗刻','清一色','人胡','天聽','地聽']);
 // ms from the screen's first frame: figure slides in, main word slams, tai label, then each sub line, the seal, faces
 export const BIG_TIMING=Object.freeze({main:700,tai:980,sub:1250,step:380,face:130,ready:450});
