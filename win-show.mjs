@@ -167,7 +167,7 @@ export const BIG_WORDS=Object.freeze({
  清一色:{file:'qingyise',ratio:2.207},字一色:{file:'ziyise',ratio:2.303},大三元:{file:'dasanyuan',ratio:2.577},小四喜:{file:'xiaosixi',ratio:2.417},
  天聽:{file:'tianting',ratio:2.02},地聽:{file:'diting',ratio:2.05},人胡:{file:'renhu',ratio:2.14},
  天胡:{file:'tianhu',ratio:2.027},地胡:{file:'dihu',ratio:2.207},大四喜:{file:'dasixi',ratio:2.417},八仙過海:{file:'baxian',ratio:3.177},七搶一:{file:'qiqiangyi',ratio:2.857},
- // 五暗刻: the first art read 五晴刻 (wrong character) — typeset until it is redrawn
+ 五暗刻:{file:'wuanke',ratio:2.61}, // redrawn: the first art read 五晴刻
 });
 export const BIG_SEAL='./assets/bigwin-v1/words/shuangdapai.webp';
 export const bigWordUrl=n=>BIG_WORDS[n]?'./assets/bigwin-v1/words/'+BIG_WORDS[n].file+'.webp':null;
