@@ -143,3 +143,31 @@ export function tallyRows(result,{dealer,repeats=0,names=[]}={}){
  else{rows.push({name:'自摸　三家各付',value:'×3',extra:'mult'});if(d)rows.push({name:label+'（'+(names[dealer]??'莊家')+'付）',value:d+' 台',extra:'dealer'});}
  return rows;
 }
+// v1.34 · Big-hand screen (tier 3/4, agreed with the user 2026-10-20): after the cut-in's white flash, one ink-and-gold
+// background per tier (3 = paper, 4 = night ink with dragon and phoenix) between the same 龍鳳柱, the winner's own
+// big-win figure, the leading pattern in big letters, the other patterns under it, a 雙大牌 seal when two big patterns
+// meet, and the other three players' chibi meltdown faces. It waits for a tap, then the usual settlement follows.
+// The leading pattern: highest tier, then most tai, then this fixed order (only one main effect is ever shown).
+export const BIG_ART=Object.freeze({bg:t=>'./assets/bigwin-v1/bg'+(t>=4?4:3)+'.webp',portrait:id=>'./assets/bigwin-v1/'+id+'-bigwin.webp',crash:id=>'./assets/bigwin-v1/'+id+'-crash.webp'});
+// where each winner's figure stands on the 854×394 stage (px), tuned with the user on the mockups
+export const BIG_POSE=Object.freeze({mimi:{left:58,top:-4,h:412},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436}});
+export const BIG_PRIORITY=Object.freeze(['天胡','地胡','大四喜','八仙過海','七搶一','大三元','字一色','小四喜','五暗刻','清一色','人胡','天聽','地聽']);
+// ms from the screen's first frame: figure slides in, main word slams, tai label, then each sub line, the seal, faces
+export const BIG_TIMING=Object.freeze({main:700,tai:980,sub:1250,step:380,face:130,ready:450});
+export function bigHand(result){
+ const g=winGrade(result);if(!g||g.tier<3)return null;
+ const rows=result.score?.rows??[],tai=n=>rows.find(r=>(SHOWN[r.name]||r.name)===n)?.tai??0;
+ const tierOf=n=>n==='八仙過海'||n==='七搶一'?4:TIER_OF(Object.keys(SHOWN).find(k=>SHOWN[k]===n)||n);
+ const pri=n=>{const i=BIG_PRIORITY.indexOf(n);return i<0?99:i;};
+ const list=g.patterns.map((name,i)=>({name,tier:tierOf(name),tai:tai(name),i}));
+ list.sort((a,b)=>b.tier-a.tier||b.tai-a.tai||pri(a.name)-pri(b.name)||a.i-b.i);
+ const t4=g.tier>=4,subs=list.slice(1,t4?3:4);
+ return {tier:g.tier,main:list[0],subs,double:list.filter(p=>p.tier>=3).length>=2};
+}
+// Schedule (ms) of everything that lands on the big-hand screen, so sounds and CSS delays share one source.
+export function bigPlan(b){
+ const T=BIG_TIMING,subs=b.subs.map((s,i)=>T.sub+i*T.step);
+ const seal=b.double?T.sub+b.subs.length*T.step:null;
+ const faceStart=(seal??(subs.at(-1)??T.tai))+T.step,faces=[0,1,2].map(i=>faceStart+i*T.face);
+ return {main:T.main,tai:T.tai,subs,seal,faces,ready:faces.at(-1)+T.ready};
+}

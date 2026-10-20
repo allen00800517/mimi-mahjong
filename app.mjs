@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
@@ -125,7 +125,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
  if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -143,6 +143,8 @@ function startWinCinema(r=game.result,preview=false){
   $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;$('cinema-skip').focus();syncSettlement();
   let went=false;
   const toStamp=white=>{if(went||!winPresentation)return;went=true;cutinShow.stop();clearTimeout(cinemaTimer);sound.play('win',{method:r.method});
+   // v1.34 · tier 3/4: the big-hand screen instead of the stamp; it waits for a tap, then the settlement.
+   if(bigHand(r)){showBigWin(r,white);return;}
    const still=buildWinStamp(r,false),sp=yakuSpan(yakuWords(r));if(white)still.insertAdjacentHTML('beforeend','<div class="wc-white"></div>');yakuBeats(still,STILL_LAND);
    cinemaTimer=setTimeout(finishWinCinema,sp?STILL_LAND+sp:WIN_TIMING.ron);};
   const placeholder=()=>{showCutin(cid,ci.shape,false);clearTimeout(cinemaTimer);cinemaTimer=setTimeout(()=>toStamp(false),CUTIN_TIMING.ms);};
@@ -193,7 +195,10 @@ const ACTOR_SHOWS=[
   {key:'y2',label:'碰碰胡＋混一色',method:'ron',rows:[['碰碰胡',4],['混一色',4]]},
   {key:'y3',label:'三個牌型',method:'tsumo',rows:[['槓上開花',1],['碰碰胡',4],['四暗刻',5]]}],art:id=>CUTIN_CLIPS[id]?'cut-in 動畫':'cut-in 暫代'},
  {group:'大牌（第 3、4 級）',items:[
-  {key:'t3',label:'清一色＋碰碰胡',method:'tsumo',rows:[['碰碰胡',4],['清一色',8]]}],art:id=>CUTIN_CLIPS[id]?'cut-in 動畫 · 大圖未做':'暫代 · 大圖未做'},
+  {key:'t3',label:'清一色＋碰碰胡',method:'tsumo',rows:[['碰碰胡',4],['清一色',8]]},
+  {key:'t3b',label:'大三元',method:'ron',rows:[['大三元',8]]},
+  {key:'t4',label:'天胡',method:'tsumo',rows:[['天胡',24]]},
+  {key:'t4b',label:'雙大牌：大三元＋字一色',method:'ron',rows:[['大三元',8],['字一色',8]]}],art:id=>CUTIN_CLIPS[id]?'cut-in 動畫 · 大圖':'暫代 · 大圖'},
 ];
 let actorSel=null;
 function openActorMenu(id=PORTRAITS[0],focusKey=null){
@@ -234,6 +239,38 @@ function yakuRow(r,anim){
  const words=yakuWords(r,{anim});if(!words.length)return '';
  return '<div class="wc-yaku">'+words.map((w,i)=>'<span class="wc-yw'+(w.url?' art':'')+(w.last?' last':'')+'" data-delay="'+w.delay+'" style="--d:'+w.delay+'ms;--r:'+(i%2?2.5:-4)+'deg;height:'+w.height+'px;font-size:'+Math.round(w.height*.8)+'px">'+(w.url?'<img alt="" draggable="false" src="'+w.url+'" style="height:'+(w.height*(1+2*YAKU_PAD)).toFixed(1)+'px;margin:'+(-w.height*YAKU_PAD).toFixed(1)+'px">':'')+'<b>'+escape(w.name)+'</b></span>').join('')+'</div>';
 }
+// v1.34 · Big-hand screen (tier 3/4): background per tier, 龍鳳柱, the winner's big-win figure, the leading pattern,
+// the other patterns, a 雙大牌 seal, the three losers' meltdown faces, then 「點一下繼續」. Times come from bigPlan.
+let bigWinLoaded=false;
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function showBigWin(r,white){
+ const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
+ c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
+ const st=document.createElement('div');st.className='wc-stage wc-big t'+t;
+ const taiTag=n=>n?taiNumeral(n)+'台':'';
+ const word=escape(b.main.name),losers=PORTRAITS.filter((x,s)=>s!==r.winner);
+ st.innerHTML='<div class="bw-bg" style="background-image:url('+BIG_ART.bg(t)+')"></div>'
+  +'<img class="bw-who" alt="" draggable="false" src="'+BIG_ART.portrait(id)+'" style="left:'+p.left+'px;top:'+p.top+'px;height:'+p.h+'px">'
+  +'<div class="bw-ttl"><div class="bw-main" style="--d:'+plan.main+'ms"><i>'+word+'</i><b>'+word+'</b></div>'
+  +(b.main.tai?'<div class="bw-tai" style="--d:'+plan.tai+'ms">'+taiTag(b.main.tai)+'</div>':'')
+  +b.subs.map((s,i)=>'<div class="bw-sub" style="--d:'+plan.subs[i]+'ms">'+escape(s.name)+(s.tai?'　'+taiTag(s.tai):'')+'</div>').join('')
+  +(b.double?'<div class="bw-seal" style="--d:'+plan.seal+'ms">雙大牌</div>':'')+'</div>'
+  +'<div class="bw-lose">'+losers.map((x,i)=>'<div style="--d:'+plan.faces[i]+'ms"><img alt="" draggable="false" src="'+BIG_ART.crash(x)+'"></div>').join('')+'</div>'
+  +'<div class="bw-tap">點一下繼續</div><div class="bw-pl l"></div><div class="bw-pl r"></div>'+(white?'<div class="wc-white"></div>':'');
+ c.prepend(st);
+ clearYakuBeats();
+ const beat=(at,name,hard)=>yakuTimers.push(setTimeout(()=>{if(!st.isConnected)return;sound.play(name);
+  const k=hard?6:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];
+  st.querySelectorAll('.bw-ttl,.bw-who,.bw-lose').forEach(e=>e.animate(frames,{duration:hard?280:170,easing:'ease-out'}));},at));
+ beat(plan.main,'pillar',true);plan.subs.forEach(at=>beat(at,'yaku'));if(plan.seal!==null)beat(plan.seal,'yaku');
+ winPresentation.big={stage:st,ready:false};
+ yakuTimers.push(setTimeout(()=>bigReady(false),plan.ready));
+}
+function bigReady(skip){
+ const b=winPresentation?.big;if(!b||b.ready)return;b.ready=true;
+ if(skip){clearYakuBeats();b.stage.classList.add('ff');}
+ b.stage.classList.add('ready');
+}
 function buildWinStamp(r,anim=false){
  const c=$('win-cinema'),id=PORTRAITS[r.winner],tsumo=r.method==='tsumo',word=stampWord(r);
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special');c.classList.toggle('tsumo',tsumo);c.dataset.tier=winGrade(r)?.tier??1;
@@ -248,13 +285,14 @@ function buildWinStamp(r,anim=false){
  const st=stage.querySelector('.wc-stamp img'),art=word==='胡'?WIN_ART.stamp:word==='自摸'?WIN_ART.stampTsumo:null;if(!art)st.remove();else{const box=stage.querySelector('.wc-stamp');box.classList.toggle('wide',word==='自摸');box.classList.add('loading');const ready=()=>{box.classList.remove('loading');box.classList.add('art');};st.onload=ready;st.onerror=()=>{box.classList.remove('loading');st.remove();};st.src=art;if(st.complete&&st.naturalWidth)ready();}
  c.prepend(stage);return stage;
 }
-$('win-cinema').addEventListener('click',e=>{if(winPresentation&&e.target.id!=='cinema-skip')finishWinCinema();});
+// v1.34 · on the big-hand screen the first tap only skips to its finished state; the next one continues.
+$('win-cinema').addEventListener('click',e=>{if(!winPresentation||e.target.id==='cinema-skip')return;const b=winPresentation.big;if(b&&!b.ready){bigReady(true);return;}finishWinCinema();});
 $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);preloadBigWin();}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 

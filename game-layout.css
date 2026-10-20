@@ -525,3 +525,44 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-ci .ci-clip.open .ci-edge{clip-path:polygon(-4% -4%,104% -4%,104% 104%,-4% 104%);opacity:0}
 #win-cinema .wc-white{position:absolute;inset:0;background:#fff;pointer-events:none;animation:wc-white-out .45s ease-out forwards}
 @keyframes wc-white-out{to{opacity:0}}
+/* v1.34 · Big-hand screen (tier 3/4) — see showBigWin in app.mjs. Delays come from --d (bigPlan). */
+#win-cinema .wc-big{font-family:"Noto Serif TC","Noto Serif CJK TC","Songti TC","Hiragino Mincho ProN",serif}
+#win-cinema .wc-big .bw-bg{position:absolute;inset:0;background:#111 center/cover no-repeat;animation:bw-bg 1.2s cubic-bezier(.2,.7,.2,1) both}
+@keyframes bw-bg{from{transform:scale(1.12)}to{transform:none}}
+#win-cinema .wc-big .bw-pl{position:absolute;top:0;width:56px;height:394px;background:0 0/100% 100% no-repeat;z-index:5}
+#win-cinema .wc-big .bw-pl.l{left:0;background-image:url('./assets/cutin-v1/pillar-dragon-hd.webp')}
+#win-cinema .wc-big .bw-pl.r{right:0;background-image:url('./assets/cutin-v1/pillar-phoenix-hd.webp')}
+#win-cinema .wc-big .bw-who{position:absolute;z-index:2;max-width:none;filter:drop-shadow(0 0 8px rgba(0,0,0,.35));animation:bw-who .5s cubic-bezier(.2,.8,.2,1) .15s both}
+@keyframes bw-who{from{opacity:0;transform:translateX(-70px)}to{opacity:1;transform:none}}
+#win-cinema .wc-big .bw-ttl{position:absolute;right:84px;z-index:3;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+#win-cinema .wc-big.t3 .bw-ttl{top:34px}
+#win-cinema .wc-big.t4 .bw-ttl{bottom:56px}
+#win-cinema .wc-big.t4 .bw-ttl::before{content:'';position:absolute;inset:-30px -40px -20px -60px;background:radial-gradient(closest-side,#000d,#0008 60%,transparent);z-index:-1}
+#win-cinema .wc-big .bw-main{position:relative;font-size:92px;line-height:1;letter-spacing:4px;font-weight:900;white-space:nowrap;animation:bw-slam .32s cubic-bezier(.3,1.5,.5,1) var(--d) both}
+#win-cinema .wc-big .bw-main i{position:absolute;left:0;top:0;font-style:normal}
+#win-cinema .wc-big .bw-main b{position:relative;font-weight:900}
+@keyframes bw-slam{from{opacity:0;transform:scale(2.4)}60%{opacity:1}to{opacity:1;transform:none}}
+#win-cinema .wc-big.t3 .bw-main b{color:#111;-webkit-text-stroke:1.5px #b8892e}
+#win-cinema .wc-big.t3 .bw-main i{color:#d4a945;transform:translate(3px,3px)}
+#win-cinema .wc-big.t4 .bw-main b{background:linear-gradient(#fff6d6,#f3cf6a 45%,#b8832a);-webkit-background-clip:text;background-clip:text;color:transparent}
+#win-cinema .wc-big.t4 .bw-main i{color:#3a2400;transform:translate(2px,3px);text-shadow:0 0 12px rgba(255,214,120,.6)}
+#win-cinema .wc-big .bw-tai{font:900 22px/1.3 "Noto Sans TC","PingFang TC",sans-serif;letter-spacing:3px;padding:4px 14px;border-radius:3px;white-space:nowrap;animation:bw-pop .25s ease-out var(--d) both}
+#win-cinema .wc-big.t3 .bw-tai{background:#a8141a;color:#fff}
+#win-cinema .wc-big.t4 .bw-tai{background:linear-gradient(#f7dc8a,#c8952e);color:#2a1700}
+@keyframes bw-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+#win-cinema .wc-big .bw-sub{font-weight:900;font-size:24px;line-height:1.35;white-space:nowrap;padding:3px 14px;background:linear-gradient(90deg,transparent,#120c06e6 18%);color:#f3e2b0;border-right:4px solid #d4a945;animation:bw-sub .26s ease-out var(--d) both}
+@keyframes bw-sub{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+#win-cinema .wc-big .bw-seal{position:absolute;left:-62px;top:4px;color:#fff;background:#c4161c;border:3px solid #fff3;padding:6px 8px;font-size:22px;font-weight:900;line-height:1.05;writing-mode:vertical-rl;letter-spacing:2px;box-shadow:0 2px 0 #7a0a0e;animation:bw-seal .3s cubic-bezier(.3,1.6,.5,1) var(--d) both}
+@keyframes bw-seal{from{opacity:0;transform:rotate(-6deg) scale(2.2)}to{opacity:1;transform:rotate(-6deg)}}
+#win-cinema .wc-big .bw-lose{position:absolute;right:76px;z-index:4;display:flex;gap:8px}
+#win-cinema .wc-big.t3 .bw-lose{bottom:12px}
+#win-cinema .wc-big.t4 .bw-lose{top:12px}
+#win-cinema .wc-big .bw-lose div{width:84px;height:84px;border-radius:10px;overflow:hidden;background:#fff6e0;border:3px solid #d8b25a;box-shadow:0 2px 6px #0006;animation:bw-face .4s cubic-bezier(.3,1.7,.5,1) var(--d) both}
+#win-cinema .wc-big .bw-lose img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+@keyframes bw-face{from{opacity:0;transform:scale(.3) rotate(-10deg)}to{opacity:1;transform:none}}
+#win-cinema .wc-big .bw-tap{position:absolute;bottom:22px;left:350px;z-index:4;font:700 13px "Noto Sans TC","PingFang TC",sans-serif;letter-spacing:3px;background:#000b;color:#f3e2b0;padding:5px 14px;border-radius:14px;border:1px solid #d4a94588;opacity:0;transition:opacity .3s}
+#win-cinema .wc-big.ready .bw-tap{opacity:1;animation:bw-blink 1.4s ease-in-out .3s infinite}
+@keyframes bw-blink{50%{opacity:.45}}
+#win-cinema .wc-big.ff :not(.bw-tap){animation-delay:0s!important;animation-duration:.01s!important}
+/* the big-hand screen continues on a tap, so the skip button would only cover the meltdown faces */
+#win-cinema.big #cinema-skip{display:none}
