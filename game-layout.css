@@ -566,3 +566,9 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-big.ff :not(.bw-tap){animation-delay:0s!important;animation-duration:.01s!important}
 /* the big-hand screen continues on a tap, so the skip button would only cover the meltdown faces */
 #win-cinema.big #cinema-skip{display:none}
+/* v1.39 · calligraphy art for the leading pattern and the 雙大牌 seal (typeset text stays as the fallback) */
+#win-cinema .wc-big .bw-main.art i,#win-cinema .wc-big .bw-main.art b,#win-cinema .wc-big .bw-seal.art span{display:none}
+#win-cinema .wc-big .bw-main.art img{display:block;max-width:none}
+#win-cinema .wc-big .bw-seal.art{background:none;border:0;padding:0;box-shadow:none;left:-74px;top:0}
+#win-cinema .wc-big .bw-seal.art img{display:block;width:64px;height:auto}
+#win-cinema .wc-big.t4 .bw-main.art::before{content:none}

@@ -161,6 +161,18 @@ export function bigClipRect(id){
  const c=BIG_CLIP[id],p=BIG_POSE[id];if(!c||!p)return null;const k=p.h/c.box[3];
  return {left:p.left-c.box[0]*k,top:p.top-c.box[1]*k,width:c.frame[0]*k,height:c.frame[1]*k};
 }
+// v1.39 · the leading pattern in gold-leaf brush calligraphy over a black ink edge (one art per pattern, readable on the
+// paper and the night background alike); ratio = width/height of the keyed art. A pattern without art is typeset.
+export const BIG_WORDS=Object.freeze({
+ 清一色:{file:'qingyise',ratio:2.207},字一色:{file:'ziyise',ratio:2.303},大三元:{file:'dasanyuan',ratio:2.577},小四喜:{file:'xiaosixi',ratio:2.417},
+ 天聽:{file:'tianting',ratio:2.02},地聽:{file:'diting',ratio:2.05},人胡:{file:'renhu',ratio:2.14},
+ 天胡:{file:'tianhu',ratio:2.027},地胡:{file:'dihu',ratio:2.207},大四喜:{file:'dasixi',ratio:2.417},八仙過海:{file:'baxian',ratio:3.177},七搶一:{file:'qiqiangyi',ratio:2.857},
+ // 五暗刻: the first art read 五晴刻 (wrong character) — typeset until it is redrawn
+});
+export const BIG_SEAL='./assets/bigwin-v1/words/shuangdapai.webp';
+export const bigWordUrl=n=>BIG_WORDS[n]?'./assets/bigwin-v1/words/'+BIG_WORDS[n].file+'.webp':null;
+// height (px) of the word art on the stage: as tall as the typeset title, never wider than maxW
+export const bigWordHeight=(n,maxW=440,h=124)=>BIG_WORDS[n]?Math.round(Math.min(h,maxW/BIG_WORDS[n].ratio)):0;
 export const BIG_PRIORITY=Object.freeze(['天胡','地胡','大四喜','八仙過海','七搶一','大三元','字一色','小四喜','五暗刻','清一色','人胡','天聽','地聽']);
 // ms from the screen's first frame: figure slides in, main word slams, tai label, then each sub line, the seal, faces
 export const BIG_TIMING=Object.freeze({main:700,tai:980,sub:1250,step:380,face:130,ready:450});

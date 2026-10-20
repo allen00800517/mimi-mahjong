@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect,bigWordUrl,bigWordHeight,BIG_SEAL,BIG_PRIORITY} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
@@ -262,7 +262,7 @@ function playBigClip(st,id){
  v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
 }
 function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -271,12 +271,14 @@ function showBigWin(r,white){
  const word=escape(b.main.name),losers=PORTRAITS.filter((x,s)=>s!==r.winner);
  st.innerHTML='<div class="bw-bg" style="background-image:url('+BIG_ART.bg(t)+')"></div>'
   +'<img class="bw-who" alt="" draggable="false" src="'+BIG_ART.portrait(id)+'" style="left:'+p.left+'px;top:'+p.top+'px;height:'+p.h+'px">'
-  +'<div class="bw-ttl"><div class="bw-main" style="--d:'+plan.main+'ms"><i>'+word+'</i><b>'+word+'</b></div>'
+  +'<div class="bw-ttl"><div class="bw-main'+(bigWordUrl(b.main.name)?' art':'')+'" style="--d:'+plan.main+'ms">'+(bigWordUrl(b.main.name)?'<img alt="" draggable="false" src="'+bigWordUrl(b.main.name)+'" style="height:'+bigWordHeight(b.main.name)+'px">':'')+'<i>'+word+'</i><b>'+word+'</b></div>'
   +(b.main.tai?'<div class="bw-tai" style="--d:'+plan.tai+'ms">'+taiTag(b.main.tai)+'</div>':'')
   +b.subs.map((s,i)=>'<div class="bw-sub" style="--d:'+plan.subs[i]+'ms">'+escape(s.name)+(s.tai?'　'+taiTag(s.tai):'')+'</div>').join('')
-  +(b.double?'<div class="bw-seal" style="--d:'+plan.seal+'ms">雙大牌</div>':'')+'</div>'
+  +(b.double?'<div class="bw-seal art" style="--d:'+plan.seal+'ms"><img alt="" draggable="false" src="'+BIG_SEAL+'"><span>雙大牌</span></div>':'')+'</div>'
   +'<div class="bw-lose">'+losers.map((x,i)=>'<div style="--d:'+plan.faces[i]+'ms"><img alt="" draggable="false" src="'+BIG_ART.crash(x)+'"></div>').join('')+'</div>'
   +'<div class="bw-tap">點一下繼續</div><div class="bw-pl l"></div><div class="bw-pl r"></div>'+(white?'<div class="wc-white"></div>':'');
+ // a word or seal whose art fails to load falls back to the typeset version
+ st.querySelectorAll('.bw-main.art img,.bw-seal.art img').forEach(im=>{im.onerror=()=>{im.parentNode.classList.remove('art');im.remove();};});
  c.prepend(st);playBigClip(st,id);
  clearYakuBeats();
  const beat=(at,name,hard)=>yakuTimers.push(setTimeout(()=>{if(!st.isConnected)return;sound.play(name);
