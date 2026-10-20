@@ -130,7 +130,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview||!winPresentation.big)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
  if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -145,8 +145,8 @@ function startWinCinema(r=game.result,preview=false){
  // others keep the still placeholder. Either way the stamp and the pattern words follow.
  const ci=cutinFor(r),cid=PORTRAITS[r.winner],clip=!!ci&&cutinShow.canPlay(cid);
  if(ci&&showCutin(cid,ci.shape,clip)){
-  // v1.36 · a big hand's theme starts right here with the cut-in; smaller hands just fade the table music out.
-  {const b=bigHand(r);musicOverride=b?(b.tier>=4?'big4':'big3'):'hush';syncMusic();}
+  // v1.36 · the hand's theme starts right here with the cut-in. v1.37 · every cut-in has music: tier 2 gets its own.
+  {const b=bigHand(r);musicOverride=b?(b.tier>=4?'big4':'big3'):'big2';syncMusic();}
   $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;$('cinema-skip').focus();syncSettlement();
   let went=false;
   const toStamp=white=>{if(went||!winPresentation)return;went=true;cutinShow.stop();clearTimeout(cinemaTimer);sound.play('win',{method:r.method});
@@ -249,7 +249,7 @@ function yakuRow(r,anim){
 // v1.34 · Big-hand screen (tier 3/4): background per tier, 龍鳳柱, the winner's big-win figure, the leading pattern,
 // the other patterns, a 雙大牌 seal, the three losers' meltdown faces, then 「點一下繼續」. Times come from bigPlan.
 let bigWinLoaded=false;
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big3');music.prefetch('big4');},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');

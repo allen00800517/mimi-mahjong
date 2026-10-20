@@ -18,6 +18,8 @@ export const MUSIC_TRACKS=Object.freeze({
  // Miracle, both 140 BPM. v1.36 · they start the moment 胡 is pressed, together with the cut-in (user: the music has to
  // come in with the effect, not later), cutting the table music short (fadeOut); they loop 8 bars (3) / 12 bars (4)
  // until the next hand. startAt skips the file's leading silence; hit = the first big hit, s into the file.
+ // v1.37 · tier 2 (Snappy Mahjong Win, 120 BPM): every cut-in now has its own music; 24-bar loop.
+ big2:{label:'牌型・二級',url:'./assets/music-v1/bgm-big2.mp3',loopStart:12.4,loopEnd:60.4,startAt:.06,fadeIn:.05,fadeOut:.4,hit:.522},
  big3:{label:'大牌・三級',url:'./assets/music-v1/bgm-big3.mp3',loopStart:50.586,loopEnd:64.3,startAt:.42,fadeIn:.05,fadeOut:.4,hit:1.654},
  big4:{label:'大牌・四級',url:'./assets/music-v1/bgm-big4.mp3',loopStart:33.928,loopEnd:54.5,startAt:.04,fadeIn:.05,fadeOut:.4,hit:3.42},
 });
