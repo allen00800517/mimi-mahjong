@@ -572,3 +572,36 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-big .bw-seal.art{background:none;border:0;padding:0;box-shadow:none;left:-74px;top:0}
 #win-cinema .wc-big .bw-seal.art img{display:block;width:64px;height:auto}
 #win-cinema .wc-big.t4 .bw-main.art::before{content:none}
+/* v1.40 · chibi reactions on each hand's score cards */
+#result .score-board>div{position:relative}
+#result .sb-face{display:block;width:42px;height:42px;margin:0 auto 2px;border-radius:50%;overflow:hidden;border:2px solid #6d6155;background:#e9e2d8;box-shadow:0 2px 5px #0008}
+#result .sb-face img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 10%}
+#result .sb-face.happy{border-color:#e8c060;background:#fff2c8}
+#result .sb-face.calm img{object-position:50% 0;transform:scale(1.9) translateY(20%)}
+#result .sb-face{animation:sb-pop .35s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes sb-pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+/* v1.40 · end-of-match standings with full-body chibis by rank */
+#result.final-v2{left:0!important;top:0!important;width:854px!important;height:394px!important;max-height:none!important;transform:none!important;border:0!important;border-radius:0!important;background:rgba(14,9,6,.9)!important;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);box-shadow:none!important;overflow:hidden!important}
+#result.final-v2 .settlement-heading{position:absolute;left:14px;right:14px;top:8px;padding:0!important;border:0;background:none;display:flex;justify-content:center}
+#result.final-v2 .settlement-heading h2{font:900 24px "Noto Serif TC","Noto Serif CJK TC","Songti TC",serif;letter-spacing:8px;color:#f3cf6a;text-shadow:0 2px 0 #3a2400}
+#result.final-v2 .settlement-heading .close-result{position:absolute;left:0;top:0;min-height:30px;padding:4px 12px;font-size:12px}
+#result.final-v2 .settlement-body{position:absolute;inset:0;padding:0!important;overflow:hidden}
+#result.final-v2 .fs-sub{position:absolute;top:40px;left:0;right:0;margin:0;text-align:center;font-size:12px;letter-spacing:2px;color:#e8d8b8;opacity:.85}
+#result.final-v2 #final-history{position:absolute;top:8px;right:206px;min-height:30px;padding:4px 12px;font-size:12px;z-index:2}
+#result.final-v2 .settlement-footer{position:absolute;top:8px;right:14px;padding:0!important;border:0;background:none;z-index:2}
+#result.final-v2 .settlement-footer #next-match{min-height:30px;padding:4px 14px;font-size:12px}
+#result.final-v2 #settlement-pause,#result.final-v2 #settlement-countdown{display:none}
+#result.final-v2 .fs-row{position:absolute;left:24px;right:24px;bottom:12px;display:flex;justify-content:space-around;align-items:flex-end}
+#result.final-v2 .fs-p{position:relative;width:180px;display:flex;flex-direction:column;align-items:center;animation:fs-in .5s cubic-bezier(.3,1.5,.5,1) var(--d) both}
+@keyframes fs-in{from{opacity:0;transform:translateY(40px) scale(.85)}to{opacity:1;transform:none}}
+#result.final-v2 .fs-p img{display:block;max-width:190px;object-fit:contain;filter:drop-shadow(0 6px 8px #000a)}
+#result.final-v2 .fs-p.r1::before{content:'';position:absolute;bottom:50px;left:50%;width:230px;height:230px;margin-left:-115px;border-radius:50%;background:radial-gradient(#ffe08a55,transparent 65%);z-index:-1}
+#result.final-v2 .fs-rank{position:absolute;top:-4px;left:18px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:900 19px "Noto Serif TC","Noto Serif CJK TC",serif;color:#f6ead2;background:#5a4632;border:2px solid #b8a07a;z-index:2}
+#result.final-v2 .fs-p.r1 .fs-rank{background:linear-gradient(#ffe48a,#c8952e);color:#3a2400;border-color:#fff3c0}
+#result.final-v2 .fs-plate{margin-top:4px;width:150px;text-align:center;background:linear-gradient(#2a1c12e6,#120c06e6);border:2px solid #6d5a3a;border-radius:10px;padding:4px 0 5px;display:grid}
+#result.final-v2 .fs-p.r1 .fs-plate{border-color:#e8c060;box-shadow:0 0 14px #e8c06088}
+#result.final-v2 .fs-plate strong{font-size:13px;color:#f6ead2}
+#result.final-v2 .fs-plate span{font:900 22px "Noto Sans TC",sans-serif;color:#e8e2d6}
+#result.final-v2 .fs-plate span.gain{color:#ffd76a}
+#result.final-v2 .fs-plate span.loss{color:#8fb8ff}
+#result.final-v2[hidden]{display:none!important}

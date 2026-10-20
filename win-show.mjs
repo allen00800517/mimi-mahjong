@@ -193,3 +193,11 @@ export function bigPlan(b){
  const faceStart=(seal??(subs.at(-1)??T.tai))+T.step,faces=[0,1,2].map(i=>faceStart+i*T.face);
  return {main:T.main,tai:T.tai,subs,seal,faces,ready:faces.at(-1)+T.ready};
 }
+// v1.40 · Settlement reactions (user, 2026-10-21): every hand's score card shows the player's chibi face — gained points
+// → happy (cropped from the happy full-body art), lost points → the meltdown face, nothing → the everyday chibi. The
+// end-of-match standings show the full bodies by rank: up → happy, down → sad.
+export const SETTLE_ART=Object.freeze({happy:id=>'./assets/settle-v1/'+id+'-happy.webp',sad:id=>'./assets/settle-v1/'+id+'-sad.webp',happyFace:id=>'./assets/settle-v1/'+id+'-happy-face.webp'});
+export function settleMood(delta){return delta>0?'happy':delta<0?'sad':'calm';}
+export function settleFace(id,delta){const m=settleMood(delta);return m==='happy'?SETTLE_ART.happyFace(id):m==='sad'?BIG_ART.crash(id):null;}
+// full-body height (stage px) on the final standings: sitting / kneeling poses are shorter by nature
+export const SETTLE_BODY_H=Object.freeze({happy:{mimi:228,ichika:214,harumi:218,gondo:214},sad:{mimi:168,ichika:172,harumi:212,gondo:212}});

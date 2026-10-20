@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect,bigWordUrl,bigWordHeight,BIG_SEAL,BIG_PRIORITY} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect,bigWordUrl,bigWordHeight,BIG_SEAL,BIG_PRIORITY,SETTLE_ART,settleMood,settleFace,SETTLE_BODY_H} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
@@ -262,7 +262,7 @@ function playBigClip(st,id){
  v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
 }
 function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id),SETTLE_ART.happyFace(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -447,13 +447,19 @@ function advanceResult(revision,handNumber){
   lastEffect=null;clearEffects();resultDismissed=false;selected=null;selectedIndex=null;declaring=false;saveLocal();render();
  }catch(e){settlementHeld=true;$('feedback').textContent=e.message;const label=$('settlement-countdown');if(label)label.textContent='無法接續：'+e.message;console.error(e);}
 }
+// v1.40 · the chibi reaction on each hand's score card (see settleFace)
+function scoreFace(s,d){const id=PORTRAITS[s],u=settleFace(id,d);return '<i class="sb-face '+settleMood(d)+'"><img alt="" draggable="false" src="'+(u||characterSprite(s,'chibi'))+'"></i>';}
 function renderSettlement(){
- const el=$('result');el.replaceChildren();if(!game.result)return;
+ const el=$('result');el.replaceChildren();el.classList.remove('final-v2');if(!game.result)return;
  const r=game.result,completed=match?.status==='completed';
  const title=completed?'整場結算':r.kind==='draw'?'本手流局':r.kind==='review'?'本手待核對':FULL_NAMES[r.winner]+' '+(r.method==='flower'?(r.flower.kind==='eight'?'八仙過海':'七搶一'):r.method==='tsumo'?'自摸':r.method==='rob_added_kan'?'搶槓胡':'胡牌');
  el.innerHTML='<div class="settlement-heading"><h2>'+escape(title)+'</h2><button class="close-result">返回牌桌</button></div><div class="settlement-body"></div><div class="settlement-footer"><span id="settlement-countdown" role="status"></span><button id="settlement-pause">暫停倒數</button></div>';
  const body=el.querySelector('.settlement-body');
- if(completed)body.innerHTML='<div class="standings">'+match.standings().map(p=>'<div><strong>'+p.rank+' 名 · '+NAMES[p.seat]+'</strong><span>'+signed(p.score)+' 分</span></div>').join('')+'</div><p>完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button>';
+ // v1.40 · final standings: each player's full-body chibi by rank (happy when up, sad when down); fourth place pops in
+ // first and the winner last.
+ if(completed){el.classList.add('final-v2');const st=match.standings();
+  body.innerHTML='<p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button><div class="fs-row">'+st.map((p,i)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id),h=m==='calm'?200:SETTLE_BODY_H[m][id]??210;
+   return '<div class="fs-p r'+p.rank+' '+m+'" style="--d:'+((st.length-1-i)*260+200)+'ms"><b class="fs-rank">'+p.rank+'</b><img alt="" draggable="false" src="'+src+'" style="height:'+h+'px"><div class="fs-plate"><strong>'+escape(FULL_NAMES[p.seat])+'</strong><span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span></div></div>';}).join('')+'</div>';}
  else{
   if(r.reason)body.innerHTML+='<p>'+escape(r.reason)+'</p>';
   if(r.hand){const melds=r.winner!==undefined?game.players[r.winner].melds:[],groups=settlementGroups(r,melds);
@@ -467,7 +473,7 @@ function renderSettlement(){
    else body.innerHTML+='<div class="score-rows">'+r.score.rows.map(x=>'<span>'+escape(x.name)+' '+x.tai+' 台</span>').join('')+'</div><p class="tai-total">合計 '+r.score.tai+' 台'+(r.flower?' · 花胡另計':'')+'</p>';
   }
   const delta=[0,0,0,0];for(const x of r.payments??[]){delta[x.from]-=x.amount;delta[x.to]+=x.amount;}
-  if(r.kind!=='review')body.innerHTML+='<div class="score-board">'+game.scores.map((score,s)=>'<div><strong>'+NAMES[s]+'</strong><b class="'+(delta[s]>0?'gain':delta[s]<0?'loss':'')+'">'+signed(delta[s])+'</b><small>累計 '+signed(score)+'</small></div>').join('')+'</div>';
+  if(r.kind!=='review')body.innerHTML+='<div class="score-board">'+game.scores.map((score,s)=>'<div>'+scoreFace(s,delta[s])+'<strong>'+NAMES[s]+'</strong><b class="'+(delta[s]>0?'gain':delta[s]<0?'loss':'')+'">'+signed(delta[s])+'</b><small>累計 '+signed(score)+'</small></div>').join('')+'</div>';
   if(r.payments?.length)body.innerHTML+='<details><summary>查看付款與台數細節</summary>'+r.payments.map(x=>'<p>'+NAMES[x.from]+' → '+NAMES[x.to]+'：'+x.amount+' 分（底 100 ＋ '+x.tai+' 台 × 50；莊家／連莊 '+x.dealerTai+' 台'+(x.flowerTai!==undefined?'；本筆花台 '+x.flowerTai+' 台':'')+'）</p>').join('')+'</details>';
  }
  decorateWinSettlement(el,r,completed);
