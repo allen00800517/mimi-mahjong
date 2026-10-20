@@ -201,3 +201,8 @@ export function settleMood(delta){return delta>0?'happy':delta<0?'sad':'calm';}
 export function settleFace(id,delta){const m=settleMood(delta);return m==='happy'?SETTLE_ART.happyFace(id):m==='sad'?BIG_ART.crash(id):null;}
 // full-body height (stage px) on the final standings: sitting / kneeling poses are shorter by nature
 export const SETTLE_BODY_H=Object.freeze({happy:{mimi:228,ichika:214,harumi:218,gondo:214},sad:{mimi:168,ichika:172,harumi:212,gondo:212}});
+// v1.41 · the final standings stand on a podium (generated art): 1st in the middle, 2nd left, 3rd right, 4th on the
+// floor beside it. Geometry is in fractions of the podium picture: x = tier centre, foot = where a figure's feet land
+// on the tier top, panel = the tier's blank front panel (left, top, width, height) for rank, name and score.
+export const PODIUM=Object.freeze({art:'./assets/settle-v1/podium.webp',title:'./assets/settle-v1/title.webp',ratio:1000/486,
+ tiers:[{x:.5,foot:.05,panel:[.40,.25,.22,.66]},{x:.165,foot:.34,panel:[.05,.53,.22,.40]},{x:.833,foot:.595,panel:[.74,.77,.21,.16]}]});

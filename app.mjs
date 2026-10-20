@@ -22,7 +22,7 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect,bigWordUrl,bigWordHeight,BIG_SEAL,BIG_PRIORITY,SETTLE_ART,settleMood,settleFace,SETTLE_BODY_H} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect,bigWordUrl,bigWordHeight,BIG_SEAL,BIG_PRIORITY,SETTLE_ART,settleMood,settleFace,SETTLE_BODY_H,PODIUM} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
@@ -448,18 +448,37 @@ function advanceResult(revision,handNumber){
  }catch(e){settlementHeld=true;$('feedback').textContent=e.message;const label=$('settlement-countdown');if(label)label.textContent='無法接續：'+e.message;console.error(e);}
 }
 // v1.40 · the chibi reaction on each hand's score card (see settleFace)
+// v1.41 · podium standings. Reveal order 4th → 1st (the winner lands with a thud, rays and confetti); it plays once per
+// finished match — render() rebuilds this panel often, later builds show the final state at once.
+let finalRevealed=null,finalStart=0;
+function finalStandings(st){
+ const W=430,H=Math.round(W/PODIUM.ratio),fresh=finalRevealed!==game.revision&&!reduced();if(fresh){finalRevealed=game.revision;finalStart=performance.now();}
+ // a rebuild during the reveal keeps every animation where it is (negative delays); later rebuilds show it finished
+ const elapsed=fresh?0:performance.now()-finalStart,done=reduced()||elapsed>st.length*520+1800;
+ const body=(p,k)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id);return {src,h:Math.round((m==='calm'?200:SETTLE_BODY_H[m][id]??210)*k),m};};
+ const at=i=>(st.length-1-i)*520+250,delay=i=>(at(i)-elapsed).toFixed(0)+'ms',score=p=>'<span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span>';
+ let html='<img class="fs-title" alt="最終戰果" draggable="false" src="'+PODIUM.title+'"><p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button><div class="fs-rays" style="--d0:'+delay(0)+'"></div><div class="fs-podium" style="width:'+W+'px;height:'+H+'px"><img class="fs-podium-art" alt="" draggable="false" src="'+PODIUM.art+'">';
+ st.slice(0,3).forEach((p,i)=>{const t=PODIUM.tiers[i],b=body(p,.74),[pl,pt,pw,ph]=t.panel;
+  html+='<img class="fs-fig r'+p.rank+' '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="--d:'+delay(i)+';left:'+(t.x*W).toFixed(0)+'px;bottom:'+((1-t.foot)*H).toFixed(0)+'px;height:'+b.h+'px">'
+   +'<div class="fs-panel t'+i+'" style="--d:'+delay(i)+';left:'+(pl*W).toFixed(0)+'px;top:'+(pt*H).toFixed(0)+'px;width:'+(pw*W).toFixed(0)+'px;height:'+(ph*H).toFixed(0)+'px"><b>'+p.rank+'</b><strong>'+escape(NAMES[p.seat])+'</strong>'+score(p)+'</div>';});
+ html+='</div>';
+ const p4=st[3];if(p4){const b=body(p4,.66);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="height:'+b.h+'px"><div class="fs-plate4"><b>'+p4.rank+'</b><strong>'+escape(NAMES[p4.seat])+'</strong>'+score(p4)+'</div></div>';}
+ html+='<div class="fs-confetti">'+Array.from({length:36},(_,i)=>'<i style="--x:'+((i*37)%100)+'%;--r:'+((i*53)%180)+'deg;--t:'+(1.6+(i%5)*.35).toFixed(2)+'s;--c:'+['#ffd76a','#ff6b6b','#fff3c0','#e8c060'][i%4]+'"></i>').join('')+'</div>';
+ if(fresh)st.forEach((p,i)=>setTimeout(()=>{if($('result').classList.contains('final-v2'))sound.play(i===0?'pillar':'yaku');},at(i)));
+ if(done)queueMicrotask(()=>$('result').classList.add('fs-shown'));
+ return html;
+}
 function scoreFace(s,d){const id=PORTRAITS[s],u=settleFace(id,d);return '<i class="sb-face '+settleMood(d)+'"><img alt="" draggable="false" src="'+(u||characterSprite(s,'chibi'))+'"></i>';}
 function renderSettlement(){
- const el=$('result');el.replaceChildren();el.classList.remove('final-v2');if(!game.result)return;
+ const el=$('result');el.replaceChildren();el.classList.remove('final-v2','fs-shown');if(!game.result)return;
  const r=game.result,completed=match?.status==='completed';
  const title=completed?'整場結算':r.kind==='draw'?'本手流局':r.kind==='review'?'本手待核對':FULL_NAMES[r.winner]+' '+(r.method==='flower'?(r.flower.kind==='eight'?'八仙過海':'七搶一'):r.method==='tsumo'?'自摸':r.method==='rob_added_kan'?'搶槓胡':'胡牌');
  el.innerHTML='<div class="settlement-heading"><h2>'+escape(title)+'</h2><button class="close-result">返回牌桌</button></div><div class="settlement-body"></div><div class="settlement-footer"><span id="settlement-countdown" role="status"></span><button id="settlement-pause">暫停倒數</button></div>';
  const body=el.querySelector('.settlement-body');
  // v1.40 · final standings: each player's full-body chibi by rank (happy when up, sad when down); fourth place pops in
  // first and the winner last.
- if(completed){el.classList.add('final-v2');const st=match.standings();
-  body.innerHTML='<p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button><div class="fs-row">'+st.map((p,i)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id),h=m==='calm'?200:SETTLE_BODY_H[m][id]??210;
-   return '<div class="fs-p r'+p.rank+' '+m+'" style="--d:'+((st.length-1-i)*260+200)+'ms"><b class="fs-rank">'+p.rank+'</b><img alt="" draggable="false" src="'+src+'" style="height:'+h+'px"><div class="fs-plate"><strong>'+escape(FULL_NAMES[p.seat])+'</strong><span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span></div></div>';}).join('')+'</div>';}
+ // v1.41 · on the podium: 1st in the middle, 2nd left, 3rd right, 4th sitting on the floor beside it (see PODIUM).
+ if(completed){el.classList.add('final-v2');body.innerHTML=finalStandings(match.standings());}
  else{
   if(r.reason)body.innerHTML+='<p>'+escape(r.reason)+'</p>';
   if(r.hand){const melds=r.winner!==undefined?game.players[r.winner].melds:[],groups=settlementGroups(r,melds);
