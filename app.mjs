@@ -130,7 +130,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview||!winPresentation.big)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
  if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -145,7 +145,8 @@ function startWinCinema(r=game.result,preview=false){
  // others keep the still placeholder. Either way the stamp and the pattern words follow.
  const ci=cutinFor(r),cid=PORTRAITS[r.winner],clip=!!ci&&cutinShow.canPlay(cid);
  if(ci&&showCutin(cid,ci.shape,clip)){
-  musicOverride='hush';syncMusic();{const b=bigHand(r);if(b)music.load(b.tier>=4?'big4':'big3');}
+  // v1.36 · a big hand's theme starts right here with the cut-in; smaller hands just fade the table music out.
+  {const b=bigHand(r);musicOverride=b?(b.tier>=4?'big4':'big3'):'hush';syncMusic();}
   $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;$('cinema-skip').focus();syncSettlement();
   let went=false;
   const toStamp=white=>{if(went||!winPresentation)return;went=true;cutinShow.stop();clearTimeout(cinemaTimer);sound.play('win',{method:r.method});
@@ -264,7 +265,6 @@ function showBigWin(r,white){
   +'<div class="bw-lose">'+losers.map((x,i)=>'<div style="--d:'+plan.faces[i]+'ms"><img alt="" draggable="false" src="'+BIG_ART.crash(x)+'"></div>').join('')+'</div>'
   +'<div class="bw-tap">點一下繼續</div><div class="bw-pl l"></div><div class="bw-pl r"></div>'+(white?'<div class="wc-white"></div>':'');
  c.prepend(st);
- musicOverride=t>=4?'big4':'big3';syncMusic();
  clearYakuBeats();
  const beat=(at,name,hard)=>yakuTimers.push(setTimeout(()=>{if(!st.isConnected)return;sound.play(name);
   const k=hard?6:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];

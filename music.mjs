@@ -15,10 +15,11 @@ export const MUSIC_TRACKS=Object.freeze({
  // the hit felt chopped); the title logo pops on the downbeat.
  title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02,startAt:1.52,downbeat:2.02},
  // v1.35 · big-hand themes (user's Flow Music, 2026-10-20): 3 = Mahjong Victory Fanfare (take 2), 4 = Heavenly Mahjong
- // Miracle, both 140 BPM. They start on the big-hand screen so that their first big hit (hit, s into the file) lands
- // with the leading pattern's slam 0.7 s in (BIG_TIMING.main), then loop 8 bars (3) / 12 bars (4) until the next hand.
- big3:{label:'大牌・三級',url:'./assets/music-v1/bgm-big3.mp3',loopStart:50.586,loopEnd:64.3,startAt:0.954,hit:1.654},
- big4:{label:'大牌・四級',url:'./assets/music-v1/bgm-big4.mp3',loopStart:33.928,loopEnd:54.5,startAt:2.72,hit:3.42},
+ // Miracle, both 140 BPM. v1.36 · they start the moment 胡 is pressed, together with the cut-in (user: the music has to
+ // come in with the effect, not later), cutting the table music short (fadeOut); they loop 8 bars (3) / 12 bars (4)
+ // until the next hand. startAt skips the file's leading silence; hit = the first big hit, s into the file.
+ big3:{label:'大牌・三級',url:'./assets/music-v1/bgm-big3.mp3',loopStart:50.586,loopEnd:64.3,startAt:.42,fadeIn:.05,fadeOut:.4,hit:1.654},
+ big4:{label:'大牌・四級',url:'./assets/music-v1/bgm-big4.mp3',loopStart:33.928,loopEnd:54.5,startAt:.04,fadeIn:.05,fadeOut:.4,hit:3.42},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
 export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
@@ -77,10 +78,10 @@ export class MusicPlayer{
   src.buffer=buffer;src.loop=true;src.loopStart=track.loopStart;src.loopEnd=Math.min(track.loopEnd,buffer.duration);
   // A track with startAt (the title theme) begins on its downbeat: from silence with no fade, over another track with
   // a short fade-in while the old one fades out as usual.
-  const at=track.startAt||0,fadeIn=at?.12:this.fade;
+  const at=track.startAt||0,fadeIn=track.fadeIn??(at?.12:this.fade);
   gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(1,now+fadeIn);
   src.connect(gain);gain.connect(out);src.start(now,at);
-  if(this.active)this.stopActive(this.fade);
+  if(this.active)this.stopActive(track.fadeOut??this.fade);
   this.active={id,src,gain};this.current=id;this.prune(id);
  }
  stopActive(fade){
