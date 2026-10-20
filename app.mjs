@@ -78,8 +78,13 @@ renderFlowerPreview();
 const reduced=()=>!$('motion').checked||matchMedia('(prefers-reduced-motion: reduce)').matches;
 function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,soundDefault:'v102',flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
 // Background music follows the master sound switch, the menu choice and page visibility.
-const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});
-function syncMusic(){try{music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value,title:titleScreen.open||charSelect.open}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
+const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});globalThis.mimiMusic=music; // read-only handle for QA (which track is actually playing)
+// v1.35 · musicOverride: 'hush' from the cut-in on (the table music fades out), 'big3'/'big4' on the big-hand screen and
+// through its settlement; a real big hand keeps its theme until the next hand is dealt, a preview until the menu returns.
+let musicOverride=null;
+function syncMusic(){try{if(musicOverride&&musicOverride!=='hush'&&!winPresentation&&!['ended','review'].includes(game.phase))musicOverride=null;
+ if(musicOverride){if(musicOverride==='hush')music.hush();else music.want(musicOverride);$('table').dataset.music=musicOverride+'/'+(music.active?.id||'');return;}
+ music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value,title:titleScreen.open||charSelect.open}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
 $('music-choice').onchange=()=>{savePreferences();if(sound.enabled&&sound.state!=='running')sound.unlock().then(syncMusic);else syncMusic();};
 function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);b.dataset.samples=String(sound.samples?.size||0);syncMusic();}
 $('sound-toggle').onclick=async()=>{await sound.toggle();if(sound.enabled)await characterActors.prepareVoices();else characterActors.stopVoices();sound.play('select');savePreferences();syncSound();};
@@ -125,7 +130,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
  if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -140,6 +145,7 @@ function startWinCinema(r=game.result,preview=false){
  // others keep the still placeholder. Either way the stamp and the pattern words follow.
  const ci=cutinFor(r),cid=PORTRAITS[r.winner],clip=!!ci&&cutinShow.canPlay(cid);
  if(ci&&showCutin(cid,ci.shape,clip)){
+  musicOverride='hush';syncMusic();{const b=bigHand(r);if(b)music.load(b.tier>=4?'big4':'big3');}
   $('win-cinema').hidden=false;$('game-shell').inert=true;$('result').hidden=true;$('cinema-skip').focus();syncSettlement();
   let went=false;
   const toStamp=white=>{if(went||!winPresentation)return;went=true;cutinShow.stop();clearTimeout(cinemaTimer);sound.play('win',{method:r.method});
@@ -242,7 +248,7 @@ function yakuRow(r,anim){
 // v1.34 · Big-hand screen (tier 3/4): background per tier, 龍鳳柱, the winner's big-win figure, the leading pattern,
 // the other patterns, a 雙大牌 seal, the three losers' meltdown faces, then 「點一下繼續」. Times come from bigPlan.
 let bigWinLoaded=false;
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big3');music.prefetch('big4');},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -258,6 +264,7 @@ function showBigWin(r,white){
   +'<div class="bw-lose">'+losers.map((x,i)=>'<div style="--d:'+plan.faces[i]+'ms"><img alt="" draggable="false" src="'+BIG_ART.crash(x)+'"></div>').join('')+'</div>'
   +'<div class="bw-tap">點一下繼續</div><div class="bw-pl l"></div><div class="bw-pl r"></div>'+(white?'<div class="wc-white"></div>':'');
  c.prepend(st);
+ musicOverride=t>=4?'big4':'big3';syncMusic();
  clearYakuBeats();
  const beat=(at,name,hard)=>yakuTimers.push(setTimeout(()=>{if(!st.isConnected)return;sound.play(name);
   const k=hard?6:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];

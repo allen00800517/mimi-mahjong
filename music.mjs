@@ -14,6 +14,11 @@ export const MUSIC_TRACKS=Object.freeze({
  // earlier (startAt), so the tail of the swell leads into the hit instead of cutting in on it (user: starting right on
  // the hit felt chopped); the title logo pops on the downbeat.
  title:{label:'標題',url:'./assets/music-v1/bgm-title.mp3',loopStart:80.02,loopEnd:160.02,startAt:1.52,downbeat:2.02},
+ // v1.35 · big-hand themes (user's Flow Music, 2026-10-20): 3 = Mahjong Victory Fanfare (take 2), 4 = Heavenly Mahjong
+ // Miracle, both 140 BPM. They start on the big-hand screen so that their first big hit (hit, s into the file) lands
+ // with the leading pattern's slam 0.7 s in (BIG_TIMING.main), then loop 8 bars (3) / 12 bars (4) until the next hand.
+ big3:{label:'大牌・三級',url:'./assets/music-v1/bgm-big3.mp3',loopStart:50.586,loopEnd:64.3,startAt:0.954,hit:1.654},
+ big4:{label:'大牌・四級',url:'./assets/music-v1/bgm-big4.mp3',loopStart:33.928,loopEnd:54.5,startAt:2.72,hit:3.42},
 });
 export const WIND_TRACKS=Object.freeze(['east','south','west','north']);
 export const MUSIC_VOLUME=.35; // v0.92: 30% lower than the first .5 (user request)
@@ -58,6 +63,8 @@ export class MusicPlayer{
  whenPlaying(id,timeout=1200){const t0=Date.now();return new Promise(res=>{const tick=()=>{if(this.active?.id===id)res(true);else if(Date.now()-t0>=timeout)res(false);else setTimeout(tick,15);};tick();});}
  // Ask for a track; playback follows whenever audio is enabled. Calling it repeatedly with the same id is cheap.
  want(id){this.wanted=id;this.sync();}
+ // v1.35 · silence (fading out what plays) until the next want(): the cut-in takes the stage on its own sound.
+ hush(fade=.5){this.wanted=null;this.pending=null;if(this.active)this.stopActive(fade);this.current=null;}
  async sync(){
   const ctx=this.context(),on=!!(ctx&&this.enabled()&&ctx.state==='running');
   if(!on){this.pending=null;if(this.active)this.stopActive(0.25);this.current=null;return;}
