@@ -151,6 +151,16 @@ export function tallyRows(result,{dealer,repeats=0,names=[]}={}){
 export const BIG_ART=Object.freeze({bg:t=>'./assets/bigwin-v1/bg'+(t>=4?4:3)+'.webp',portrait:id=>'./assets/bigwin-v1/'+id+'-bigwin.webp',crash:id=>'./assets/bigwin-v1/'+id+'-crash.webp'});
 // where each winner's figure stands on the 854×394 stage (px), tuned with the user on the mockups
 export const BIG_POSE=Object.freeze({mimi:{left:66,top:4,h:400},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436}});
+// v1.38 · a big-win figure can come alive (green-screen Flow clip, keyed live like the 自摸 clips): it plays once from
+// the still's pose and lands back on it, then holds its last frame. frame = clip size (px); box = the figure's bounding
+// box in the clip's first frame, which is matched to where the still stands (BIG_POSE), so the swap is invisible.
+export const BIG_CLIP=Object.freeze({
+ ichika:{video:'./assets/bigwin-v1/ichika-bigwin.mp4',frame:[652,1170],box:[12,26,554,1126]}, // 莓香 twirl (user's Flow clip, 2026-10-20)
+});
+export function bigClipRect(id){
+ const c=BIG_CLIP[id],p=BIG_POSE[id];if(!c||!p)return null;const k=p.h/c.box[3];
+ return {left:p.left-c.box[0]*k,top:p.top-c.box[1]*k,width:c.frame[0]*k,height:c.frame[1]*k};
+}
 export const BIG_PRIORITY=Object.freeze(['天胡','地胡','大四喜','八仙過海','七搶一','大三元','字一色','小四喜','五暗刻','清一色','人胡','天聽','地聽']);
 // ms from the screen's first frame: figure slides in, main word slams, tai label, then each sub line, the seal, faces
 export const BIG_TIMING=Object.freeze({main:700,tai:980,sub:1250,step:380,face:130,ready:450});

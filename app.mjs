@@ -22,9 +22,10 @@ import {tileFace,concealedFace,setFlowerSkin} from './tiles.mjs';
 import {TableSound} from './sound.mjs';
 import {DiceShow,diceBadgeText,DICE_TIMING} from './dice-show.mjs';
 import {DealShow,DEAL_START_AFTER_DICE} from './deal-show.mjs';
-import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE} from './win-show.mjs';
+import {sealChars,winTaiTotal,tallyRows,winGrade,winPortraits,stampWord,winCaption,revealPlan,WIN_TIMING,WIN_COLORS,WIN_ART,WIN_ANIM,YAKU_ART,YAKU_SHOW,YAKU_PAD,yakuWords,yakuUrl,yakuSpan,CUTIN_TIMING,cutinFor,cutinCrop,taiNumeral,bigHand,bigPlan,BIG_ART,BIG_POSE,BIG_CLIP,bigClipRect} from './win-show.mjs';
 import {TsumoShow,CLIP_MAX_MS} from './tsumo-show.mjs';
 import {CutinShow,CUTIN_CLIPS} from './cutin-show.mjs';
+import {ChromaVideo} from './chroma-video.mjs';
 import {CharSelect,rosterFor} from './char-select.mjs';
 import {TitleScreen,TITLE_ART,titleLang} from './title-screen.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
@@ -130,7 +131,7 @@ $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))in
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 function finishWinCinema(){
- if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
+ if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;stopBigClip();$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
  if(preview&&!portrait()){openActorMenu(preview.id,preview.key);return;}
  if(!portrait()&&!document.hidden)document.querySelector('.close-result')?.focus();
@@ -248,8 +249,20 @@ function yakuRow(r,anim){
 }
 // v1.34 · Big-hand screen (tier 3/4): background per tier, 龍鳳柱, the winner's big-win figure, the leading pattern,
 // the other patterns, a 雙大牌 seal, the three losers' meltdown faces, then 「點一下繼續」. Times come from bigPlan.
-let bigWinLoaded=false;
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+let bigWinLoaded=false;const bigClipUrls=new Map();let bigClipRun=null;
+// v1.38 · living big-win figures: the clip is fetched as a blob after the table is ready, played muted and keyed live
+// over the still (which stays underneath until the first frame is drawn); it plays once and keeps its last frame.
+function playBigClip(st,id){
+ const url=bigClipUrls.get(id),r=bigClipRect(id),img=st.querySelector('.bw-who');if(!url||!r||!img)return;
+ const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';
+ v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';v.setAttribute('aria-hidden','true');document.body.append(v);v.src=url;
+ const cv=document.createElement('canvas');cv.className='bw-who bw-clip';cv.style.cssText='left:'+r.left.toFixed(1)+'px;top:'+r.top.toFixed(1)+'px;width:'+r.width.toFixed(1)+'px;height:'+r.height.toFixed(1)+'px';
+ img.after(cv);const chroma=new ChromaVideo(cv,v),run={v,raf:0,done:false};bigClipRun=run;
+ const tick=()=>{if(bigClipRun!==run)return;if(chroma.draw()&&img.style.visibility!=='hidden')img.style.visibility='hidden';if(v.ended){run.done=true;return;}run.raf=requestAnimationFrame(tick);};
+ v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
+}
+function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id)])].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -264,7 +277,7 @@ function showBigWin(r,white){
   +(b.double?'<div class="bw-seal" style="--d:'+plan.seal+'ms">雙大牌</div>':'')+'</div>'
   +'<div class="bw-lose">'+losers.map((x,i)=>'<div style="--d:'+plan.faces[i]+'ms"><img alt="" draggable="false" src="'+BIG_ART.crash(x)+'"></div>').join('')+'</div>'
   +'<div class="bw-tap">點一下繼續</div><div class="bw-pl l"></div><div class="bw-pl r"></div>'+(white?'<div class="wc-white"></div>':'');
- c.prepend(st);
+ c.prepend(st);playBigClip(st,id);
  clearYakuBeats();
  const beat=(at,name,hard)=>yakuTimers.push(setTimeout(()=>{if(!st.isConnected)return;sound.play(name);
   const k=hard?6:3,frames=[{translate:'0 0'},{translate:k+'px '+(-k)+'px'},{translate:(-k)+'px '+k+'px'},{translate:(k/2)+'px 0'},{translate:'0 0'}];
