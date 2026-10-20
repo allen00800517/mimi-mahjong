@@ -72,7 +72,10 @@ export class CutinShow{
  }
  stop(){
   this.run++;this.timers.forEach(clearTimeout);this.timers=[];
-  try{this.video?.pause();}catch{}this.video=null;
+  // v1.33 · release the clip's video completely (src cleared, element removed): a stopped <video> otherwise keeps its
+  // hardware decoder until garbage collection, and replaying previews piled them up until iPhone audio broke down
+  // into a continuous beep.
+  const v=this.video;this.video=null;if(v){try{v.pause();v.onended=null;v.removeAttribute('src');v.load();}catch{}v.remove();}
   const s=this.src;this.src=null;if(s){try{const ctx=this.sound.context,now=ctx.currentTime;s.g.gain.setValueAtTime(s.g.gain.value,now);s.g.gain.linearRampToValueAtTime(0,now+.15);s.src.stop(now+.17);}catch{}}
  }
 }
