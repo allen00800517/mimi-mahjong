@@ -470,6 +470,9 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
    slams down from above, the phoenix pillar shoots up from below a beat later; each lands with a heavy thud, a jolt and
    gold sparks; their eyes leave coloured after-glows (dragon cyan, phoenix magenta). They fade into the closing white. */
 #win-cinema .ci-clip.open video{transform:scale(.8197)}
+/* v1.30 · lacquer backing behind the pillars, so the moment between the band opening and the pillars landing never
+   shows black at the sides */
+#win-cinema .wc-ci .ci-clip.open .ci-frame{background:linear-gradient(90deg,#2c0707,#6a1212 45%,#2c0707) 0 0/77px 100% no-repeat,linear-gradient(90deg,#2c0707,#6a1212 55%,#2c0707) 100% 0/77px 100% no-repeat,#000}
 #win-cinema .ci-pillar{position:absolute;top:0;width:77px;height:394px;background:center/100% 100% no-repeat;z-index:3;pointer-events:none;opacity:0}
 #win-cinema .ci-pillar.l{left:0;background-image:url('./assets/cutin-v1/pillar-dragon.webp');--eye:#52f4ff}
 #win-cinema .ci-pillar.r{right:0;background-image:url('./assets/cutin-v1/pillar-phoenix.webp');--eye:#ff52dc}
@@ -478,6 +481,13 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 @keyframes ci-drop{0%{transform:translateY(-105%);opacity:1;animation-timing-function:cubic-bezier(.55,0,1,.45)}78%{transform:translateY(0);animation-timing-function:ease-out}88%{transform:translateY(-2.5%);animation-timing-function:ease-in}100%{transform:translateY(0);opacity:1}}
 @keyframes ci-rise{0%{transform:translateY(105%);opacity:1;animation-timing-function:cubic-bezier(.55,0,1,.45)}78%{transform:translateY(0);animation-timing-function:ease-out}88%{transform:translateY(2.5%);animation-timing-function:ease-in}100%{transform:translateY(0);opacity:1}}
 #win-cinema .ci-pillar::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .42s ease-in}
+/* v1.30 · after landing a band of gold light sweeps along each pillar (dragon top→bottom, phoenix bottom→top), then
+   again every few seconds, fainter */
+#win-cinema .ci-pillar::before{content:"";position:absolute;left:0;right:0;height:38%;top:-40%;background:linear-gradient(to bottom,transparent,rgba(255,236,170,.0) 15%,rgba(255,240,190,.75) 50%,rgba(255,236,170,0) 85%,transparent);mix-blend-mode:screen;opacity:0;pointer-events:none}
+#win-cinema .ci-clip.open .ci-pillar.l::before{animation:ci-sheen-down 3s .42s linear infinite}
+#win-cinema .ci-clip.open .ci-pillar.r::before{animation:ci-sheen-up 3s .5s linear infinite}
+@keyframes ci-sheen-down{0%{top:-40%;opacity:1}24%{top:102%;opacity:1}25%,100%{top:102%;opacity:0}}
+@keyframes ci-sheen-up{0%{top:102%;opacity:1}24%{top:-40%;opacity:1}25%,100%{top:-40%;opacity:0}}
 #win-cinema .ci-clip.ending .ci-pillar::after{opacity:1}
 #win-cinema .ci-eye{position:absolute;width:0;height:0}
 #win-cinema .ci-pillar.l .ci-eye{left:71.4%;top:66.5%}

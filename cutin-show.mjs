@@ -64,7 +64,7 @@ export class CutinShow{
    const at=Math.max(0,c.open-v.currentTime*1000);
    this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('open');},at));
    // the pillars land 0.25 s (dragon) and 0.33 s (phoenix) after the band opens: a heavy thud and a jolt each
-   for(const d of [250,330])this.timers.push(setTimeout(()=>{if(token!==this.run)return;this.sound?.play?.('yaku');wrap.classList.remove('hit');void wrap.offsetWidth;wrap.classList.add('hit');},at+d));
+   for(const d of [250,330])this.timers.push(setTimeout(()=>{if(token!==this.run)return;this.sound?.play?.('pillar');wrap.classList.remove('hit');void wrap.offsetWidth;wrap.classList.add('hit');},at+d));
    this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('ending');},Math.max(0,c.ms-420-v.currentTime*1000)));
    this.timers.push(setTimeout(end,c.ms+600)); // safety if 'ended' never fires
   }).catch(()=>{if(token!==this.run)return;wrap.remove();onFail?.();});
