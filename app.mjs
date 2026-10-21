@@ -601,7 +601,7 @@ function render(){
  for(const [s,id] of [[0,'south'],[1,'east'],[2,'north'],[3,'west']])player(s,id);
  $('table-scores').innerHTML='<thead><tr><th scope="col">人物</th><th scope="col">門風</th><th scope="col">累計</th><th scope="col">狀態</th></tr></thead><tbody>'+game.players.map((p,s)=>'<tr><th scope="row">'+FULL_NAMES[s]+'</th><td>'+['東','南','西','北'][game.wind(s)]+'</td><td class="tally">'+(game.scores[s]>0?'+':'')+game.scores[s]+' 分</td><td class="status">'+[game.dealer===s?'莊':'',p.state==='S0'?'':STATE_NAMES[p.state],p.passed?'過水':''].filter(Boolean).join('・')+'</td></tr>').join('')+'</tbody>';
  $('table').dataset.phase=game.phase;
- $('wall').textContent='可摸 '+game.live+' 張';$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
+ $('wall').innerHTML='<small>可摸</small><b>'+game.live+'</b>';$('wall').setAttribute('aria-label','可摸 '+game.live+' 張');$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
  $('current-seed').textContent=match?String(match.seed):'練習牌例';
  $('round-label').textContent=match?(match.status==='completed'?'整場結束':'第 '+match.progress.handInRound+' 莊'+(game.repeats?' · 連 '+game.repeats:'')):'練習局';$('round-label').title=match?match.label:'固定配牌練習，不計入整場';
  $('deal-info').textContent=game.deal?'骰子 '+game.deal.dice.join('＋')+'＝'+game.deal.total+' · '+NAMES[game.deal.doorSeat]+'東位':'固定配牌練習';

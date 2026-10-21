@@ -633,6 +633,12 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
    for tiles. Name tags sit just over each character's head (touching the hair is fine). */
 #header-count #round-wind-token,#header-count #round-label{display:none!important}
 #header-count{padding:3px 8px}
+/* v1.47 · the wall count uses the big console look (small 可摸 over a large number), top right, nudged toward centre */
+#header-count{position:absolute!important;right:150px;top:4px;margin:0!important;padding:3px 11px 4px!important;border-radius:9px!important;background:#0f1d16d9!important;border:1.5px solid #b6975a;box-shadow:inset 0 0 0 2px #0006;z-index:6}
+#game-shell header nav{margin-left:auto}
+#header-count #wall{display:flex;flex-direction:column;align-items:center;line-height:1.05;color:#f3e2b0;font-weight:900}
+#header-count #wall small{font-size:9px;letter-spacing:2px;opacity:.8}
+#header-count #wall b{font:900 21px "Noto Sans TC",sans-serif;color:#ffe9a8;font-variant-numeric:tabular-nums}
 #game-shell header nav button{min-height:26px;height:26px;padding:0 6px}
 #table .west .profile{left:86px;right:auto;top:42px;transform:translateX(-50%)}
 #table .east .profile{left:768px;right:auto;top:42px;transform:translateX(-50%)}
