@@ -164,6 +164,9 @@ export const BIG_CLIP=Object.freeze({
  // the figure's own bounds would mis-scale it); 蜜蜜's tile sparkle runs a little past her clip's right edge.
  harumi:{video:'./assets/bigwin-v1/harumi-bigwin.mp4',frame:[522,1266],box:[18,8,494,1248]},
  mimi:{video:'./assets/bigwin-v1/mimi-bigwin.mp4',frame:[720,1280],box:[6,16,754,1066]},
+ // 權藤: a hearty laugh and a thrust of the pointing finger (made from the still padded onto a wide 9:16 green canvas so
+ // Flow keeps his arms).
+ gondo:{video:'./assets/bigwin-v1/gondo-bigwin.mp4',frame:[608,796],box:[16,18,576,768]},
 });
 export function bigClipRect(id){
  const c=BIG_CLIP[id],p=BIG_POSE[id];if(!c||!p)return null;const k=p.h/c.box[3];
