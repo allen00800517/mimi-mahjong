@@ -452,18 +452,22 @@ function advanceResult(revision,handNumber){
 // finished match — render() rebuilds this panel often, later builds show the final state at once.
 let finalRevealed=null,finalStart=0;
 function finalStandings(st){
- const W=430,H=Math.round(W/PODIUM.ratio),fresh=finalRevealed!==game.revision&&!reduced();if(fresh){finalRevealed=game.revision;finalStart=performance.now();}
+ const W=PODIUM.width,H=Math.round(W/PODIUM.ratio),fresh=finalRevealed!==game.revision&&!reduced();if(fresh){finalRevealed=game.revision;finalStart=performance.now();}
  // a rebuild during the reveal keeps every animation where it is (negative delays); later rebuilds show it finished
- const elapsed=fresh?0:performance.now()-finalStart,done=reduced()||elapsed>st.length*520+1800;
+ const elapsed=fresh?0:performance.now()-finalStart,done=reduced()||elapsed>st.length*520+1400;
  const body=(p,k)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id);return {src,h:Math.round((m==='calm'?200:SETTLE_BODY_H[m][id]??210)*k),m};};
- const at=i=>(st.length-1-i)*520+250,delay=i=>(at(i)-elapsed).toFixed(0)+'ms',score=p=>'<span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span>';
- let html='<img class="fs-title" alt="最終戰果" draggable="false" src="'+PODIUM.title+'"><p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button><div class="fs-rays" style="--d0:'+delay(0)+'"></div><div class="fs-podium" style="width:'+W+'px;height:'+H+'px"><img class="fs-podium-art" alt="" draggable="false" src="'+PODIUM.art+'">';
- st.slice(0,3).forEach((p,i)=>{const t=PODIUM.tiers[i],b=body(p,.74),[pl,pt,pw,ph]=t.panel;
-  html+='<img class="fs-fig r'+p.rank+' '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="--d:'+delay(i)+';left:'+(t.x*W).toFixed(0)+'px;bottom:'+((1-t.foot)*H).toFixed(0)+'px;height:'+b.h+'px">'
-   +'<div class="fs-panel t'+i+'" style="--d:'+delay(i)+';left:'+(pl*W).toFixed(0)+'px;top:'+(pt*H).toFixed(0)+'px;width:'+(pw*W).toFixed(0)+'px;height:'+(ph*H).toFixed(0)+'px"><b>'+p.rank+'</b><strong>'+escape(NAMES[p.seat])+'</strong>'+score(p)+'</div>';});
+ const at=i=>(st.length-1-i)*520+250,delay=i=>(at(i)-elapsed).toFixed(0)+'ms';
+ const plate=p=>'<strong>'+escape(NAMES[p.seat])+'</strong><span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span>';
+ const cx=Math.round((854-W)/2),top=394-H+PODIUM.sink;
+ let html='<img class="fs-title" alt="最終戰果" draggable="false" src="'+PODIUM.title+'"><p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button>'
+  +'<div class="fs-rays" style="--d0:'+delay(0)+';top:'+(top+PODIUM.tiers[0].foot*H-60).toFixed(0)+'px"></div>'
+  +'<div class="fs-podium" style="left:'+cx+'px;top:'+top+'px;width:'+W+'px;height:'+H+'px"><img class="fs-podium-art" alt="" draggable="false" src="'+PODIUM.art+'">';
+ st.slice(0,3).forEach((p,i)=>{const t=PODIUM.tiers[i],b=body(p,.92),[pl,pt,pw,ph]=t.panel,x=(t.x*W).toFixed(0),foot=((1-t.foot)*H).toFixed(0);
+  html+='<div class="fs-panel t'+i+'" style="--d:'+delay(i)+';left:'+(pl*W).toFixed(0)+'px;top:'+(pt*H).toFixed(0)+'px;width:'+(pw*W).toFixed(0)+'px;height:'+(ph*H).toFixed(0)+'px">'+p.rank+'</div>'
+   +'<img class="fs-fig r'+p.rank+' '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(+foot+8)+'px;height:'+b.h+'px">'
+   +'<div class="fs-plate" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(foot-12)+'px">'+plate(p)+'</div>';});
  html+='</div>';
- const p4=st[3];if(p4){const b=body(p4,.66);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="height:'+b.h+'px"><div class="fs-plate4"><b>'+p4.rank+'</b><strong>'+escape(NAMES[p4.seat])+'</strong>'+score(p4)+'</div></div>';}
- html+='<div class="fs-confetti">'+Array.from({length:36},(_,i)=>'<i style="--x:'+((i*37)%100)+'%;--r:'+((i*53)%180)+'deg;--t:'+(1.6+(i%5)*.35).toFixed(2)+'s;--c:'+['#ffd76a','#ff6b6b','#fff3c0','#e8c060'][i%4]+'"></i>').join('')+'</div>';
+ const p4=st[3];if(p4){const b=body(p4,.8);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="height:'+b.h+'px"><div class="fs-plate"><b>'+p4.rank+'</b>'+plate(p4)+'</div></div>';}
  if(fresh)st.forEach((p,i)=>setTimeout(()=>{if($('result').classList.contains('final-v2'))sound.play(i===0?'pillar':'yaku');},at(i)));
  if(done)queueMicrotask(()=>$('result').classList.add('fs-shown'));
  return html;

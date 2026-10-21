@@ -598,36 +598,25 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 /* secondary buttons sit bottom-left under the title, leaving the top clear above the winner */
 #result.final-v2 .settlement-heading .close-result{position:absolute;left:6px;right:auto;top:340px;min-width:112px}
 #result.final-v2 #final-history{left:20px;right:auto;top:304px;bottom:auto;min-width:112px}
-#result.final-v2 .fs-rays{position:absolute;left:427px;top:190px;width:860px;height:860px;margin:-430px;border-radius:50%;background:repeating-conic-gradient(#ffd76a26 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(#000 18%,transparent 62%);mask:radial-gradient(#000 18%,transparent 62%);animation:fs-rays 1s ease-out calc(var(--d0,0ms)) both,fs-spin 40s linear infinite}
+#result.final-v2 .fs-rays{position:absolute;left:427px;width:800px;height:800px;margin:-400px;border-radius:50%;background:repeating-conic-gradient(#ffd76a1c 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(#000 15%,transparent 60%);mask:radial-gradient(#000 15%,transparent 60%);animation:fs-rays 1s ease-out var(--d0,0ms) both,fs-spin 60s linear infinite}
 @keyframes fs-rays{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
 @keyframes fs-spin{to{rotate:360deg}}
-#result.final-v2 .fs-podium{position:absolute;left:50%;bottom:0;transform:translateX(-50%)}
-#result.final-v2 .fs-podium-art{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 -2px 10px #0008);animation:fs-rise .6s cubic-bezier(.2,.8,.2,1) both}
+/* v1.41b · plain flat podium (chibi style); the rank numeral is set on its red front, names and scores on plates at the feet */
+#result.final-v2 .fs-podium{position:absolute}
+#result.final-v2 .fs-podium-art{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 -2px 8px #0007);animation:fs-rise .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes fs-rise{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
-#result.final-v2 .fs-fig{position:absolute;transform:translateX(-50%);filter:drop-shadow(0 5px 6px #000a);animation:fs-jump .55s cubic-bezier(.3,1.6,.5,1) var(--d) both;z-index:2}
-#result.final-v2 .fs-fig.r1{z-index:3}
+#result.final-v2 .fs-panel{position:absolute;display:flex;align-items:center;justify-content:center;font:900 46px/1 "Noto Serif TC","Noto Serif CJK TC",serif;color:#fff3d8;text-shadow:0 2px 0 #7a0a0e;animation:fs-fade .4s ease-out var(--d) both}
+#result.final-v2 .fs-panel.t2{font-size:30px}
+#result.final-v2 .fs-fig{position:absolute;transform:translateX(-50%);filter:drop-shadow(0 4px 4px #0009);animation:fs-jump .55s cubic-bezier(.3,1.6,.5,1) var(--d) both;z-index:2}
 @keyframes fs-jump{from{opacity:0;transform:translate(-50%,-80px) scale(.6)}to{opacity:1;transform:translateX(-50%)}}
-#result.final-v2 .fs-panel{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1;animation:fs-fade .4s ease-out var(--d) both}
-#result.final-v2 .fs-panel b{font:900 30px "Noto Serif TC","Noto Serif CJK TC",serif;color:#a8141a}
-#result.final-v2 .fs-panel strong{font-size:12px;color:#3a2a18;font-weight:900;margin-top:2px}
-#result.final-v2 .fs-panel span{font:900 17px "Noto Sans TC",sans-serif;color:#3a2a18}
-#result.final-v2 .fs-panel.t2{flex-direction:row;gap:6px}
-#result.final-v2 .fs-panel.t2 b{font-size:20px}
-#result.final-v2 .fs-panel.t2 span{font-size:14px}
-#result.final-v2 .fs-panel span.gain{color:#a8740a}
-#result.final-v2 .fs-panel span.loss{color:#2a5ac0}
+#result.final-v2 .fs-plate{position:absolute;z-index:3;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:baseline;gap:6px;padding:2px 9px;border-radius:7px;background:#1a0f08e8;border:1px solid #c9a24e;color:#f6ead2;font-size:12px;font-weight:900;animation:fs-fade .4s ease-out var(--d) both}
+#result.final-v2 .fs-plate b{font:900 14px "Noto Serif TC","Noto Serif CJK TC",serif}
+#result.final-v2 .fs-plate span.gain{color:#ffd76a}
+#result.final-v2 .fs-plate span.loss{color:#8fb8ff}
 @keyframes fs-fade{from{opacity:0}to{opacity:1}}
-#result.final-v2 .fs-floor{position:absolute;right:28px;bottom:4px;display:flex;flex-direction:column;align-items:center;animation:fs-fade .5s ease-out var(--d) both}
-#result.final-v2 .fs-fig4{display:block;filter:drop-shadow(0 5px 6px #000a)}
-#result.final-v2 .fs-plate4{margin-top:2px;display:flex;align-items:baseline;gap:6px;padding:3px 10px;border-radius:8px;background:#2a1c12e6;border:1px solid #6d5a3a;font-size:12px;color:#f6ead2}
-#result.final-v2 .fs-plate4 b{font:900 15px "Noto Serif TC","Noto Serif CJK TC",serif}
-#result.final-v2 .fs-plate4 span{font-weight:900}
-#result.final-v2 .fs-plate4 span.gain{color:#ffd76a}
-#result.final-v2 .fs-plate4 span.loss{color:#8fb8ff}
-#result.final-v2 .fs-confetti{position:absolute;left:300px;width:254px;top:0;height:394px;pointer-events:none;overflow:hidden;z-index:4}
-#result.final-v2 .fs-confetti i{position:absolute;top:-14px;left:var(--x);width:6px;height:10px;border-radius:2px;background:var(--c);opacity:0;animation:fs-fall var(--t) linear 2.1s infinite;rotate:var(--r)}
-@keyframes fs-fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:.9;transform:translateY(410px) rotate(540deg)}}
+#result.final-v2 .fs-floor{position:absolute;left:770px;bottom:6px;width:0;display:flex;flex-direction:column;align-items:center;animation:fs-fade .5s ease-out var(--d) both}
+#result.final-v2 .fs-fig4{display:block;filter:drop-shadow(0 4px 4px #0009)}
+#result.final-v2 .fs-floor .fs-plate{position:relative;transform:none;margin-top:-6px}
 #result.final-v2.fs-shown *{animation-delay:0s!important;animation-duration:.01s!important}
-#result.final-v2.fs-shown .fs-confetti i,#result.final-v2.fs-shown .fs-rays{animation:none!important;opacity:1}
-#result.final-v2.fs-shown .fs-confetti i{opacity:0}
+#result.final-v2.fs-shown .fs-rays{animation:fs-spin 60s linear infinite!important;opacity:1}
 #result.final-v2[hidden]{display:none!important}

@@ -202,7 +202,9 @@ export function settleFace(id,delta){const m=settleMood(delta);return m==='happy
 // full-body height (stage px) on the final standings: sitting / kneeling poses are shorter by nature
 export const SETTLE_BODY_H=Object.freeze({happy:{mimi:228,ichika:214,harumi:218,gondo:214},sad:{mimi:168,ichika:172,harumi:212,gondo:212}});
 // v1.41 · the final standings stand on a podium (generated art): 1st in the middle, 2nd left, 3rd right, 4th on the
-// floor beside it. Geometry is in fractions of the podium picture: x = tier centre, foot = where a figure's feet land
-// on the tier top, panel = the tier's blank front panel (left, top, width, height) for rank, name and score.
-export const PODIUM=Object.freeze({art:'./assets/settle-v1/podium.webp',title:'./assets/settle-v1/title.webp',ratio:1000/486,
- tiers:[{x:.5,foot:.05,panel:[.40,.25,.22,.66]},{x:.165,foot:.34,panel:[.05,.53,.22,.40]},{x:.833,foot:.595,panel:[.74,.77,.21,.16]}]});
+// floor beside it. Geometry is in fractions of the podium picture: x = tier centre, foot = the tier's top edge (where
+// a figure's feet land), panel = the visible part of the tier's red front panel (left, top, width, height) for the
+// rank numeral. v2 (user, 2026-10-21): a plain flat podium in the chibi style instead of the ornate one; names and
+// scores sit on plates at each figure's feet; the podium sinks `sink` px below the stage so the tiers stay low.
+export const PODIUM=Object.freeze({art:'./assets/settle-v1/podium-v2.webp',title:'./assets/settle-v1/title.webp',ratio:1000/421,width:400,sink:20,
+ tiers:[{x:.5,foot:.005,panel:[.363,.12,.274,.75]},{x:.162,foot:.285,panel:[.041,.40,.271,.47]},{x:.839,foot:.528,panel:[.687,.64,.273,.23]}]});
