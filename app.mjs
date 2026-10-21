@@ -389,11 +389,19 @@ function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'
 function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
 function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
+// v1.45 · HUD reshuffle (user, 2026-10-21): the top keeps only the three buttons so the characters own it. Each
+// opponent's running score rides on their name tag; the wall count moves to a small console in the middle of the felt;
+// the bottom bar (which some phones' corners and home bar can cover) carries only secondary info, centred away from
+// the rounded corners: own score and rank, then round wind, hand and repeat count.
+function seatScore(s){const v=game.scores[s];return '<span class="seat-score'+(v>0?' gain':v<0?' loss':'')+'">'+signed(v)+'</span>';}
+function roundText(){return match?(match.status==='completed'?'整場結束':'第 '+match.progress.handInRound+' 莊'):'練習局';}
+function selfInfo(){const v=game.scores[0],rank=1+game.scores.filter(x=>x>v).length;
+ return '<span class="self-info">'+seatScore(0)+'<span class="self-rank">第 '+rank+' 名</span><i>｜</i><span class="self-round">'+['東','南','西','北'][game.roundWind]+'風圈・'+roundText()+'・連莊 '+game.repeats+'</span></span>';}
 function player(s,id){
  const p=game.players[s],acts=game.actions(s),active=(game.phase==='turn'&&game.turn===s)||(game.phase==='response'&&acts.length>0)||(game.phase==='flower'&&game.flowerEvent.winner===s);
  const cue=game.phase==='turn'?'出牌':game.phase==='response'?'可回應':'花胡機會';
  const badges=(p.state==='S0'?'':'<span class="status-badge" title="'+STATE_NAMES[p.state]+'">'+({S1:'聽',S2:'地聽',S3:'天聽'}[p.state])+'</span>')+(p.passed?'<span class="status-badge passed" title="過水限制生效">過水</span>':'');
- const profile=(s===0?'':'<div class="character-stage" data-character="'+PORTRAITS[s]+'"><img src="'+characterSprite(s)+'" alt="'+FULL_NAMES[s]+'Q版" draggable="false"></div>')+'<div class="profile"><div class="identity">'+(active?'<span class="turn-cue" role="img" aria-label="'+NAMES[s]+'：'+cue+'" title="'+cue+'">▶</span>':'')+'<div class="name">'+(s===0?'<span class="wind">'+['東','南','西','北'][game.wind(s)]+'</span>':'')+NAMES[s]+(game.dealer===s?'<span class="dealer-mark">莊</span>':'')+'</div>'+(badges?'<div class="state">'+badges+'</div>':'')+'</div></div>';
+ const profile=(s===0?'':'<div class="character-stage" data-character="'+PORTRAITS[s]+'"><img src="'+characterSprite(s)+'" alt="'+FULL_NAMES[s]+'Q版" draggable="false"></div>')+'<div class="profile"><div class="identity">'+(active?'<span class="turn-cue" role="img" aria-label="'+NAMES[s]+'：'+cue+'" title="'+cue+'">▶</span>':'')+'<div class="name">'+(s===0?'<span class="wind">'+['東','南','西','北'][game.wind(s)]+'</span>':'')+NAMES[s]+(game.dealer===s?'<span class="dealer-mark">莊</span>':'')+(s===0?'':seatScore(s))+'</div>'+(badges?'<div class="state">'+badges+'</div>':'')+(s===0?selfInfo():'')+'</div></div>';
 
  const backs=s===0?'':'<div class="backs" aria-label="'+p.hand.length+' 張暗牌">'+p.hand.map((_,i)=>'<i class="back" style="--back-index:'+i+';--back-depth:'+i+'">'+''+'</i>').join('')+'</div>';
  const flowers='<div class="flowers flower-group" aria-label="花牌">'+p.flowers.map(t=>'<button class="flower-tile tile small-tile" data-flower="'+t+'" aria-label="放大'+tileLabel(t)+'">'+(s===0?tileFace(t,{compact:true}):'')+'</button>').join('')+'</div>';
@@ -592,7 +600,7 @@ function render(){
  for(const [s,id] of [[0,'south'],[1,'east'],[2,'north'],[3,'west']])player(s,id);
  $('table-scores').innerHTML='<thead><tr><th scope="col">人物</th><th scope="col">門風</th><th scope="col">累計</th><th scope="col">狀態</th></tr></thead><tbody>'+game.players.map((p,s)=>'<tr><th scope="row">'+FULL_NAMES[s]+'</th><td>'+['東','南','西','北'][game.wind(s)]+'</td><td class="tally">'+(game.scores[s]>0?'+':'')+game.scores[s]+' 分</td><td class="status">'+[game.dealer===s?'莊':'',p.state==='S0'?'':STATE_NAMES[p.state],p.passed?'過水':''].filter(Boolean).join('・')+'</td></tr>').join('')+'</tbody>';
  $('table').dataset.phase=game.phase;
- $('wall').textContent='可摸 '+game.live+' 張';$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
+ $('wall').textContent='可摸 '+game.live+' 張';{let c=$('wall-console');if(!c){c=document.createElement('div');c.id='wall-console';c.setAttribute('role','status');$('table').append(c);}c.innerHTML='<small>可摸</small><b>'+game.live+'</b>';c.setAttribute('aria-label','可摸 '+game.live+' 張');}$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
  $('current-seed').textContent=match?String(match.seed):'練習牌例';
  $('round-label').textContent=match?(match.status==='completed'?'整場結束':'第 '+match.progress.handInRound+' 莊'+(game.repeats?' · 連 '+game.repeats:'')):'練習局';$('round-label').title=match?match.label:'固定配牌練習，不計入整場';
  $('deal-info').textContent=game.deal?'骰子 '+game.deal.dice.join('＋')+'＝'+game.deal.total+' · '+NAMES[game.deal.doorSeat]+'東位':'固定配牌練習';
