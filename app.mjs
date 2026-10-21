@@ -389,8 +389,9 @@ function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'
 function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
 function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
-// v1.45 · HUD reshuffle (user, 2026-10-21): the top keeps only the three buttons so the characters own it. Each
-// opponent's running score rides on their name tag; the wall count moves to a small console in the middle of the felt;
+// v1.45 · HUD reshuffle (user, 2026-10-21): the top right keeps only the wall count and the three buttons so the
+// characters own the rest (v1.46: the wall count went back up there — the felt is for tiles). Each opponent's running
+// score rides on their name tag, which sits just over the character's head;
 // the bottom bar (which some phones' corners and home bar can cover) carries only secondary info, centred away from
 // the rounded corners: own score and rank, then round wind, hand and repeat count.
 function seatScore(s){const v=game.scores[s];return '<span class="seat-score'+(v>0?' gain':v<0?' loss':'')+'">'+signed(v)+'</span>';}
@@ -600,7 +601,7 @@ function render(){
  for(const [s,id] of [[0,'south'],[1,'east'],[2,'north'],[3,'west']])player(s,id);
  $('table-scores').innerHTML='<thead><tr><th scope="col">人物</th><th scope="col">門風</th><th scope="col">累計</th><th scope="col">狀態</th></tr></thead><tbody>'+game.players.map((p,s)=>'<tr><th scope="row">'+FULL_NAMES[s]+'</th><td>'+['東','南','西','北'][game.wind(s)]+'</td><td class="tally">'+(game.scores[s]>0?'+':'')+game.scores[s]+' 分</td><td class="status">'+[game.dealer===s?'莊':'',p.state==='S0'?'':STATE_NAMES[p.state],p.passed?'過水':''].filter(Boolean).join('・')+'</td></tr>').join('')+'</tbody>';
  $('table').dataset.phase=game.phase;
- $('wall').textContent='可摸 '+game.live+' 張';{let c=$('wall-console');if(!c){c=document.createElement('div');c.id='wall-console';c.setAttribute('role','status');$('table').append(c);}c.innerHTML='<small>可摸</small><b>'+game.live+'</b>';c.setAttribute('aria-label','可摸 '+game.live+' 張');}$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
+ $('wall').textContent='可摸 '+game.live+' 張';$('dealer').textContent=NAMES[game.dealer]+'莊 · 連 '+game.repeats;
  $('current-seed').textContent=match?String(match.seed):'練習牌例';
  $('round-label').textContent=match?(match.status==='completed'?'整場結束':'第 '+match.progress.handInRound+' 莊'+(game.repeats?' · 連 '+game.repeats:'')):'練習局';$('round-label').title=match?match.label:'固定配牌練習，不計入整場';
  $('deal-info').textContent=game.deal?'骰子 '+game.deal.dice.join('＋')+'＝'+game.deal.total+' · '+NAMES[game.deal.doorSeat]+'東位':'固定配牌練習';

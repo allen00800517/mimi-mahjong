@@ -629,12 +629,14 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #result.final-v2[hidden]{display:none!important}
 /* v1.45 · HUD reshuffle: top = buttons only; wall count on a felt console; opponents' scores on their name tags; the
    bottom bar holds secondary info only, centred so phone corners can't clip it. */
-#header-count{display:none!important}
-#game-shell header nav{margin-left:auto}
+/* v1.46 · the wall count stays top right (alone, compact); round wind / hand moved to the bottom bar. The felt stays
+   for tiles. Name tags sit just over each character's head (touching the hair is fine). */
+#header-count #round-wind-token,#header-count #round-label{display:none!important}
+#header-count{padding:3px 8px}
 #game-shell header nav button{min-height:26px;height:26px;padding:0 6px}
-#wall-console{position:absolute;left:50%;top:205px;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;padding:3px 11px 4px;border-radius:9px;background:#0f1d16d9;border:1.5px solid #b6975a;box-shadow:inset 0 0 0 2px #0006;color:#f3e2b0;font-weight:900;line-height:1.05;pointer-events:none}
-#wall-console small{font-size:9px;letter-spacing:2px;opacity:.8}
-#wall-console b{font:900 21px "Noto Sans TC",sans-serif;color:#ffe9a8;font-variant-numeric:tabular-nums}
+#table .west .profile{left:86px;right:auto;top:42px;transform:translateX(-50%)}
+#table .east .profile{left:768px;right:auto;top:42px;transform:translateX(-50%)}
+#table .north .profile{left:478px;top:44px}
 .seat-score{margin-left:4px;font-size:.85em;font-weight:900;color:#e8dcc0;font-variant-numeric:tabular-nums}
 .seat-score.gain{color:#ffd76a}.seat-score.loss{color:#8fb8ff}
 .self .identity{justify-content:center}
