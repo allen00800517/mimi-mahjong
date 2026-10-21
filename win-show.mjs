@@ -167,6 +167,8 @@ export const BIG_CLIP=Object.freeze({
  // 權藤: a hearty laugh and a thrust of the pointing finger (made from the still padded onto a wide 9:16 green canvas so
  // Flow keeps his arms).
  gondo:{video:'./assets/bigwin-v1/gondo-bigwin.mp4',frame:[608,796],box:[16,18,576,768]},
+ // v1.54 · 珍英: one take (ロンよ in the wind, back to the first pose); cropped from 720×1280 to the figure's reach.
+ jinying:{video:'./assets/bigwin-v1/jinying-bigwin.mp4',frame:[664,1000],box:[30,14,604,971]},
 });
 export function bigClipRect(id){
  const c=BIG_CLIP[id],p=BIG_POSE[id];if(!c||!p)return null;const k=p.h/c.box[3];
