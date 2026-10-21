@@ -595,7 +595,12 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #result.final-v2 .fs-sub{position:absolute;left:20px;top:58px;right:auto;margin:0;text-align:left;font-size:11px;letter-spacing:2px;color:#e8d8b8;opacity:.85}
 #result.final-v2 .settlement-heading{justify-content:flex-end}
 #result.final-v2 .settlement-heading h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-/* secondary buttons sit bottom-left under the title, leaving the top clear above the winner */
+/* secondary buttons sit bottom-left under the title, leaving the top clear above the winner. v1.44: the heading is
+   lifted above the full-stage settlement body (which painted over 返回牌桌 and swallowed taps) and passes taps through
+   everywhere except its button; the decorative layers never catch taps either. */
+#result.final-v2 .settlement-heading{z-index:5;pointer-events:none}
+#result.final-v2 .settlement-heading .close-result{pointer-events:auto}
+#result.final-v2 .fs-rays,#result.final-v2 .fs-podium,#result.final-v2 .fs-floor{pointer-events:none}
 #result.final-v2 .settlement-heading .close-result{position:absolute;left:6px;right:auto;top:340px;min-width:112px}
 #result.final-v2 #final-history{left:20px;right:auto;top:304px;bottom:auto;min-width:112px}
 #result.final-v2 .fs-rays{position:absolute;left:427px;width:800px;height:800px;margin:-400px;border-radius:50%;background:repeating-conic-gradient(#ffd76a1c 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(#000 15%,transparent 60%);mask:radial-gradient(#000 15%,transparent 60%);animation:fs-rays 1s ease-out var(--d0,0ms) both,fs-spin 60s linear infinite}
