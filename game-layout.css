@@ -605,12 +605,14 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #result.final-v2 .fs-podium{position:absolute}
 #result.final-v2 .fs-podium-art{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 -2px 8px #0007);animation:fs-rise .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes fs-rise{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
-#result.final-v2 .fs-panel{position:absolute;display:flex;align-items:center;justify-content:center;font:900 46px/1 "Noto Serif TC","Noto Serif CJK TC",serif;color:#fff3d8;text-shadow:0 2px 0 #7a0a0e;animation:fs-fade .4s ease-out var(--d) both}
-#result.final-v2 .fs-panel.t2{font-size:30px}
+/* v1.42b · rank numerals: chunky rounded digits (Poppins Bold, OFL, subset to 1-4) in gold with the podium's black outline */
+@font-face{font-family:"PodiumNum";src:url(./assets/fonts/podium-num.woff) format("woff");font-weight:700;font-display:block}
+#result.final-v2 .fs-panel{position:absolute;display:flex;align-items:center;justify-content:center;font:700 50px/1 "PodiumNum","Noto Sans TC",sans-serif;color:#ffd34d;-webkit-text-stroke:7px #1a0f08;paint-order:stroke fill;text-shadow:0 3px 0 #1a0f08;animation:fs-fade .4s ease-out var(--d) both}
+#result.final-v2 .fs-panel.t2{font-size:34px;-webkit-text-stroke:6px #1a0f08}
 #result.final-v2 .fs-fig{position:absolute;transform:translateX(-50%);filter:drop-shadow(0 4px 4px #0009);animation:fs-jump .55s cubic-bezier(.3,1.6,.5,1) var(--d) both;z-index:2}
 @keyframes fs-jump{from{opacity:0;transform:translate(-50%,-80px) scale(.6)}to{opacity:1;transform:translateX(-50%)}}
 #result.final-v2 .fs-plate{position:absolute;z-index:3;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:baseline;gap:6px;padding:2px 9px;border-radius:7px;background:#1a0f08e8;border:1px solid #c9a24e;color:#f6ead2;font-size:12px;font-weight:900;animation:fs-fade .4s ease-out var(--d) both}
-#result.final-v2 .fs-plate b{font:900 14px "Noto Serif TC","Noto Serif CJK TC",serif}
+#result.final-v2 .fs-plate b{font:700 15px "PodiumNum","Noto Sans TC",sans-serif;color:#ffd34d}
 #result.final-v2 .fs-plate span.gain{color:#ffd76a}
 #result.final-v2 .fs-plate span.loss{color:#8fb8ff}
 @keyframes fs-fade{from{opacity:0}to{opacity:1}}
