@@ -264,7 +264,11 @@ function playBigClip(st,id){
  v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
 }
 function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},5000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id),SETTLE_ART.happyFace(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+// v1.51 · load order on a first visit: the table art and the opponents' motion sheets come first (needed at once);
+// the win clips (自摸, cut-ins, big-win figures ~16 MB) follow a few seconds later instead of competing with them.
+let winClipsAt=0;
+function preloadWinClips(){const go=()=>{tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);};if(!winClipsAt)winClipsAt=performance.now()+8000;const wait=winClipsAt-performance.now();if(wait>0)setTimeout(go,wait);else go();}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},14000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id),SETTLE_ART.happyFace(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -316,7 +320,7 @@ $('cinema-skip').onclick=finishWinCinema;
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
 const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
-function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);preloadBigWin();}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
+function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){preloadWinClips();preloadBigWin();}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
 
@@ -479,7 +483,7 @@ function finalStandings(st){
    +'<div class="fs-plate" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(foot-12)+'px">'+plate(p)+'</div>';});
  html+='</div>';
  const p4=st[3];if(p4){const b=body(p4,.8);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="height:'+b.h+'px"><div class="fs-plate"><b>'+p4.rank+'</b>'+plate(p4)+'</div></div>';}
- if(fresh)st.forEach((p,i)=>setTimeout(()=>{if($('result').classList.contains('final-v2'))sound.play(i===0?'pillar':'yaku');},at(i)));
+ if(fresh)st.forEach((p,i)=>setTimeout(()=>{if($('result').classList.contains('final-v2'))sound.play(i===0?'podium':'yaku');},at(i)));
  if(done)queueMicrotask(()=>$('result').classList.add('fs-shown'));
  return html;
 }
@@ -665,7 +669,7 @@ function renderMatchSummary(){
 }
 // v0.93 · every new hand opens with the engine's own wall-break dice; the computer waits until they settle.
 function startDice(){
- pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);
+ pendingDice=false;clearTimeout(timer);clearTimeout(dealTimer);preloadWinClips();
  const still=reduced();
  if(!still)dealShow.prepare(game,game.dealer);else dealShow.finish({silent:true});
  diceShow.start({dice:game.deal.dice,text:diceBadgeText(game.deal,NAMES),from:game.dealer,reduced:still,
