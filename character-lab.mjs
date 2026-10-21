@@ -25,7 +25,7 @@ idleButtons();
 document.querySelector('.lab-settings h2').textContent='播放設定';
 function stopVoices(){eventToken++;for(const voice of voices.values())voice.stop();}
 function stage(){
- const cast=['mimi','gondo','ichika','harumi'],other=cast.indexOf(selected);[cast[seat],cast[other]]=[cast[other],cast[seat]];
+ const cast=['mimi','gondo','ichika','harumi'],other=cast.indexOf(selected);if(other<0)cast[seat]=selected;else [cast[seat],cast[other]]=[cast[other],cast[seat]]; // v1.55 · a 5th character (珍英) takes the preview seat
  for(const [s,id]of [[2,'north'],[3,'west'],[1,'east']]){
   const media=CHARACTER_MEDIA[cast[s]],el=$(id);el.replaceChildren();const actor=document.createElement('div');actor.className='character-stage';actor.dataset.character=cast[s];
   const image=new Image();image.src=media.image;image.alt=media.name+'Q版';actor.append(image);el.append(actor);
