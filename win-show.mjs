@@ -155,7 +155,15 @@ export const BIG_POSE=Object.freeze({mimi:{left:66,top:4,h:400},ichika:{left:88,
 // the still's pose and lands back on it, then holds its last frame. frame = clip size (px); box = the figure's bounding
 // box in the clip's first frame, which is matched to where the still stands (BIG_POSE), so the swap is invisible.
 export const BIG_CLIP=Object.freeze({
- ichika:{video:'./assets/bigwin-v1/ichika-bigwin.mp4',frame:[652,1170],box:[12,26,554,1126]}, // 莓香 twirl (user's Flow clip, 2026-10-20)
+ // v1.48 · 莓香: the twirl, then (second Flow clip, re-scaled onto the twirl's framing) a wink and a kiss of the tile —
+ // two poses, 8 s, both starting and ending on the still. 珍美: chin up, back of the hand to her mouth (4 s). The clips'
+ // own voices are not used here (a big hand may be a self-draw; the big-hand music plays) — their ロン lines play on
+ // ordinary wins instead (see the 'ron' voice).
+ ichika:{video:'./assets/bigwin-v1/ichika-bigwin-v2.mp4',frame:[652,1170],box:[12,26,554,1126]},
+ // box here = where the still itself registers onto the first frame (a Flow frame can trim a wide figure's edge, so
+ // the figure's own bounds would mis-scale it); 蜜蜜's tile sparkle runs a little past her clip's right edge.
+ harumi:{video:'./assets/bigwin-v1/harumi-bigwin.mp4',frame:[522,1266],box:[18,8,494,1248]},
+ mimi:{video:'./assets/bigwin-v1/mimi-bigwin.mp4',frame:[720,1280],box:[6,16,754,1066]},
 });
 export function bigClipRect(id){
  const c=BIG_CLIP[id],p=BIG_POSE[id];if(!c||!p)return null;const k=p.h/c.box[3];

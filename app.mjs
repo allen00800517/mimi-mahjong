@@ -179,6 +179,8 @@ function playWinSound(r){
  // a cut-in clip carries its own sound; the placeholder cut-in gets the swoosh
  if(cutinFor(r)&&!reduced()){if(!cutinShow.canPlay(PORTRAITS[r.winner]))sound.play('cutin');return;}
  sound.play('win',{method:r.method,anim:r.method==='tsumo'&&!reduced()&&tsumoShow.canPlay(PORTRAITS[r.winner])});
+ // v1.48 · an ordinary win off a discard: the winner calls ロン in their own voice (cut-ins and 自摸 clips carry their own)
+ if(r.method!=='tsumo'&&r.method!=='flower')characterActors.line(PORTRAITS[r.winner],'ron');
 }
 // The cut-in stage: dimmed table with speed lines, the shape (band or wedge) slides in with the face slowly pushing
 // in and a glint in the eye, then slides out. buildWinStamp replaces it when the stamp comes.
@@ -258,7 +260,7 @@ function playBigClip(st,id){
  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';v.setAttribute('aria-hidden','true');document.body.append(v);v.src=url;
  const cv=document.createElement('canvas');cv.className='bw-who bw-clip';cv.style.cssText='left:'+r.left.toFixed(1)+'px;top:'+r.top.toFixed(1)+'px;width:'+r.width.toFixed(1)+'px;height:'+r.height.toFixed(1)+'px';
  img.after(cv);const chroma=new ChromaVideo(cv,v),run={v,raf:0,done:false};bigClipRun=run;
- const tick=()=>{if(bigClipRun!==run)return;if(chroma.draw()&&img.style.visibility!=='hidden')img.style.visibility='hidden';if(v.ended){run.done=true;return;}run.raf=requestAnimationFrame(tick);};
+ const tick=()=>{if(bigClipRun!==run)return;if(chroma.draw()&&img.style.visibility!=='hidden')img.style.visibility='hidden';if(v.ended){run.done=true;img.style.visibility='';cv.remove();return;} /* v1.48 · back to the still on the last frame (same pose) so anything a clip trimmed at its edge returns */run.raf=requestAnimationFrame(tick);};
  v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
 }
 function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}

@@ -15,6 +15,9 @@ export class CharacterActors{
   this.voice=this.voices.get('ichika');
   this.loading=Promise.allSettled(pending).then(()=>{if(this.disabled)return;this.ready=this.assets.size>0;this.reconcile();this.schedule();this.audit();});
  }
+ // v1.48 · a one-off line outside table play (the ロン call on an ordinary win): the table is already 'ended' by then,
+ // which blocks the call voices, so the block is lifted just for this line. Returns false if the line isn't loaded.
+ line(id,kind){const voice=this.voices.get(id);if(!voice)return false;const blocked=this.blocked;this.blocked=false;try{return voice.play(kind);}finally{this.blocked=blocked;}}
  ensureMotion(id){
   // v1.28 · opponents' motion sheets (~20 MB) load after the title and after the table art, so the table is ready first.
   if(globalThis.mimiStartGate&&!(globalThis.mimiStartGateOpen&&globalThis.mimiTableReady))return;
