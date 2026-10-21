@@ -107,6 +107,9 @@ export const WIN_ANIM=Object.freeze({
  harumi:{video:'./assets/win-v1/harumi-tsumo.mp4',stampAt:2000,handoff:{cx:115,frameH:394,portraitH:341,portraitLeft:18},slide:{from:1000,to:2000}},
  // 權藤: motion from take A, voice from take B (the fan snaps line up within ~50 ms); the stamp lands with 「ツモじゃ」.
  gondo:{video:'./assets/win-v1/gondo-tsumo.mp4',stampAt:3050,handoff:{cx:134,frameH:324,portraitH:302,portraitLeft:6},slide:{from:1800,to:2900}},
+ // v1.62 · 珍英: first frame = her tsumo-start art, last frame = the settlement portrait; the stamp lands on 「ツモよ」,
+ // she glides over while her smile grows, before the stamp.
+ jinying:{video:'./assets/win-v1/jinying-tsumo.mp4',stampAt:1300,handoff:{cx:122,frameH:394,portraitH:351,portraitLeft:18},slide:{from:400,to:1250}},
 });
 // Where the clip stands on the 854×394 stage: 'B' puts the figure where the settlement portrait will be (no jump at
 // the hand-off; a clip's own handoff.cx wins), 'A' centres it. frameH = height of the 16:9 video frame on the stage.
