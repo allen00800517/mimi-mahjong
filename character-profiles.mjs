@@ -26,3 +26,12 @@ export const GONDO_PROFILE=Object.freeze({
  notes:{chi:'吃：單手張掌，簡短示意。',pon:'碰：豎掌宣告，配一下乾脆點頭。',kan:'槓：提拳宣告；語音已剪除接上的多餘台詞。',ready:'聽：抬下巴、微微挺身，自信而沉穩。'},
  idleNote:'自然待機以安靜呼吸為主，3.5–7秒隨機用力閉眼一下（取自待機原片，只換眼部）；輪替垂眼看牌、輕整羽織、甩開摺扇；待機片段全程靜音。'
 });
+// v1.53 · 金田珍英 (user, 2026-10-21): five Flow clips cut into the usual set — 吃+碰, 槓+聽, a tap, a poke and a silent
+// idle (beret, then a glance at the tiles). Each clip's first frame is registered onto her idle chibi.
+export const JINYING_PROFILE=Object.freeze({
+ clips:{idle:{frames:1,fps:1},call:{frames:16,fps:12},pon:{frames:26,fps:12},kan:{frames:18,fps:12},ready:{frames:28,fps:12},tap:{frames:45,fps:12},poke:{frames:43,fps:12},hat:{frames:23,fps:12},look:{frames:26,fps:12}},
+ actions:{chi:{clip:'call',duration:800,first:0},pon:{clip:'pon',duration:950,first:0},kan:{clip:'kan',duration:900,first:0},ready:{clip:'ready',duration:1100,first:0},tap:{clip:'tap',duration:3750,first:0},poke:{clip:'poke',duration:3583,first:0}},
+ idleVariants:{blink:{label:'眨眼',clip:'look',duration:300,first:0,last:3,pingpong:true,lead:50,tail:60},hat:{label:'整理軟帽',clip:'hat',duration:1917,first:0,last:22,lead:150,tail:200},look:{label:'低頭看牌',clip:'look',duration:2167,first:0,last:25,lead:150,tail:200}},
+ notes:{chi:'吃：掌心朝上輕輕一比。',pon:'碰：小拳收到胸前、輕輕點頭。',kan:'槓：手抬到肩旁，帶點得意；語音已剪掉多餘尾音。',ready:'聽（リーチ）：指尖碰下巴，沉穩自信。'},
+ idleNote:'自然待機以安靜呼吸為主；眨眼取自低頭看牌片段的閉眼；輪替整理軟帽、低頭看牌；待機片段全程靜音。'
+});

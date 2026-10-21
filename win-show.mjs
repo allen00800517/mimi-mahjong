@@ -3,7 +3,7 @@
 // Art (generated, keyed): assets/win-v1/<id>-hu.webp portraits, brush-hu.png, seal-frame.png. Until a file exists the
 // presentation falls back to the existing half-body portrait and a typeset character, so nothing ever shows blank.
 export const WIN_TIMING=Object.freeze({ron:1500,tsumo:2000,rowGap:260,rowFirst:350,sealAfter:220});
-export const WIN_COLORS=Object.freeze({mimi:'#e0566f',ichika:'#c8323a',harumi:'#7b3fb0',gondo:'#b8892e'});
+export const WIN_COLORS=Object.freeze({mimi:'#e0566f',ichika:'#c8323a',harumi:'#7b3fb0',gondo:'#b8892e',jinying:'#3b5ba5'});
 export const WIN_ART=Object.freeze({portrait:id=>'./assets/win-v1/'+id+'-hu.webp',burst:id=>'./assets/win-v1/'+id+'-tsumo.webp',stamp:'./assets/win-v1/brush-hu.png',stampTsumo:'./assets/win-v1/brush-tsumo.webp',seal:'./assets/win-v1/seal-frame.png'});
 
 // Rarity grades agreed with the user (2026-10-18). Row names are the scoring engine's.
@@ -58,7 +58,7 @@ export const yakuSpan=words=>words.length?words.at(-1).delay+YAKU_SHOW.land+YAKU
 export const CUTIN_TIMING=Object.freeze({ms:1300,in:200,out:200,glint:420});
 export const CUTIN_ART=Object.freeze({
  mimi:{w:340,h:760,eye:[165,280],span:110},ichika:{w:475,h:760,eye:[215,155],span:120},
- harumi:{w:413,h:760,eye:[220,105],span:95},gondo:{w:788,h:760,eye:[332,112],span:100},
+ harumi:{w:413,h:760,eye:[220,105],span:95},gondo:{w:788,h:760,eye:[332,112],span:100},jinying:{w:483,h:760,eye:[225,138],span:85},
 });
 const CUTIN_SHAPES=Object.freeze({band:{fill:.62,at:[427,202]},wedge:{fill:.32,at:[600,170]}});
 export function cutinFor(result){const t=winGrade(result)?.tier??1;return t>=2?{shape:t>=3?'wedge':'band'}:null;}
@@ -150,7 +150,7 @@ export function tallyRows(result,{dealer,repeats=0,names=[]}={}){
 // The leading pattern: highest tier, then most tai, then this fixed order (only one main effect is ever shown).
 export const BIG_ART=Object.freeze({bg:t=>'./assets/bigwin-v1/bg'+(t>=4?4:3)+'.webp',portrait:id=>'./assets/bigwin-v1/'+id+'-bigwin.webp',crash:id=>'./assets/bigwin-v1/'+id+'-crash.webp'});
 // where each winner's figure stands on the 854×394 stage (px), tuned with the user on the mockups
-export const BIG_POSE=Object.freeze({mimi:{left:66,top:4,h:400},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436}});
+export const BIG_POSE=Object.freeze({mimi:{left:66,top:4,h:400},ichika:{left:88,top:10,h:446},harumi:{left:170,top:10,h:462},gondo:{left:58,top:12,h:436},jinying:{left:96,top:8,h:440}});
 // v1.38 · a big-win figure can come alive (green-screen Flow clip, keyed live like the 自摸 clips): it plays once from
 // the still's pose and lands back on it, then holds its last frame. frame = clip size (px); box = the figure's bounding
 // box in the clip's first frame, which is matched to where the still stands (BIG_POSE), so the swap is invisible.
@@ -211,7 +211,7 @@ export const SETTLE_ART=Object.freeze({happy:id=>'./assets/settle-v1/'+id+'-happ
 export function settleMood(delta){return delta>0?'happy':delta<0?'sad':'calm';}
 export function settleFace(id,delta){const m=settleMood(delta);return m==='happy'?SETTLE_ART.happyFace(id):m==='sad'?BIG_ART.crash(id):null;}
 // full-body height (stage px) on the final standings: sitting / kneeling poses are shorter by nature
-export const SETTLE_BODY_H=Object.freeze({happy:{mimi:228,ichika:214,harumi:218,gondo:214},sad:{mimi:168,ichika:172,harumi:212,gondo:212}});
+export const SETTLE_BODY_H=Object.freeze({happy:{mimi:228,ichika:214,harumi:218,gondo:214,jinying:214},sad:{mimi:168,ichika:172,harumi:212,gondo:212,jinying:206}});
 // v1.41 · the final standings stand on a podium (generated art): 1st in the middle, 2nd left, 3rd right, 4th on the
 // floor beside it. Geometry is in fractions of the podium picture: x = tier centre, foot = the tier's top edge (where
 // a figure's feet land), panel = the visible part of the tier's red front panel (left, top, width, height) for the

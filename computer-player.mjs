@@ -105,12 +105,14 @@ const effective=q=>q.shanten===0&&q.ukeire===0?1:q.shanten;
 // v1.03 · CPU 牌風 — each character plays to the style shown on the character select (user, 2026-10-19).
 //  mimi 快手: wins whatever comes, calls freely, defends little.      ichika 穩健: defends hard, folds early, rarely calls.
 //  harumi 貴氣: steers toward 混一色 / honour triplets, passes cheap wins early.   gondo 豪賭: chases 清一色, passes small wins.
+//  jinying 家常 (v1.53): plain 平胡 — sheds honours early, chows freely but pons only when it makes her ready, takes any win.
 // Numbers are tuned with self-play (work/cpu/sim.mjs) so the styles differ but no one runs away with the table.
 export const CPU_STYLES=Object.freeze({
  std:Object.freeze({}),
  mimi:Object.freeze({defense:.3,eagerCalls:true,declareRisk:1}),
  ichika:Object.freeze({defense:1.35,fold:true,strictCalls:true,declareRisk:.5}),
  harumi:Object.freeze({defense:1.25,flush:'half',flushFrom:10,offSuit:40,offSuitEarly:90,honorKeep:18,minTai:Object.freeze({tai:2,live:30})}),
+ jinying:Object.freeze({defense:1,plainShed:14,ponOnlyReady:true}),
  gondo:Object.freeze({defense:.75,flush:'half',pureLean:12,flushFrom:9,offSuit:70,offSuitEarly:120,minTai:Object.freeze({tai:2,live:24,whenChasing:true}),declareRisk:1.4}),
 });
 const styleOf=id=>CPU_STYLES[id]??CPU_STYLES.std;
@@ -153,6 +155,7 @@ function rankDiscards(view,hand,meldCount,tiles,analyze,seen,style=CPU_STYLES.st
    if(fq.shanten<=effective(q)+(plan.strong?2:1))q.value=-100*fq.shanten+fq.ukeire*1.2-q.danger*defense+(plan.fits(q.tile)?0:style.offSuit*plan.weight);
   }
   if(plan&&style.pureLean&&q.tile[1]==='z')q.value+=style.pureLean; // 豪賭 sheds honours first: 清一色 over 混一色
+  if(style.plainShed&&q.tile[1]==='z')q.value+=style.plainShed; // 家常 keeps a plain hand: honours go first
   if(style.honorKeep&&valuableHonor(view,q.tile)&&hand.filter(t=>t===q.tile).length>=2)q.value-=style.honorKeep;
   if(folding)q.value=-q.danger*1000-effective(q);
  }
@@ -214,6 +217,7 @@ export function chooseAction(view,character){
    const improves=effective(best??{shanten:9})<effective(baseline),eager=style.eagerCalls&&best&&effective(best)===effective(baseline)&&best.ukeire>baseline.ukeire*2;
    const honorPon=style.honorKeep&&call.id==='pon'&&valuableHonor(view,incoming)&&best&&effective(best)<=effective(baseline);
    const strictOk=!style.strictCalls||(best&&best.shanten<=2);
+   if(style.ponOnlyReady&&call.id==='pon'&&(best?.shanten??9)>0)continue; // 家常 pons only when it makes her ready
    if(best&&(improves||usefulKan||eager||honorPon)&&strictOk&&best.ukeire>0&&best.danger<.8)candidates.push({id:call.id,...best});
   }
   candidates.sort((a,b)=>b.value-a.value||a.id.localeCompare(b.id));

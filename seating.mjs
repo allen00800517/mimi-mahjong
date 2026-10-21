@@ -1,5 +1,5 @@
 import {seededRandom,rollDice} from './deal.mjs';
-export const characters=['mimi','gondo','ichika','harumi'];
+export const characters=['mimi','gondo','ichika','harumi','jinying'];
 export function validateCharacters(c){
  if(!Array.isArray(c)||c.length!==4||new Set(c).size!==4||c.some(k=>!characters.includes(k)))throw new TypeError('角色座位紀錄不正確');
  return [...c];

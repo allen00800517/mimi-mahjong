@@ -49,7 +49,7 @@ $('table-toast').addEventListener('click',e=>{if(!e.target.closest('#table-toast
 let openStartGate;globalThis.mimiStartGate=new Promise(r=>{openStartGate=()=>{if(globalThis.mimiStartGateOpen)return;globalThis.mimiStartGateOpen=true;r();};setTimeout(()=>openStartGate(),8000);});
 const tableView=new PlayableTable($('table-canvas'),$('table-motion-canvas'));
 tableView.onReady=()=>{globalThis.mimiTableReady=true;render();};tableView.onUnavailable=()=>{clearTimeout(timer);clearEffects();syncCharacters();};$('table-retry').onclick=()=>location.reload();
-const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['莓香','春日莓香'],harumi:['珍美','金田珍美']};
+const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['莓香','春日莓香'],harumi:['珍美','金田珍美'],jinying:['珍英','金田珍英']};
 // The resident table cast uses the approved full-body chibis. Cinematic callers
 // explicitly request 'front', keeping the original-proportion performance assets.
 const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+(variant==='chibi'?'.webp':'.png'); // v1.28 · chibi as WebP (1.1 MB → 0.2 MB)
