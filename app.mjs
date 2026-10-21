@@ -685,7 +685,7 @@ $('step').onclick=()=>{if(!portrait()){const s=findComputer();if(s!==null){$('se
 // v1.01 · the character select opens over the table first; the old cast picker in this menu is hidden.
 function openCharSelect({cancellable=true,onDone,onCancel}={}){
  clearTimeout(timer);clearEffects();
- charSelect.show({choice:PORTRAITS[0],cancellable,onConfirm:id=>{const roster=rosterFor(id);for(let s=0;s<4;s++)$('character-'+s).value=roster[s];onDone?.(id);render();},onCancel:()=>{onCancel?.();render();}});
+ charSelect.show({choice:PORTRAITS[0],opponents:PORTRAITS.slice(1),cancellable,onConfirm:picked=>{const roster=rosterFor(picked[0],picked.slice(1));for(let s=0;s<4;s++)$('character-'+s).value=roster[s];onDone?.(roster[0]);render();},onCancel:()=>{onCancel?.();render();}});
  render();
 }
 $('new').onclick=()=>{let n;try{n=newGameSeed($('seed').value,match?.seed??game.seed);}catch(e){$('feedback').textContent=e.message;return;}$('settings-dialog').close();openCharSelect({onDone:()=>startNewMatch(n)});};
