@@ -225,9 +225,14 @@ function openActorMenu(id=PORTRAITS[0],focusKey=null){
  const d=$('sticker-dialog');if(!d.open){clearTimeout(timer);clearEffects();d.showModal();}
  (focusKey&&d.querySelector('[data-show="'+focusKey+'"]')||d.querySelector('[aria-selected="true"]'))?.focus();
 }
-function playActorShow(key){
- const it=ACTOR_SHOWS.flatMap(g=>g.items).find(x=>x.key===key);if(!it||winPresentation)return;
+// v1.69 · the first tap on a fresh page (the lab preview has no title tap) only starts unlocking audio; wait briefly
+// for the character lines to decode so the opening ロン／ツモ is not lost.
+let actorShowBusy=false;
+async function playActorShow(key){
+ const it=ACTOR_SHOWS.flatMap(g=>g.items).find(x=>x.key===key);if(!it||winPresentation||actorShowBusy)return;
  const seat=PORTRAITS.indexOf(actorSel);if(seat<0)return;
+ if(sound.enabled&&(sound.state!=='running'||!characterActors.voices?.get(actorSel)?.buffers?.size)){actorShowBusy=true;try{await Promise.race([sound.unlock().then(()=>characterActors.prepareVoices()),new Promise(r=>setTimeout(r,1500))]);}catch{}actorShowBusy=false;syncSound();}
+ if(winPresentation)return;
  const r={kind:'win',winner:seat,method:it.method,tile:null,payments:[],score:{rows:it.rows.map(([name,tai])=>({name,tai}))}};
  $('sticker-dialog').close();playWinSound(r);
  if(!startWinCinema(r,{id:actorSel,key}))$('feedback').textContent='目前的設定（減少動態效果）不播放演出。';
