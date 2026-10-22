@@ -718,3 +718,7 @@ body.no-motion .status-badge.ready-seal img{animation:none}
 /* v1.78 · user: the phone's rounded corner clipped the settings／sound buttons and the wall count — the whole top-right group moves 26px toward the middle */
 #game-shell header{padding-right:36px!important}
 #header-count{right:136px!important}
+/* v1.80 · user: 自動打牌 did nothing — the header strip (z-index 10, full width) sat over it and took the taps. The strip itself now lets taps through; its own buttons still take them. */
+#game-shell header{pointer-events:none}
+#game-shell header>*{pointer-events:auto}
+#auto-discard{z-index:11}
