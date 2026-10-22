@@ -90,7 +90,9 @@ const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled
 // v1.35 · musicOverride: 'hush' from the cut-in on (the table music fades out), 'big3'/'big4' on the big-hand screen and
 // through its settlement; a real big hand keeps its theme until the next hand is dealt, a preview until the menu returns.
 let musicOverride=null;
-function syncMusic(){try{if(musicOverride&&musicOverride!=='hush'&&!winPresentation&&!['ended','review'].includes(game.phase))musicOverride=null;
+// 流局 show state (declared here because syncMusic reads drawShow).
+let pendingDrawShow=null,drawShow=null,drawHold=null;
+function syncMusic(){try{/* v1.76 · any override (also 'hush') ends once no show is running and a hand is in play — a 流局 left 'hush' on and every later hand was silent */if(musicOverride&&!winPresentation&&!drawShow&&!['ended','review'].includes(game.phase))musicOverride=null;
  if(musicOverride){if(musicOverride==='hush')music.hush();else music.want(musicOverride);$('table').dataset.music=musicOverride+'/'+(music.active?.id||'');return;}
  // v1.67 · lab preview: no table music, only the win shows' own themes
  if(PREVIEW||!$('page-overlay').hidden){music.hush();$('table').dataset.music='preview';return;} // v1.68 · also while the lab (or any page) is open over the table
@@ -141,16 +143,15 @@ $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 // v1.74 · 流局: the silver-grey brush 流局 lands on the dimmed table with a gong, holds, then the settlement opens.
 // Only for a draw that happens now (not one restored from a save). The table music fades out with it.
-let pendingDrawShow=null,drawShow=null,drawHold=null;
 const DRAW_SHOW_MS=2600;
 function startDrawShow(){
  pendingDrawShow=null;drawHold=null;if(reduced()||document.hidden){sound.play('liuju');syncSound();return;}
  const el=document.createElement('div');el.id='liuju-show';el.innerHTML='<div class="liuju-dim"></div><img class="liuju-stamp" src="./assets/win-v1/liuju-brush.webp" alt="流局" draggable="false">';$('table').append(el);
  drawShow={revision:game.revision,el};musicOverride='hush';syncMusic();
  setTimeout(()=>{if(drawShow?.el===el){sound.play('liuju');syncSound();}},260);
- drawShow.timer=setTimeout(()=>{if(drawShow?.el!==el)return;el.classList.add('out');setTimeout(()=>{el.remove();if(drawShow?.el===el){drawShow=null;render();}},380);},DRAW_SHOW_MS-380);
+ drawShow.timer=setTimeout(()=>{if(drawShow?.el!==el)return;el.classList.add('out');setTimeout(()=>{el.remove();if(drawShow?.el===el){drawShow=null;if(musicOverride==='hush')musicOverride=null;render();}},380);},DRAW_SHOW_MS-380);
 }
-function stopDrawShow(){if(!drawShow)return;clearTimeout(drawShow.timer);drawShow.el.remove();drawShow=null;}
+function stopDrawShow(){if(!drawShow)return;clearTimeout(drawShow.timer);drawShow.el.remove();drawShow=null;if(musicOverride==='hush')musicOverride=null;}
 function finishWinCinema(){
  if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;stopBigClip();$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
