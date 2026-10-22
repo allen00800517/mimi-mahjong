@@ -22,8 +22,10 @@ export const CUTIN_CLIPS=Object.freeze({
  // stray "hey" at the peak of the leap is muted (a silent beat before the dive). v1.23 · final cut (the user's join): the
  // dive cuts away just before touchdown to the take whose landing, negative flash and burst all run on in one piece; 9.79 s.
  mimi:{video:'./assets/cutin-v1/mimi-cutin-c.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
- // v1.62 · 珍英: eyes + 「はい」, the band opens as the camera eases back for 「おまちどおさま」 and her smile; one 4 s take.
- jinying:{video:'./assets/cutin-v1/jinying-cutin-c.mp4',audio:'./assets/cutin-v1/jinying-cutin.mp3',open:1700,ms:4000},
+ // v1.63 · 珍英: eyes + golden glint and 「はい おまちどおさま」, the band opens as the camera pulls back (1.3 s), she lifts the
+ // tile high like bringing out her signature bowl, a settled hold, then sets it down with a gold-white slam; two takes
+ // joined on the wind-up pose (0.17 s dissolve), 8.83 s. Her line is lifted 6 dB and the slam eased 3 dB so both read.
+ jinying:{video:'./assets/cutin-v1/jinying-cutin-c2.mp4',audio:'./assets/cutin-v1/jinying-cutin-2.mp3',open:1300,ms:8833},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
