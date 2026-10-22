@@ -611,7 +611,7 @@ function autoDiscardAction(a,p,revision){
 }
 function renderAutoDiscard(p){
  if(p.state==='S0')autoDiscard=false;
- const b=$('auto-discard'),show=p.state!=='S0'&&!['ended','review'].includes(game.phase)&&$('action-band').hidden;
+ const b=$('auto-discard'),show=p.state!=='S0'&&!['ended','review'].includes(game.phase);/* v1.77 · stays put for the whole 聽 (no longer gives way to the band or hides during tile moves) */
  b.hidden=!show;b.setAttribute('aria-pressed',String(autoDiscard));b.classList.toggle('on',autoDiscard);b.textContent=autoDiscard?'自動打牌中':'自動打牌';
 }
 function renderActionBand(a,p,revision){
