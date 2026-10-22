@@ -141,10 +141,10 @@ $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
 // v1.74 · 流局: the silver-grey brush 流局 lands on the dimmed table with a gong, holds, then the settlement opens.
 // Only for a draw that happens now (not one restored from a save). The table music fades out with it.
-let pendingDrawShow=null,drawShow=null;
+let pendingDrawShow=null,drawShow=null,drawHold=null;
 const DRAW_SHOW_MS=2600;
 function startDrawShow(){
- pendingDrawShow=null;if(reduced()||document.hidden){sound.play('liuju');syncSound();return;}
+ pendingDrawShow=null;drawHold=null;if(reduced()||document.hidden){sound.play('liuju');syncSound();return;}
  const el=document.createElement('div');el.id='liuju-show';el.innerHTML='<div class="liuju-dim"></div><img class="liuju-stamp" src="./assets/win-v1/liuju-brush.webp" alt="流局" draggable="false">';$('table').append(el);
  drawShow={revision:game.revision,el};musicOverride='hush';syncMusic();
  setTimeout(()=>{if(drawShow?.el===el){sound.play('liuju');syncSound();}},260);
@@ -426,7 +426,7 @@ async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始�
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
 function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
-function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else{if(game.result?.kind==='draw')pendingDrawShow=game.revision;presentTable(before,s,id);}}catch(e){characterActors.reset();recoverPresentation(e);}}
+function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(game.result?.kind==='draw')drawHold=game.revision;/* v1.75 · hide the settlement from the first render until the 流局 show starts (it used to flash for a moment) */if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else{if(game.result?.kind==='draw')pendingDrawShow=game.revision;presentTable(before,s,id);if(pendingDrawShow===game.revision&&presentation===null)render();}}catch(e){characterActors.reset();recoverPresentation(e);}}
 // v1.45 · HUD reshuffle (user, 2026-10-21): the top right keeps only the wall count and the three buttons so the
 // characters own the rest (v1.46: the wall count went back up there — the felt is for tiles). Each opponent's running
 // score rides on their name tag, which sits just over the character's head;
@@ -681,7 +681,7 @@ function render(){
  if(game.phase==='flower')$('notice').textContent='接受花胡會依法補足手牌並結算；放棄不移轉他人的花，也不重開同一次機會。';
  const forced=a.length===1&&['win','flowerWin'].includes(a[0].id)&&['S2','S3'].includes(p.state);
  if(forced)$('notice').textContent='天聽／地聽有胡必胡（包含合法花胡），系統將自動接受。';
- $('result').hidden=!game.result||resultDismissed||winPresentation!==null||drawShow!==null;
+ $('result').hidden=!game.result||resultDismissed||winPresentation!==null||drawShow!==null||drawHold===game.revision;
  if(pendingDrawShow!==null&&(pendingDrawShow!==game.revision||game.result?.kind!=='draw'))pendingDrawShow=null;
  if(pendingDrawShow===game.revision&&presentation===null&&!drawShow){startDrawShow();$('result').hidden=drawShow!==null;}
  $('result-toggle').hidden=!game.result;
