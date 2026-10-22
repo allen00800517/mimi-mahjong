@@ -700,3 +700,19 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #auto-discard.on{border-color:#9fe3c4;background:linear-gradient(#2f8a69,#1b5a43);color:#fff;box-shadow:0 0 10px rgba(120,230,180,.55)}
 body.discard-in-flight #auto-discard,body.moving-tiles #auto-discard{visibility:hidden;pointer-events:none}
 #table > .call-performer{z-index:8;pointer-events:none}
+
+/* v1.74 · 流局 show: the table dims, the brush 流局 lands (a little overshoot), holds, then everything fades. */
+#liuju-show{position:absolute;inset:0;z-index:12;pointer-events:none}
+#liuju-show .liuju-dim{position:absolute;inset:0;background:rgba(8,14,12,.5);animation:liuju-dim .3s ease-out both}
+#liuju-show .liuju-stamp{position:absolute;left:50%;top:44%;width:46%;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));animation:liuju-land .42s cubic-bezier(.2,.9,.3,1.2) .12s both}
+#liuju-show.out{transition:opacity .36s ease-in;opacity:0}
+@keyframes liuju-dim{from{opacity:0}to{opacity:1}}
+@keyframes liuju-land{0%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}60%{opacity:1;transform:translate(-50%,-50%) scale(.97)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+/* v1.74 · 聽 seal beside the name (red; 天聽／地聽 gold with a tiny label), with a slow soft glow so it is noticed. */
+.status-badge.ready-seal{display:inline-flex;align-items:center;gap:2px;padding:0;border:0;line-height:1;vertical-align:middle;background:none}
+.status-badge.ready-seal img{width:20px;height:20px;display:block;animation:ready-glow 2.4s ease-in-out infinite}
+.status-badge.ready-seal small{font-size:10px;color:#ffe0a2;font-weight:800}
+@keyframes ready-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,90,60,0))}50%{filter:drop-shadow(0 0 5px rgba(255,120,80,.85))}}
+.status-badge.ready-seal.gold img{animation-name:ready-glow-gold}
+@keyframes ready-glow-gold{0%,100%{filter:drop-shadow(0 0 0 rgba(255,210,90,0))}50%{filter:drop-shadow(0 0 6px rgba(255,215,110,.9))}}
+body.no-motion .status-badge.ready-seal img{animation:none}

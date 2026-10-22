@@ -1,5 +1,5 @@
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
-export const SFX=Object.freeze({discard:{files:6,gain:.85},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3},thud:{files:2,gain:1},pillar:{files:2,gain:.95},podium:{files:1,gain:.8}});
+export const SFX=Object.freeze({discard:{files:6,gain:.85},liuju:{files:1,gain:.6},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3},thud:{files:2,gain:1},pillar:{files:2,gain:.95},podium:{files:1,gain:.8}});
 export const SFX_VOLUME=.7;
 // Game event → which samples play, with start offsets in seconds.
 export const SOUND_PLAN=Object.freeze({
@@ -22,7 +22,9 @@ export const SOUND_PLAN=Object.freeze({
  // v1.51 · the winner landing on the podium: a short bright electronic flourish (synthesized, 2.6 s).
  podium:()=>[['podium',0]],
  shuffle:()=>[['shuffle',0]], // the old recorded dice ran into the first discards (user); dice now have their own show
- dice:()=>[['dice',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
+ dice:()=>[['dice',0]],
+ // v1.74 · 流局: a single gong that dies away (synthesized, user picked version A).
+ liuju:()=>[['liuju',0]], // v0.93 · cut to dice-show.mjs: tumble 0–0.55s, land, badge at 0.75s
 });
 export class TableSound{
  constructor({sampleBase=null,fetcher=(...a)=>fetch(...a)}={}){this.enabled=false;this.context=null;this.played=0;this.master=null;this.sampleBase=sampleBase;this.fetcher=fetcher;this.samples=null;}

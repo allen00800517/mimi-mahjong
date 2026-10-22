@@ -139,6 +139,18 @@ $('chow-close').onclick=()=>$('chow-dialog').close();$('meld-close').onclick=()=
 $('self-meld-dock').addEventListener('click',e=>{if(e.target.closest('.meld'))inspectMelds();});$('self-meld-dock').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('.meld')){e.preventDefault();inspectMelds();}});
 $('header-count').append($('round-wind-token'),$('round-label'),$('wall'));
 let resultDismissed=false,winPresentation=null,cinemaTimer=null;
+// v1.74 · 流局: the silver-grey brush 流局 lands on the dimmed table with a gong, holds, then the settlement opens.
+// Only for a draw that happens now (not one restored from a save). The table music fades out with it.
+let pendingDrawShow=null,drawShow=null;
+const DRAW_SHOW_MS=2600;
+function startDrawShow(){
+ pendingDrawShow=null;if(reduced()||document.hidden){sound.play('liuju');syncSound();return;}
+ const el=document.createElement('div');el.id='liuju-show';el.innerHTML='<div class="liuju-dim"></div><img class="liuju-stamp" src="./assets/win-v1/liuju-brush.webp" alt="流局" draggable="false">';$('table').append(el);
+ drawShow={revision:game.revision,el};musicOverride='hush';syncMusic();
+ setTimeout(()=>{if(drawShow?.el===el){sound.play('liuju');syncSound();}},260);
+ drawShow.timer=setTimeout(()=>{if(drawShow?.el!==el)return;el.classList.add('out');setTimeout(()=>{el.remove();if(drawShow?.el===el){drawShow=null;render();}},380);},DRAW_SHOW_MS-380);
+}
+function stopDrawShow(){if(!drawShow)return;clearTimeout(drawShow.timer);drawShow.el.remove();drawShow=null;}
 function finishWinCinema(){
  if(!winPresentation)return;const preview=winPresentation.preview;if(musicOverride==='hush'||preview)musicOverride=null;clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;stopBigClip();$('win-cinema').hidden=true;$('win-cinema').classList.remove('big');$('win-cinema').getAnimations({subtree:true}).forEach(a=>a.cancel());$('game-shell').inert=portrait();render();
  // v1.14 · a show played from the character menu returns to it, on the same character and button.
@@ -333,7 +345,7 @@ $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
-const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open)||!!PREVIEW;
+const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open)||!!PREVIEW||drawShow!==null;
 function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){preloadWinClips();preloadBigWin();}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
@@ -414,7 +426,7 @@ async function saveRecovery(){const status=await offerFile('蜜蜜麻將-原始�
 function fileMessage(status,ok){return status==='saved'?ok:status==='declined'?'已取消存檔。':'這個頁面目前無法存出檔案，請稍後再試。';}
 function recoverPresentation(error){clearTimeout(timer);$('auto').checked=false;clearEffects();if(winPresentation){clearTimeout(cinemaTimer);clearYakuBeats();tsumoShow.stop();cutinShow.stop();winPresentation=null;$('win-cinema').hidden=true;$('game-shell').inert=portrait();}try{render();}catch(renderError){tableView.ready=false;$('table-loading').hidden=false;$('table-loading-text').textContent='畫面需要重新載入，牌局已保存。';$('table-retry').hidden=false;console.error(renderError);}$('feedback').textContent='演出中斷，已保留本次牌局操作；可按「繼續電腦行動」恢復。';console.error(error);}
 tableView.onMotionError=recoverPresentation;
-function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else presentTable(before,s,id);}catch(e){characterActors.reset();recoverPresentation(e);}}
+function perform(s,id,revision=game.revision){if(paused()||revision!==game.revision)return;try{const before=captureTable(s,id);resultDismissed=false;game.act(s,id,revision);if(/^(discard|declare):/.test(id))lastEffect={seat:s,tile:id.split(':')[1]};selected=null;selectedIndex=null;declaring=false;saveLocal();render();characterActors.events(before,game);if(game.result?.kind==='win'){playWinSound(game.result);syncSound();startWinCinema();syncCharacters();}else{if(game.result?.kind==='draw')pendingDrawShow=game.revision;presentTable(before,s,id);}}catch(e){characterActors.reset();recoverPresentation(e);}}
 // v1.45 · HUD reshuffle (user, 2026-10-21): the top right keeps only the wall count and the three buttons so the
 // characters own the rest (v1.46: the wall count went back up there — the felt is for tiles). Each opponent's running
 // score rides on their name tag, which sits just over the character's head;
@@ -422,12 +434,14 @@ function perform(s,id,revision=game.revision){if(paused()||revision!==game.revis
 // the rounded corners: own score and rank, then round wind, hand and repeat count.
 function seatScore(s){const v=game.scores[s];return '<span class="seat-score'+(v>0?' gain':v<0?' loss':'')+'">'+signed(v)+'</span>';}
 function roundText(){return match?(match.status==='completed'?'整場結束':'第 '+match.progress.handInRound+' 莊'):'練習局';}
+// v1.74 · 聽 is a small red seal (generated art) beside the name; 天聽／地聽 use the gold version plus a tiny label.
+function readySeal(state){const label={S1:'聽',S2:'地聽',S3:'天聽'}[state],gold=state!=='S1';return '<span class="status-badge ready-seal'+(gold?' gold':'')+'" title="'+STATE_NAMES[state]+'"><img src="./assets/ready-v1/ready-seal'+(gold?'-gold':'')+'.webp" alt="'+label+'" draggable="false">'+(gold?'<small>'+label+'</small>':'')+'</span>';}
 function selfInfo(){const v=game.scores[0],rank=1+game.scores.filter(x=>x>v).length;
  return '<span class="self-info">'+seatScore(0)+'<span class="self-rank">第 '+rank+' 名</span><i>｜</i><span class="self-round">'+['東','南','西','北'][game.roundWind]+'風圈・'+roundText()+'・連莊 '+game.repeats+'</span></span>';}
 function player(s,id){
  const p=game.players[s],acts=game.actions(s),active=(game.phase==='turn'&&game.turn===s)||(game.phase==='response'&&acts.length>0)||(game.phase==='flower'&&game.flowerEvent.winner===s);
  const cue=game.phase==='turn'?'出牌':game.phase==='response'?'可回應':'花胡機會';
- const badges=(p.state==='S0'?'':'<span class="status-badge" title="'+STATE_NAMES[p.state]+'">'+({S1:'聽',S2:'地聽',S3:'天聽'}[p.state])+'</span>')+(p.passed?'<span class="status-badge passed" title="過水限制生效">過水</span>':'');
+ const badges=(p.state==='S0'?'':readySeal(p.state))+(p.passed?'<span class="status-badge passed" title="過水限制生效">過水</span>':'');
  const profile=(s===0?'':'<div class="character-stage" data-character="'+PORTRAITS[s]+'"><img src="'+characterSprite(s)+'" alt="'+FULL_NAMES[s]+'Q版" draggable="false"></div>')+'<div class="profile"><div class="identity">'+(active?'<span class="turn-cue" role="img" aria-label="'+NAMES[s]+'：'+cue+'" title="'+cue+'">▶</span>':'')+'<div class="name">'+(s===0?'<span class="wind">'+['東','南','西','北'][game.wind(s)]+'</span>':'')+NAMES[s]+(game.dealer===s?'<span class="dealer-mark">莊</span>':'')+(s===0?'':seatScore(s))+'</div>'+(badges?'<div class="state">'+badges+'</div>':'')+(s===0?selfInfo():'')+'</div></div>';
 
  const backs=s===0?'':'<div class="backs" aria-label="'+p.hand.length+' 張暗牌">'+p.hand.map((_,i)=>'<i class="back" style="--back-index:'+i+';--back-depth:'+i+'">'+''+'</i>').join('')+'</div>';
@@ -667,7 +681,9 @@ function render(){
  if(game.phase==='flower')$('notice').textContent='接受花胡會依法補足手牌並結算；放棄不移轉他人的花，也不重開同一次機會。';
  const forced=a.length===1&&['win','flowerWin'].includes(a[0].id)&&['S2','S3'].includes(p.state);
  if(forced)$('notice').textContent='天聽／地聽有胡必胡（包含合法花胡），系統將自動接受。';
- $('result').hidden=!game.result||resultDismissed||winPresentation!==null;
+ $('result').hidden=!game.result||resultDismissed||winPresentation!==null||drawShow!==null;
+ if(pendingDrawShow!==null&&(pendingDrawShow!==game.revision||game.result?.kind!=='draw'))pendingDrawShow=null;
+ if(pendingDrawShow===game.revision&&presentation===null&&!drawShow){startDrawShow();$('result').hidden=drawShow!==null;}
  $('result-toggle').hidden=!game.result;
  // After 返回牌桌 the hand is still over: keep a visible way back to the settlement / next hand on the table itself.
  $('result-reopen').hidden=!game.result||!resultDismissed||winPresentation!==null;$('result-reopen').textContent=match?.status==='playing'?'本手結算・下一手 ▸':'查看本手結算 ▸';
