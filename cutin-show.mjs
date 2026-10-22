@@ -24,8 +24,8 @@ export const CUTIN_CLIPS=Object.freeze({
  mimi:{video:'./assets/cutin-v1/mimi-cutin-c.mp4',audio:'./assets/cutin-v1/mimi-cutin-5.mp3',open:2100,ms:9790},
  // v1.63 · 珍英: eyes + golden glint and 「はい おまちどおさま」, the band opens as the camera pulls back (1.3 s), she lifts the
  // tile high like bringing out her signature bowl, a settled hold, then sets it down with a gold-white slam; two takes
- // joined on the wind-up pose (0.17 s dissolve), 8.83 s. Her line is lifted 6 dB and the slam eased 3 dB so both read.
- jinying:{video:'./assets/cutin-v1/jinying-cutin-c2.mp4',audio:'./assets/cutin-v1/jinying-cutin-2.mp3',open:1300,ms:8833},
+ // joined on the wind-up pose (0.17 s dissolve), 8.83 s. v1.65 · the sound keeps only her line (lifted 6 dB) and the slam (eased 3 dB): Flow's own background music between them is muted.
+ jinying:{video:'./assets/cutin-v1/jinying-cutin-c2.mp4',audio:'./assets/cutin-v1/jinying-cutin-3.mp3',open:1300,ms:8833},
 });
 export const CUTIN_OPEN_MS=260;
 export class CutinShow{
