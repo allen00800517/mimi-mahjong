@@ -88,6 +88,8 @@ const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled
 let musicOverride=null;
 function syncMusic(){try{if(musicOverride&&musicOverride!=='hush'&&!winPresentation&&!['ended','review'].includes(game.phase))musicOverride=null;
  if(musicOverride){if(musicOverride==='hush')music.hush();else music.want(musicOverride);$('table').dataset.music=musicOverride+'/'+(music.active?.id||'');return;}
+ // v1.67 · lab preview: no table music, only the win shows' own themes
+ if(PREVIEW){music.hush();$('table').dataset.music='preview';return;}
  music.want(musicTrackFor({phase:game.phase,players:game.players,roundWind:game.roundWind,rounds:match?.rounds??null,seed:match?.seed??0,choice:$('music-choice').value,title:titleScreen.open||charSelect.open}));$('table').dataset.music=(music.wanted||'')+'/'+(music.active?.id||'');}catch(e){if(!(e instanceof ReferenceError))console.error(e);}}
 $('music-choice').onchange=()=>{savePreferences();if(sound.enabled&&sound.state!=='running')sound.unlock().then(syncMusic);else syncMusic();};
 function syncSound(){const b=$('sound-toggle');b.innerHTML='<img src="./assets/icons/'+(sound.enabled?'volume-2':'volume-x')+'.svg" alt="">';b.setAttribute('aria-label',sound.enabled?'音效開啟，點擊靜音':'音效關閉，點擊開啟');b.title=sound.enabled?'音效開':'音效關';b.setAttribute('aria-pressed',String(sound.enabled));b.dataset.audioState=sound.state;b.dataset.played=String(sound.played);b.dataset.samples=String(sound.samples?.size||0);syncMusic();}
