@@ -64,6 +64,8 @@ export class CharacterActors{
   for(const c of keep){if(cache.has(c))cache.touch(c,now);else cache.ensure(c).catch(()=>{});}
   if(now-(view.sweptAt||0)>500){view.sweptAt=now;cache.sweep(keep,now);}
  }
+ // v1.72 · an idle gesture with a sound (珍英's noodle slurp) plays it once, at its moment in the clip; a gesture already past that moment (e.g. the tab was hidden) stays silent.
+ idleSound(seat,pose){const spec=this.tracks[seat]?.profile?.idleVariants?.[pose.idleVariant]?.sound;if(!spec||pose.idleStart==null||pose.idleMs<spec.at)return;const seen=this.idleSeen||(this.idleSeen=new Map());if(seen.get(seat)===pose.idleStart)return;seen.set(seat,pose.idleStart);if(pose.idleMs>spec.at+500)return;this.voices.get(this.cast?.[seat])?.play(spec.kind);}
  // Decoded atlases are large (tens of MB each): drop characters that left the visible seats.
  release(){for(const [id,assets] of this.assets)if(!this.wanted.has(id)&&![...this.views.values()].some(v=>v.character===id)){this.assets.delete(id);releaseImages(assets);}this.ready=this.assets.size>0;}
  resident(seat){return seat!==0&&this.ready&&this.assets.has(this.cast?.[seat]);}
@@ -144,7 +146,7 @@ export class CharacterActors{
   view.canvas.dataset.character=view.character;view.canvas.dataset.motion=pose.clip;view.canvas.dataset.idleVariant=pose.idleVariant||'';
  }
  schedule(){if(this.frame||this.blocked||this.reduced||!this.ready||!this.views.size)return;this.frame=requestAnimationFrame(now=>{
-  this.frame=null;for(const [seat,view] of this.views)try{const pose=this.tracks[seat].sample(now);this.paint(view,pose);this.manage(seat,view,pose,now);}catch{this.assets.delete(view.character);view.canvas.remove();view.image.style.visibility='';this.views.delete(seat);}
+  this.frame=null;for(const [seat,view] of this.views)try{const pose=this.tracks[seat].sample(now);this.paint(view,pose);this.manage(seat,view,pose,now);this.idleSound(seat,pose);}catch{this.assets.delete(view.character);view.canvas.remove();view.image.style.visibility='';this.views.delete(seat);}
   this.ready=this.assets.size>0;this.audit(now);this.schedule();
  });}
  cancelFrame(){if(this.frame)cancelAnimationFrame(this.frame);this.frame=null;}

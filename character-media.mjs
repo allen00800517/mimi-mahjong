@@ -6,7 +6,7 @@ export const CHARACTER_MEDIA=Object.freeze({
  ichika:{name:'春日莓香',image:'./assets/cast-v23/ichika-chibi.webp',motion:{base:'./assets/ichika-motion-v1',width:270,height:336,columns:8,clips:['idle','call','pon','kan','ready','look','apron','tap','poke','hair','cake'],voices:['chi','pon','kan','ready','tap','poke','ron'],profile:ICHIKA_PROFILE}},
  harumi:{name:'金田珍美',image:'./assets/cast-v23/harumi-chibi.webp',motion:{base:'./assets/harumi-motion-v1',width:270,height:336,columns:8,clips:Object.keys(HARUMI_PROFILE.clips),voices:['chi','pon','kan','ready','tap','poke','ron'],profile:HARUMI_PROFILE}},
  gondo:{name:'權藤龍藏',image:'./assets/cast-v23/gondo-chibi.webp',motion:{base:'./assets/gondo-motion-v1',width:270,height:336,columns:8,clips:Object.keys(GONDO_PROFILE.clips),voices:['chi','pon','kan','ready','tap','poke','ron'],profile:GONDO_PROFILE}},
- jinying:{name:'金田珍英',image:'./assets/cast-v23/jinying-chibi.webp',motion:{base:'./assets/jinying-motion-v1',width:270,height:336,columns:8,clips:Object.keys(JINYING_PROFILE.clips),voices:['chi','pon','kan','ready','tap','poke','ron'],profile:JINYING_PROFILE}}
+ jinying:{name:'金田珍英',image:'./assets/cast-v23/jinying-chibi.webp',motion:{base:'./assets/jinying-motion-v1',width:270,height:336,columns:8,clips:Object.keys(JINYING_PROFILE.clips),voices:['chi','pon','kan','ready','tap','poke','ron','noodle'],profile:JINYING_PROFILE}}
 });
 export async function loadCharacterMotion(id){
  const motion=CHARACTER_MEDIA[id]?.motion;if(!motion)return null;

@@ -68,7 +68,10 @@ function paint(){
  $('playback-state').textContent=loading?'載入中':!assets?'靜態預覽':(preview.naturalIdle?'自然隨機待機':preview.kind==='idle'&&preview.idleVariant!=='auto'?preview.profile.idleVariants[preview.idleVariant].label:names[preview.kind])+' · '+(preview.playing?'播放中':preview.finished?'已完成':'已暫停')+' · '+pose.clip+' 第 '+(pose.frame+1)+'/'+preview.profile.clips[pose.clip].frames+' 格 · '+preview.speed+'×'+(preview.naturalIdle?' · 持續待機':' · 實播 '+Math.round(preview.duration/preview.speed)+' ms')+(preview.naturalIdle?' · '+(preview.profile.idleVariants[pose.idleVariant]?.label||'安靜呼吸')+' · 下次變化約 '+Math.ceil(pose.nextIdle/1000)+' 秒':'');
  $('playback-state').dataset.state=preview.playing?'playing':preview.finished?'finished':'paused';
 }
-function loop(now){frame=null;preview.tick(now);
+// v1.72 · the lab plays an idle gesture's sound (noodle slurp) every time, at its moment in the clip.
+let idleSounded=false;
+function idleSound(){const v=preview.kind==='idle'&&preview.idleVariant!=='auto'?preview.profile.idleVariants[preview.idleVariant]:null;if(!v?.sound||!preview.playing||!assets)return;if(preview.position<v.sound.at){idleSounded=false;return;}if(idleSounded||preview.position>v.sound.at+500||!$('voice').checked)return;idleSounded=true;const voice=voices.get(selected),token=eventToken;sound.unlock().then(()=>voice?.prepare()).then(()=>{if(token===eventToken&&!document.hidden)voice?.play(v.sound.kind);}).catch(()=>{});}
+function loop(now){frame=null;preview.tick(now);idleSound();
  if(replayEnabled&&preview.finished&&(queue.length||$('repeat').checked)&&assets){if(replayAt===null)replayAt=now+1000;if(now>=replayAt){if(queue.length){const next=queue.shift();chooseAction(next,true);}else play();}}
  paint();if(!document.hidden)frame=requestAnimationFrame(loop);
 }
