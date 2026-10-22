@@ -29,9 +29,9 @@ export const GONDO_PROFILE=Object.freeze({
 // v1.53 · 金田珍英 (user, 2026-10-21): five Flow clips cut into the usual set — 吃+碰, 槓+聽, a tap, a poke and a silent
 // idle (beret, then a glance at the tiles). Each clip's first frame is registered onto her idle chibi.
 export const JINYING_PROFILE=Object.freeze({
- clips:{idle:{frames:1,fps:1},call:{frames:39,fps:12},pon:{frames:37,fps:12},kan:{frames:35,fps:12},ready:{frames:39,fps:12},tap:{frames:46,fps:12},poke:{frames:43,fps:12},hat:{frames:46,fps:12},look:{frames:46,fps:12},blink:{frames:6}},
+ clips:{idle:{frames:1,fps:1},call:{frames:39,fps:12},pon:{frames:37,fps:12},kan:{frames:35,fps:12},ready:{frames:39,fps:12},tap:{frames:46,fps:12},poke:{frames:43,fps:12},hat:{frames:46,fps:12},look:{frames:46,fps:12},noodle:{frames:65,fps:12},blink:{frames:6}},
  actions:{chi:{clip:'call',duration:800,first:0},pon:{clip:'pon',duration:950,first:0},kan:{clip:'kan',duration:900,first:0},ready:{clip:'ready',duration:1100,first:0},tap:{clip:'tap',duration:3833,first:0},poke:{clip:'poke',duration:3583,first:0}},
- idleVariants:{/* v1.58 · blink drawn on the chibi itself (ChatGPT half/closed eyes, only the eye area swapped) */blink:{label:'眨眼',clip:'blink',duration:250,first:0,last:5,lead:0,tail:0},hat:{label:'整理軟帽',clip:'hat',duration:3833,first:0,last:45,lead:150,tail:200},look:{label:'低頭看牌',clip:'look',duration:3833,first:0,last:45,lead:150,tail:200}},
+ idleVariants:{/* v1.58 · blink drawn on the chibi itself (ChatGPT half/closed eyes, only the eye area swapped) */blink:{label:'眨眼',clip:'blink',duration:250,first:0,last:5,lead:0,tail:0},hat:{label:'整理軟帽',clip:'hat',duration:3833,first:0,last:45,lead:150,tail:200},look:{label:'低頭看牌',clip:'look',duration:3833,first:0,last:45,lead:150,tail:200},/* v1.72 · 招牌待機：端出湯麵大口吸，Flow 起訖同圖 */noodle:{label:'大口吸麵',clip:'noodle',duration:5417,first:0,last:64,lead:150,tail:200}},
  notes:{chi:'吃：掌心朝上往旁邊一比。',pon:'碰：手往前一伸、輕輕點頭。',kan:'槓：雙手往兩旁攤開，帶點得意；語音已剪掉多餘尾音。',ready:'聽（リーチ）：手掌朝上往牌桌一比。'},
- idleNote:'v1.61 · 各動作都以站姿當首尾幀重做（一支一個動作），收尾不再有殘影；眨眼用 Q 版本身的半閉、全閉圖；輪替整理軟帽、低頭看牌；待機片段全程靜音。'
+ idleNote:'v1.61 · 各動作都以站姿當首尾幀重做（一支一個動作），收尾不再有殘影；眨眼用 Q 版本身的半閉、全閉圖；輪替整理軟帽、低頭看牌、大口吸麵（v1.72 招牌動作）；待機片段全程靜音。'
 });
