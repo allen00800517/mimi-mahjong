@@ -585,6 +585,20 @@ function positionCallout(badge,seat){
 
 // v0.90 · fixed action band (see action-band.mjs). Slots never move; unusable ones stay dimmed.
 let bandChoice=null,bandDismissed=null;
+// v1.73 · after 聽 the player may switch on 自動打牌: the drawn tile is discarded for them. It never wins, kans or
+// passes a win by itself — whenever there is anything else to decide it waits. Off at the start of every hand.
+let autoDiscard=false;
+$('auto-discard').onclick=()=>{autoDiscard=!autoDiscard;render();};
+function autoDiscardAction(a,p,revision){
+ if(!autoDiscard||p.state==='S0'||game.phase!=='turn'||game.turn!==0||declaring)return null;
+ const id='discard:'+game.drawn;if(!a.some(x=>x.id===id))return null;
+ return a.length===1||bandDismissed===revision?id:null;
+}
+function renderAutoDiscard(p){
+ if(p.state==='S0')autoDiscard=false;
+ const b=$('auto-discard'),show=p.state!=='S0'&&!['ended','review'].includes(game.phase)&&$('action-band').hidden;
+ b.hidden=!show;b.setAttribute('aria-pressed',String(autoDiscard));b.classList.toggle('on',autoDiscard);b.textContent=autoDiscard?'自動打牌中':'自動打牌';
+}
 function renderActionBand(a,p,revision){
  const band=$('action-band');
  if(bandChoice&&bandChoice.revision!==revision)bandChoice=null;
@@ -646,7 +660,7 @@ function render(){
  }
  $('actions').replaceChildren();document.querySelector('.controls').classList.toggle('declaring',declaring);const readyTurn=!declaring&&p.state!=='S0'&&game.phase==='turn'&&game.turn===0;document.querySelector('.controls').classList.toggle('ready-locked',readyTurn);$('play-hint').hidden=!(declaring||readyTurn);$('play-hint').textContent=declaring?(selected?'打出選牌，宣告聽牌':'選擇要打出的牌'):readyTurn?'已聽牌，只能打新摸牌':'';
  // v0.90: 吃碰槓聽胡過 live in the fixed action band; #actions keeps only the optional discard-confirm button.
- renderActionBand(a,p,revision);
+ renderActionBand(a,p,revision);renderAutoDiscard(p);
  if(a.some(x=>x.id.startsWith('discard:'))&&!declaring&&selected&&$('confirm-button').checked)addButton('出牌 · '+tileLabel(selected),()=>perform(0,'discard:'+selected,revision),true,'discard');
  $('notice').textContent=declaring?(a.find(x=>x.id.startsWith('declare:'))?.state==='S1'?'普通宣告：固定手牌，胡牌加 1 台；可以過水。':'天聽／地聽：固定手牌、有胡必胡、禁止槓；提交後不能撤回。'):p.state!=='S0'?'已宣告，不能任意換打原手牌。'+(['S2','S3'].includes(p.state)?'有胡必胡。':'普通宣告仍可過水。'):'再點同張或上滑即可出牌；也可按確認按鈕。';
  if(game.phase==='ended')$('notice').textContent=match?.status==='completed'?'整場分數已結算，可下載紀錄或開始新場。':'本手分數已結算；繼續場次不會再次收付。';
@@ -675,7 +689,9 @@ function render(){
  if(paused())return;
  if(pendingDice&&game.deal&&game.phase==='turn'&&!game.result){startDice();return;}
  pendingDice=false;
+ const autoId=autoDiscardAction(a,p,revision);
  if(forced)timer=setTimeout(()=>perform(0,a[0].id,revision),reduced()?250:600);
+ else if(autoId)timer=setTimeout(()=>perform(0,autoId,revision),reduced()?300:900);
  else if($('auto').checked){const seat=findComputer();if(seat!==null){const id=chooseAction(game.publicView(seat),PORTRAITS[seat]);timer=setTimeout(()=>perform(seat,id,revision),computerDelay({id,speed:Number($('speed').value)}));}}
 }
 function renderMatchSummary(){

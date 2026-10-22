@@ -693,3 +693,10 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .ci-wide .ci-clip .ci-edge::before{clip-path:polygon(-2% 34.5%,102% 22.5%,102% 86.5%,-2% 98.5%)}
 /* v1.71 · your own 吃／碰／槓／聽: the Q-version pose pops up above your hand (it was the retired original-proportion front art in the middle) */
 .call-performer{left:42.9%!important;top:37%!important;width:14.1%!important;height:39%!important}
+
+/* v1.73 · 自動打牌 toggle: shown after 聽 in the action band's right-hand spot (the band itself takes over whenever there is a decision). */
+#auto-discard{position:absolute;right:18px;bottom:99px;z-index:9;height:34px;min-height:0;padding:0 12px;border-radius:9px;border:1.5px solid #c9a265;background:linear-gradient(#4a3420,#2b1d11);color:#f5e6c8;font-size:14px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#auto-discard[hidden]{display:none}
+#auto-discard.on{border-color:#9fe3c4;background:linear-gradient(#2f8a69,#1b5a43);color:#fff;box-shadow:0 0 10px rgba(120,230,180,.55)}
+body.discard-in-flight #auto-discard,body.moving-tiles #auto-discard{visibility:hidden;pointer-events:none}
+#table > .call-performer{z-index:8;pointer-events:none}
