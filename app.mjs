@@ -46,6 +46,9 @@ $('table-toast').addEventListener('click',e=>{if(!e.target.closest('#table-toast
 // v1.28 · Title first. The table art (~13 MB) and the opponents' motion sheets (~20 MB) used to start downloading at once
 // with the title, so on a phone the title cover, logo, theme and sounds queued behind ~50 MB (blank title, long waits).
 // They now wait for the start gate: opened once the title has its cover, logo, theme and table sounds (at most 8 s).
+// v1.64 · character-lab preview: index.html?show=<id>[&key=<show>] seats that character, skips the title, saves nothing
+// and opens the 角色演出 menu on the real table (the menu has no in-game button any more).
+const PREVIEW_ARGS=new URLSearchParams(location.search),PREVIEW=PREVIEW_ARGS.get('show')||null;
 let openStartGate;globalThis.mimiStartGate=new Promise(r=>{openStartGate=()=>{if(globalThis.mimiStartGateOpen)return;globalThis.mimiStartGateOpen=true;r();};setTimeout(()=>openStartGate(),8000);});
 const tableView=new PlayableTable($('table-canvas'),$('table-motion-canvas'));
 tableView.onReady=()=>{globalThis.mimiTableReady=true;render();};tableView.onUnavailable=()=>{clearTimeout(timer);clearEffects();syncCharacters();};$('table-retry').onclick=()=>location.reload();
@@ -215,7 +218,7 @@ function openActorMenu(id=PORTRAITS[0],focusKey=null){
  if(portrait()||winPresentation)return;actorSel=PORTRAITS.includes(id)?id:PORTRAITS[0];
  const seat=PORTRAITS.indexOf(actorSel);
  $('actor-tabs').innerHTML=PORTRAITS.map((pid,s)=>'<button role="tab" data-actor="'+pid+'" aria-selected="'+(pid===actorSel)+'"><img src="'+characterSprite(s,'chibi')+'" alt=""><span>'+escape(FULL_NAMES[s])+(s===0?'<small>你</small>':'')+'</span></button>').join('');
- $('actor-own').hidden=seat!==0;
+ $('actor-own').hidden=true; // v1.64 · 角色亮相 retired with the in-game ☺ button
  $('actor-shows').innerHTML=ACTOR_SHOWS.map(g=>'<section><h3>'+escape(g.group)+'</h3><div>'+g.items.map(it=>{const tag=(it.art||g.art)?.(actorSel);return '<button data-show="'+it.key+'">'+escape(it.label)+(tag?'<small>'+escape(tag)+'</small>':'')+'</button>';}).join('')+'</div></section>').join('');
  const d=$('sticker-dialog');if(!d.open){clearTimeout(timer);clearEffects();d.showModal();}
  (focusKey&&d.querySelector('[data-show="'+focusKey+'"]')||d.querySelector('[aria-selected="true"]'))?.focus();
@@ -268,7 +271,7 @@ function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cance
 // the win clips (自摸, cut-ins, big-win figures ~16 MB) follow a few seconds later instead of competing with them.
 let winClipsAt=0;
 function preloadWinClips(){const go=()=>{tsumoShow.preload(PORTRAITS);cutinShow.preload(PORTRAITS);};if(!winClipsAt)winClipsAt=performance.now()+8000;const wait=winClipsAt-performance.now();if(wait>0)setTimeout(go,wait);else go();}
-function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},14000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id),SETTLE_ART.happyFace(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
+function preloadBigWin(){if(bigWinLoaded)return;bigWinLoaded=true;setTimeout(()=>{music.prefetch('big2');music.prefetch('big3');music.prefetch('big4');for(const [id,c] of Object.entries(BIG_CLIP))fetch(c.video).then(r=>r.ok?r.blob():null).then(b=>{if(b)bigClipUrls.set(id,URL.createObjectURL(b));}).catch(()=>{});},PREVIEW?0:14000);setTimeout(()=>[BIG_ART.bg(3),BIG_ART.bg(4),BIG_SEAL,...Object.keys(BIG_POSE).flatMap(id=>[BIG_ART.portrait(id),BIG_ART.crash(id),SETTLE_ART.happyFace(id)]),...BIG_PRIORITY.map(bigWordUrl).filter(Boolean)].forEach(u=>{const i=new Image();i.decoding='async';i.src=u;STAMP_CACHE.push(i);}),3000);}
 function showBigWin(r,white){
  const b=bigHand(r),plan=bigPlan(b),c=$('win-cinema'),id=PORTRAITS[r.winner],p=BIG_POSE[id]||BIG_POSE.mimi,t=b.tier>=4?4:3;
  c.querySelector('.wc-stage')?.remove();c.classList.remove('special','tsumo');c.classList.add('big');
@@ -319,7 +322,7 @@ $('cinema-skip').onclick=finishWinCinema;
 // Phones held upright no longer pause: the page rotates into forced landscape (viewport.mjs), so nothing is 'portrait-blocked'.
 const portrait=()=>false;
 const overlayOpen=()=>!$('page-overlay').hidden;
-const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open);
+const paused=()=>titleScreen.open||charSelect.open||diceShow.running||dealShow.running||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||presentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open)||!!PREVIEW;
 function syncCharacters(){if(tableView.ready&&!titleScreen.open&&!charSelect.open){preloadWinClips();preloadBigWin();}try{characterActors.sync(game,PORTRAITS,{blocked:titleScreen.open||!tableView.ready||portrait()||document.hidden||overlayOpen()||winPresentation!==null||Array.from(document.querySelectorAll('dialog')).some(d=>d.open),reduced:reduced()});}catch(error){characterActors.disable();console.warn('角色動畫暫停，保留靜態圖',error);}}
 
 
@@ -329,7 +332,7 @@ const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 function tile(t,cls='',flat=false){return '<span class="tile small-tile '+t[1]+' '+cls+(flat?' flat-card':'')+'" data-tile="'+t+'" title="'+tileLabel(t)+'">'+(flat?'':tileFace(t))+'</span>';}
 function archiveCurrent(){archives.push(game.snapshot());archives=archives.slice(-20);try{localStorage.setItem('mimi-tw-archives-5',JSON.stringify(archives));return true;}catch{$('feedback').textContent='無法保存歷史紀錄，請下載牌局紀錄留存。';return false;}}
 const sessionStore=new SessionStorage({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
-function saveLocal(){if(sessionStore.write(sessionSnapshot()))return true;$('feedback').textContent='無法自動保存，請下載牌局紀錄留存。';return false;}
+function saveLocal(){if(PREVIEW)return true;if(sessionStore.write(sessionSnapshot()))return true;$('feedback').textContent='無法自動保存，請下載牌局紀錄留存。';return false;}
 let seating=null,completedMatches=[],suspendedTable=null;
 function sessionSnapshot(){return tableSnapshot(match??game,PORTRAITS,match?seating:null,completedMatches,match?null:suspendedTable);}
 function adoptSession(restored){match=restored.match;game=restored.game;seating=restored.seating??null;completedMatches=restored.completedMatches??completedMatches;suspendedTable=restored.match?null:restored.suspended??null;if(restored.characters){PORTRAITS=[...restored.characters];syncCast();}}
@@ -365,7 +368,13 @@ try{if(savedSession!==null)restoreSession(JSON.parse(savedSession));else {newMat
 // v1.02 · Every launch opens on the title screen (deferred until the module has finished setting up). A first visit
 // goes 開始 → character select → first hand; with a saved match the main button is 繼續牌局, plus 開新的一場.
 let titleTapped=false;
-setTimeout(()=>openTitle(),0);
+if(PREVIEW&&CAST[PREVIEW])setTimeout(()=>openPreview(),0);else setTimeout(()=>openTitle(),0);
+function openPreview(){
+ PORTRAITS=rosterFor(PREVIEW);syncCast();$('auto').checked=false;pendingDice=false;winClipsAt=performance.now();openStartGate();
+ $('sticker-toggle').hidden=false;$('sticker-close').textContent='返回測試台';
+ const key=PREVIEW_ARGS.get('key');render();
+ const wait=()=>{if(tableView.ready){syncCharacters();openActorMenu(PREVIEW,key);}else setTimeout(wait,200);};wait();
+}
 function openTitle(){
  clearTimeout(timer);clearEffects();
  // Decode the theme while the title waits (silent context), so it starts the instant the player taps.
@@ -741,7 +750,7 @@ function renderPrototypeState(){
 $('sticker-toggle').onclick=()=>openActorMenu(PORTRAITS[0]);
 $('actor-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-actor]');if(b)openActorMenu(b.dataset.actor);});
 $('actor-shows').addEventListener('click',e=>{const b=e.target.closest('[data-show]');if(b)playActorShow(b.dataset.show);});
-$('sticker-close').onclick=()=>$('sticker-dialog').close();
+$('sticker-close').onclick=()=>{if(PREVIEW){location.href='./character-lab.html?c='+encodeURIComponent(PREVIEW);return;}$('sticker-dialog').close();};
 $('sticker-dialog').addEventListener('close',render);
 $('send-sticker').onclick=()=>{const el=$('character-sticker');clearTimeout(stickerTimer);el.innerHTML='<img src="'+characterSprite(0,'chibi')+'" alt="'+FULL_NAMES[0]+'貼圖">';el.hidden=false;$('sticker-dialog').close();stickerTimer=setTimeout(()=>{el.hidden=true;el.replaceChildren();},2400);};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-flower]');if(!b||portrait()||winPresentation)return;const t=b.dataset.flower;if(!/^[1-8]f$/.test(t))return;clearTimeout(timer);clearEffects();$('flower-title').textContent=tileLabel(t)+' · '+($('flower-skin').value==='character'?'人物花牌':'花景花牌');$('flower-large').src='./assets/flower-art/'+$('flower-skin').value+'/'+t+'.png';$('flower-large').alt=tileLabel(t);$('flower-dialog').showModal();render();});

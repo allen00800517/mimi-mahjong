@@ -7,7 +7,7 @@ import {tableLayout} from './table-layout.mjs';
 import {Game} from './engine.mjs';
 const $=id=>document.getElementById(id),names={idle:'待機',chi:'吃',pon:'碰',kan:'槓',ready:'聽',tap:'點一下',poke:'連點不耐煩'};
 const preview=new MotionPreview(),sound=new TableSound();sound.enabled=true;
-const cache=new Map(),voices=new Map();let selected='ichika',seat=2,assets=null,canvas=null,stageImage=null,loading=true,request=0,eventToken=0,queue=[],replayAt=null,replayEnabled=false,frame=null;
+const cache=new Map(),voices=new Map();let selected=(id=>CHARACTER_MEDIA[id]?id:'ichika')(new URLSearchParams(location.search).get('c')),seat=2,assets=null,canvas=null,stageImage=null,loading=true,request=0,eventToken=0,queue=[],replayAt=null,replayEnabled=false,frame=null;
 for(const [id,media] of Object.entries(CHARACTER_MEDIA)){
  const b=document.createElement('button');b.className='cast-card';b.dataset.character=id;b.innerHTML='<img src="'+media.image+'" alt=""><span><strong>'+media.name+'</strong><small>'+(media.motion?'動作與語音已接入':'靜態圖 · 動作待製作')+'</small></span>';b.onclick=()=>selectCharacter(id);$('cast-list').append(b);
 }

@@ -682,3 +682,5 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #char-select .cs-random{position:absolute;left:618px;bottom:20px;min-height:40px;padding:0 8px;border-radius:10px;border:1px solid #9b7a45;background:rgba(42,28,18,.85);color:#f3dfb8;font-weight:700;font-size:12px}
 #char-select .cs-go{min-width:104px;padding:8px 14px}
 #char-select .cs-go.wait{filter:saturate(.4) brightness(.8);font-size:13px}
+/* v1.64 · the ☺ button is gone (角色演出 moved to the character lab): the wall count keeps the same gap to the buttons */
+#header-count{right:110px!important}
