@@ -691,3 +691,5 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .ci-wide .ci-clip .ci-frame{clip-path:polygon(-2% 37%,102% 25%,102% 84%,-2% 96%)}
 #win-cinema .ci-wide .ci-clip .ci-edge{clip-path:polygon(-2% 31.5%,102% 19.5%,102% 89.5%,-2% 101.5%)}
 #win-cinema .ci-wide .ci-clip .ci-edge::before{clip-path:polygon(-2% 34.5%,102% 22.5%,102% 86.5%,-2% 98.5%)}
+/* v1.71 · your own 吃／碰／槓／聽: the Q-version pose pops up above your hand (it was the retired original-proportion front art in the middle) */
+.call-performer{left:42.9%!important;top:37%!important;width:14.1%!important;height:39%!important}

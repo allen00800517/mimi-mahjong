@@ -3,7 +3,7 @@ import {actionSequence} from './action-sequence.mjs';
 import {MOTION} from './motion-timeline.mjs';
 import {meldSourcePoses} from './presentation-model.mjs';
 // Owns the presentation of an already committed legal game action; never changes game state.
-export function createTablePresenter({tableView,getGame,getSelectedIndex,getPresentation,setPresentation,clearTimer,clearEffects,render,reduced,paused,sound,syncSound,names,characterSprite,positionCallout,animatedResident=()=>false}){
+export function createTablePresenter({tableView,getGame,getSelectedIndex,getPresentation,setPresentation,clearTimer,clearEffects,render,reduced,paused,sound,syncSound,names,characterSprite,positionCallout,animatedResident=()=>false,callPose=null}){
  const $=id=>document.getElementById(id),seatNode=s=>document.getElementById(['south','east','north','west'][s]);
  const bounds=el=>{if(!el)return null;const r=rectOf(el);return {x:r.x,y:r.y,width:r.width,height:r.height};};
 function captureTable(s,id){
@@ -62,7 +62,7 @@ function presentTable(before,seat,id){
   showCall(m.kind==='sequence'?'吃':m.kind==='triplet'?'碰':'槓',s);
  }
  function showCall(text,s){const badge=document.createElement('div');badge.className='callout';badge.innerHTML=text+'<small>'+names()[s]+'</small>';$('effects').append(badge);positionCallout(badge,s);animate(badge,[{opacity:0,transform:'translate(-50%,-50%) scale(.8)'},{opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.2},{opacity:1,offset:.65},{opacity:0,transform:'translate(-50%,-50%) scale(1)'}],MOTION.call);
-  let performer=seatNode(s).querySelector('.character-stage');if(s===0){performer=document.createElement('div');performer.className='call-performer';performer.innerHTML='<img src="'+characterSprite(s,'front')+'" alt="" draggable="false">';$('effects').append(performer);animate(performer,[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)',offset:.2},{opacity:1,offset:.65},{opacity:0,transform:'translateY(0)'}],MOTION.call);}else if(performer&&!animatedResident(s))animate(performer,[{transform:'translateY(0)',filter:'drop-shadow(0 3px 4px #0005)'},{transform:'translateY(-3px)',filter:'drop-shadow(0 0 6px #ffe0a0)',offset:.25},{transform:'translateY(0)',filter:'drop-shadow(0 3px 4px #0005)'}],MOTION.call);
+  let performer=seatNode(s).querySelector('.character-stage');if(s===0){/* v1.71 · your own call: the Q-version pose of that call (one frame) pops up above your hand with the voice */const kind={'吃':'chi','碰':'pon','槓':'kan','聽':'ready'}[text],src=callPose?.(s,kind);if(src){performer=document.createElement('div');performer.className='call-performer';performer.innerHTML='<img src="'+src+'" alt="" draggable="false">';$('effects').append(performer);animate(performer,[{opacity:0,transform:'translateY(14px) scale(.9)'},{opacity:1,transform:'translateY(0) scale(1.04)',offset:.16},{opacity:1,transform:'translateY(0) scale(1)',offset:.26},{opacity:1,offset:.78},{opacity:0,transform:'translateY(0) scale(1)'}],MOTION.selfCall);}}else if(performer&&!animatedResident(s))animate(performer,[{transform:'translateY(0)',filter:'drop-shadow(0 3px 4px #0005)'},{transform:'translateY(-3px)',filter:'drop-shadow(0 0 6px #ffe0a0)',offset:.25},{transform:'translateY(0)',filter:'drop-shadow(0 3px 4px #0005)'}],MOTION.call);
  }
  for(let s=0;s<4;s++)if(before.states[s]==='S0'&&game.players[s].state!=='S0')showCall('聽',s);
  // Cards which remain in the hand move from their old places, rather than teleporting.

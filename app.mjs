@@ -1,6 +1,7 @@
 import {organizeTableMenu} from './table-menu.mjs';
 import {rectOf,viewSize,wantsForcedLandscape,applyScreenSize,homeScreenApp} from './viewport.mjs';
 import {CharacterActors} from './character-actors.mjs';
+import {CHARACTER_MEDIA} from './character-media.mjs';
 import {SessionStorage} from './session-storage.mjs';
 import {foregroundFor} from './table-layout.mjs';
 import {isKan,meldDisplay} from './meld-layout.mjs';
@@ -56,8 +57,11 @@ const CAST={mimi:['蜜蜜','蜜蜜'],gondo:['權藤','權藤龍藏'],ichika:['�
 // The resident table cast uses the approved full-body chibis. Cinematic callers
 // explicitly request 'front', keeping the original-proportion performance assets.
 const characterSprite=(seat,variant='chibi')=>'./assets/cast-v23/'+PORTRAITS[seat]+'-'+variant+(variant==='chibi'?'.webp':'.png'); // v1.28 · chibi as WebP (1.1 MB → 0.2 MB)
+// v1.71 · the pose shown for your own 吃／碰／槓／聽: the peak frame of that call's Q-version motion (pose-<kind>.webp).
+const callPose=(seat,kind)=>{const m=CHARACTER_MEDIA[PORTRAITS[seat]]?.motion;return m&&kind?m.base+'/pose-'+kind+'.webp':null;};
 let PORTRAITS=['mimi','gondo','ichika','harumi'],NAMES=[],FULL_NAMES=[],nextCharacters=[];
-function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];}
+const POSE_CACHE=[];function preloadCallPoses(){const id=PORTRAITS[0];if(POSE_CACHE.id===id)return;POSE_CACHE.id=id;POSE_CACHE.length=0;for(const k of ['chi','pon','kan','ready']){const u=callPose(0,k);if(u){const i=new Image();i.decoding='async';i.src=u;POSE_CACHE.push(i);}}}
+function syncCast(){NAMES=PORTRAITS.map(k=>CAST[k][0]);FULL_NAMES=PORTRAITS.map(k=>CAST[k][1]);nextCharacters=[...PORTRAITS];for(let s=0;s<4;s++)$('character-'+s).value=PORTRAITS[s];;preloadCallPoses();}
 const sound=new TableSound({sampleBase:'./assets/sfx-v1/'});const tsumoShow=new TsumoShow({sound});const cutinShow=new CutinShow({sound});
 // v0.96 · add ?mem=1 to the address to see how much character art is decoded (for testing on a phone).
 if(/[?&]mem=1/.test(location.search)){const box=document.createElement('div');box.id='mem-debug';box.style.cssText='position:fixed;left:4px;top:4px;z-index:99999;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.append(box);let peak=0;setInterval(()=>{try{const a=JSON.parse(document.getElementById('table').dataset.characterAudit||'{}'),m=a.memory||[],total=m.reduce((n,x)=>n+(x.mb||0),0);peak=Math.max(peak,total);box.textContent='角色圖 '+total.toFixed(0)+'MB（最高 '+peak.toFixed(0)+'）\n'+m.map(x=>x.id+' '+(x.mb||0)+'MB 等待'+(x.misses||0)).join('\n');}catch{}},1000);}
@@ -103,7 +107,7 @@ const dealShow=new DealShow({backSrc:()=>concealedFace().match(/src="([^"]+)"/)[
 function tableGame(){if(!dealShow.running)return game;const v=Object.create(game);v.players=game.players.map((p,s)=>({...p,hand:p.hand.slice(0,dealShow.handCount(s)),flowers:dealShow.flowersShown()?p.flowers:[]}));return v;}
 let lastEffect=null,presentation=null,selectedIndex=null,stickerTimer=null;
 function clearEffects(){tableView.cancelMotion({redraw:false});presentation=null;document.querySelectorAll('.motion-arrival').forEach(e=>e.classList.remove('motion-arrival'));document.querySelectorAll('.hand .tile').forEach(e=>e.getAnimations().forEach(a=>a.cancel()));$('effects').getAnimations({subtree:true}).forEach(a=>a.cancel());$('effects').replaceChildren();document.body.classList.remove('moving-tiles','discard-in-flight');}
-const presenter=createTablePresenter({tableView,getGame:()=>game,getSelectedIndex:()=>selectedIndex,getPresentation:()=>presentation,setPresentation:value=>{presentation=value;},clearTimer:()=>clearTimeout(timer),clearEffects,render,reduced,paused:()=>paused(),sound,syncSound,names:()=>NAMES,characterSprite,positionCallout,animatedResident:s=>characterActors.resident(s)&&!reduced()});
+const presenter=createTablePresenter({tableView,getGame:()=>game,getSelectedIndex:()=>selectedIndex,getPresentation:()=>presentation,setPresentation:value=>{presentation=value;},clearTimer:()=>clearTimeout(timer),clearEffects,render,reduced,paused:()=>paused(),sound,syncSound,names:()=>NAMES,characterSprite,positionCallout,callPose,animatedResident:s=>characterActors.resident(s)&&!reduced()});
 function meldMarkup(m,s,i,compact=true){
  const hidden=m.kind==='concealedKan'&&s!==0,hasSource=Number.isInteger(m.from)&&m.calledTile;
  const label=m.kind==='concealedKan'?'暗槓':hasSource?(m.kind==='sequence'?'吃':'碰／槓')+' '+tileLabel(m.calledTile)+'，來自'+FULL_NAMES[m.from]:'副露（原紀錄未保存來源）';
@@ -548,7 +552,7 @@ function decorateWinSettlement(el,r,completed){
  const v2=r.kind==='win'&&!completed&&r.winner!==undefined;el.classList.toggle('result-v2',v2);if(!v2)return;
  const id=PORTRAITS[r.winner];el.style.setProperty('--wc-color',WIN_COLORS[id]||'#c9963c');
  el.insertAdjacentHTML('afterbegin','<div class="rv2-band" aria-hidden="true"></div><img class="rv2-portrait" alt="" draggable="false">');
- const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner,'front')];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id]){img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.style.left=(WIN_ANIM[id].handoff.portraitLeft??18)+'px';}img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
+ const img=el.querySelector('.rv2-portrait'),tries=[...winPortraits(r,id),characterSprite(r.winner)];img.classList.toggle('burst',r.method==='tsumo'||(winGrade(r)?.tier??1)>=2);if(r.method==='tsumo'&&WIN_ANIM[id]){img.style.height=WIN_ANIM[id].handoff.portraitH+'px';img.style.left=(WIN_ANIM[id].handoff.portraitLeft??18)+'px';}img.onerror=()=>{tries.shift();if(tries.length>0)img.src=tries[0];else img.onerror=null;};img.src=tries[0];
  const body=el.querySelector('.settlement-body'),total=winTaiTotal(r);
  body.insertAdjacentHTML('beforeend','<div class="rv2-seal'+(sealChars(total).length>4?' tall':'')+'" aria-hidden="true"><img src="'+WIN_ART.seal+'" alt="" onerror="this.remove()"><span class="seal-text n'+sealChars(total).length+'">'+sealChars(total).map(c=>'<i>'+c+'</i>').join('')+'</span></div>');
  const rows=[...el.querySelectorAll('.rv2-row')],seal=el.querySelector('.rv2-seal');
@@ -575,7 +579,7 @@ function renderResponseContext(acts){
 }
 function positionCallout(badge,seat){
  badge.dataset.seat=seat;const t=rectOf($('table')),p=rectOf(seatNode(seat).querySelector('.profile'));
- let x=seat===1?650:seat===3?205:427,y=seat===2?130:seat===0?225:195;
+ let x=seat===1?650:seat===3?205:seat===0?548:427,y=seat===2?130:seat===0?222:195; // v1.71 · your callout sits beside your pose
  badge.style.left=x+'px';badge.style.top=y+'px';
 }
 

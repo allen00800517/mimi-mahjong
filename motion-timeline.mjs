@@ -1,5 +1,5 @@
 import {facePlane} from './table-layout.mjs';
-export const MOTION=Object.freeze({discard:340,draw:340,meld:300,meldStagger:30,flower:260,settle:180,readPause:120,call:560});
+export const MOTION=Object.freeze({discard:340,draw:340,meld:300,meldStagger:30,flower:260,settle:180,readPause:120,call:560,selfCall:760});
 export const FLIGHT=Object.freeze({play:{contact:.82,arc:10,rebound:.7},draw:{contact:.9,arc:13,rebound:.25},meld:{contact:.86,arc:8,rebound:.45},flower:{contact:.9,arc:5,rebound:.2}});
 const lerp=(a,b,t)=>a+(b-a)*t;
 export function canonicalPose(o){const p=facePlane(o);return {...o,origin:p[0],u:p[1].map((v,i)=>v-p[0][i]),v:p[3].map((v,i)=>v-p[0][i]),flipU:false,flipV:false};}
