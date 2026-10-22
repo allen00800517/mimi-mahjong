@@ -695,7 +695,7 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 .call-performer{left:42.9%!important;top:37%!important;width:14.1%!important;height:39%!important}
 
 /* v1.73 · 自動打牌 toggle after 聽. v1.77 (user): fixed in the header row left of the wall count — in the band's right spot it flickered and covered the 聽 waits box on other players' turns. */
-#auto-discard{position:absolute;right:176px;top:7px;z-index:9;height:30px;min-height:0;padding:0 11px;border-radius:9px;border:1.5px solid #c9a265;background:linear-gradient(#4a3420,#2b1d11);color:#f5e6c8;font-size:14px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#auto-discard{position:absolute;right:202px;top:7px;z-index:9;height:30px;min-height:0;padding:0 11px;border-radius:9px;border:1.5px solid #c9a265;background:linear-gradient(#4a3420,#2b1d11);color:#f5e6c8;font-size:14px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 #auto-discard[hidden]{display:none}
 #auto-discard.on{border-color:#9fe3c4;background:linear-gradient(#2f8a69,#1b5a43);color:#fff;box-shadow:0 0 10px rgba(120,230,180,.55)}
 #table > .call-performer{z-index:8;pointer-events:none}
@@ -715,3 +715,6 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 .status-badge.ready-seal.gold img{animation-name:ready-glow-gold}
 @keyframes ready-glow-gold{0%,100%{filter:drop-shadow(0 0 0 rgba(255,210,90,0))}50%{filter:drop-shadow(0 0 6px rgba(255,215,110,.9))}}
 body.no-motion .status-badge.ready-seal img{animation:none}
+/* v1.78 · user: the phone's rounded corner clipped the settings／sound buttons and the wall count — the whole top-right group moves 26px toward the middle */
+#game-shell header{padding-right:36px!important}
+#header-count{right:136px!important}
