@@ -505,19 +505,22 @@ function finalStandings(st){
  const W=PODIUM.width,H=Math.round(W/PODIUM.ratio),fresh=finalRevealed!==game.revision&&!reduced();if(fresh){finalRevealed=game.revision;finalStart=performance.now();}
  // a rebuild during the reveal keeps every animation where it is (negative delays); later rebuilds show it finished
  const elapsed=fresh?0:performance.now()-finalStart,done=reduced()||elapsed>st.length*520+1400;
- const body=(p,k)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id);return {src,h:Math.round((m==='calm'?200:SETTLE_BODY_H[m][id]??210)*k),m};};
+ const body=(p,k)=>{const id=PORTRAITS[p.seat],m=settleMood(p.score),src=m==='calm'?characterSprite(p.seat,'chibi'):SETTLE_ART[m](id);return {src,h:Math.round((m==='calm'?214:SETTLE_BODY_H[m][id]??210)*k),m};};
  const at=i=>(st.length-1-i)*520+250,delay=i=>(at(i)-elapsed).toFixed(0)+'ms';
  const plate=p=>'<strong>'+escape(NAMES[p.seat])+'</strong><span class="'+(p.score>0?'gain':p.score<0?'loss':'')+'">'+signed(p.score)+'</span>';
  const cx=Math.round((854-W)/2),top=394-H+PODIUM.sink;
  let html='<img class="fs-title" alt="最終戰果" draggable="false" src="'+PODIUM.title+'"><p class="fs-sub">完成 '+match.rounds+' 圈 · 共 '+match.history.length+' 手</p><button id="final-history">查看逐手紀錄</button>'
   +'<div class="fs-rays" style="--d0:'+delay(0)+';top:'+(top+PODIUM.tiers[0].foot*H-60).toFixed(0)+'px"></div>'
   +'<div class="fs-podium" style="left:'+cx+'px;top:'+top+'px;width:'+W+'px;height:'+H+'px"><img class="fs-podium-art" alt="" draggable="false" src="'+PODIUM.art+'">';
- st.slice(0,3).forEach((p,i)=>{const t=PODIUM.tiers[i],b=body(p,.92),[pl,pt,pw,ph]=t.panel,x=(t.x*W).toFixed(0),foot=((1-t.foot)*H).toFixed(0);
+ // v1.78 · user: 2nd must never outshine 1st. Size steps down by rank, and a wide pose (蜜蜜's jump) is fitted into a
+ // narrower box (object-fit) so its spread no longer makes it look bigger than a standing winner.
+ const RANK_K=[1.06,.86,.8],box=(b,first)=>'height:'+b.h+'px'+(b.m==='calm'||first?'':';width:'+Math.round(b.h*.58)+'px;object-fit:contain;object-position:50% 100%');/* the table chibi (calm, score 0) has wide transparent sides, so only the tightly cropped settle art gets the box */
+ st.slice(0,3).forEach((p,i)=>{const t=PODIUM.tiers[i],b=body(p,RANK_K[i]);if(i===0)b.h=Math.min(b.h,224);/* keeps the winner's head clear of the top edge */const [pl,pt,pw,ph]=t.panel,x=(t.x*W).toFixed(0),foot=((1-t.foot)*H).toFixed(0);
   html+='<div class="fs-panel t'+i+'" style="--d:'+delay(i)+';left:'+(pl*W).toFixed(0)+'px;top:'+(pt*H).toFixed(0)+'px;width:'+(pw*W).toFixed(0)+'px;height:'+(ph*H).toFixed(0)+'px">'+p.rank+'</div>'
-   +'<img class="fs-fig r'+p.rank+' '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(+foot+8)+'px;height:'+b.h+'px">'
+   +'<img class="fs-fig r'+p.rank+' '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(+foot+8)+'px;'+box(b,i===0)+'">'
    +'<div class="fs-plate" style="--d:'+delay(i)+';left:'+x+'px;bottom:'+(foot-12)+'px">'+plate(p)+'</div>';});
  html+='</div>';
- const p4=st[3];if(p4){const b=body(p4,.8);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="height:'+b.h+'px"><div class="fs-plate"><b>'+p4.rank+'</b>'+plate(p4)+'</div></div>';}
+ const p4=st[3];if(p4){const b=body(p4,.76);html+='<div class="fs-floor" style="--d:'+delay(3)+'"><img class="fs-fig4 '+b.m+'" alt="" draggable="false" src="'+b.src+'" style="'+box(b)+'"><div class="fs-plate"><b>'+p4.rank+'</b>'+plate(p4)+'</div></div>';}
  if(fresh)st.forEach((p,i)=>setTimeout(()=>{if($('result').classList.contains('final-v2'))sound.play(i===0?'podium':'yaku');},at(i)));
  if(done)queueMicrotask(()=>$('result').classList.add('fs-shown'));
  return html;
