@@ -52,16 +52,17 @@ export function yakuWords(result,{anim=false}={}){
 export const yakuSpan=words=>words.length?words.at(-1).delay+YAKU_SHOW.land+YAKU_SHOW.hold:0;
 // v1.12 · Cut-in (カットイン): from tier 2 up, pressing 胡 first flashes the winner's eyes across the screen (with the
 // character's line), then the 胡／自摸 stamp lands, then the pattern words. It replaces the 自摸 clip for those hands
-// (a bigger hand outranks the ordinary 自摸 show). Tier 2 = a slanted band with just the eyes; tier 3+ = a wedge
-// slashing in from the right with most of the face. Placeholder art: the burst portrait, cropped around the eyes
+// (a bigger hand outranks the ordinary 自摸 show). Tier 2 = a slanted band with just the eyes; tier 3+ = a wider band
+// with more of the face (v1.70; it was a wedge from the right). Placeholder art: the burst portrait, cropped around the eyes
 // (eye = centre in image px, span = eye-to-eye width); the final art will be a Flow clip per character.
 export const CUTIN_TIMING=Object.freeze({ms:1300,in:200,out:200,glint:420});
 export const CUTIN_ART=Object.freeze({
  mimi:{w:340,h:760,eye:[165,280],span:110},ichika:{w:475,h:760,eye:[215,155],span:120},
  harumi:{w:413,h:760,eye:[220,105],span:95},gondo:{w:788,h:760,eye:[332,112],span:100},jinying:{w:483,h:760,eye:[225,138],span:85},
 });
-const CUTIN_SHAPES=Object.freeze({band:{fill:.62,at:[427,202]},wedge:{fill:.32,at:[600,170]}});
-export function cutinFor(result){const t=winGrade(result)?.tier??1;return t>=2?{shape:t>=3?'wedge':'band'}:null;}
+// v1.70 · tier 3+ is a wider band (more of the face, red lacquer + gold edge); the old wedge cut one eye off.
+const CUTIN_SHAPES=Object.freeze({band:{fill:.62,at:[427,202]},wide:{fill:.7,at:[427,204]}});
+export function cutinFor(result){const t=winGrade(result)?.tier??1;return t>=2?{shape:t>=3?'wide':'band'}:null;}
 // Background size/position (stage px) that put the eyes at the shape's focus point.
 export function cutinCrop(id,shape){
  const a=CUTIN_ART[id],sh=CUTIN_SHAPES[shape];if(!a||!sh)return null;

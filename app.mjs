@@ -187,7 +187,7 @@ function playWinSound(r){
  // v1.48 · an ordinary win off a discard: the winner calls ロン in their own voice (cut-ins and 自摸 clips carry their own)
  if(r.method!=='tsumo'&&r.method!=='flower')characterActors.line(PORTRAITS[r.winner],'ron');
 }
-// The cut-in stage: dimmed table with speed lines, the shape (band or wedge) slides in with the face slowly pushing
+// The cut-in stage: dimmed table with speed lines, the shape (band, or the wide band for tier 3+) slides in with the face slowly pushing
 // in and a glint in the eye, then slides out. buildWinStamp replaces it when the stamp comes.
 function showCutin(id,shape,clip=false){
  const crop=cutinCrop(id,shape);if(!crop&&!clip)return false;

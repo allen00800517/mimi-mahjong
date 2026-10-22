@@ -443,14 +443,11 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-ci .ci-dim{position:absolute;inset:0;overflow:hidden;background:rgba(8,5,3,.72);animation:wc-fade .15s ease-out both}
 #win-cinema .wc-ci .ci-dim::after{content:"";position:absolute;inset:-40%;background:repeating-conic-gradient(from 3deg at 50% 50%,rgba(255,255,255,.22) 0 .8deg,transparent .8deg 9deg);-webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 22%,#000 44%);mask-image:radial-gradient(circle at 50% 50%,transparent 22%,#000 44%);animation:ci-spin 1.3s linear both}
 #win-cinema .wc-ci .ci-slide{position:absolute;inset:0;animation:ci-in-l .2s cubic-bezier(.2,.8,.3,1) both,ci-out-r .2s 1.1s ease-in forwards}
-#win-cinema .wc-ci.ci-wedge .ci-slide{animation:ci-in-r .2s cubic-bezier(.2,.8,.3,1) both,ci-out-l .2s 1.1s ease-in forwards}
 #win-cinema .wc-ci .ci-edge,#win-cinema .wc-ci .ci-frame{position:absolute;inset:0}
 #win-cinema .wc-ci .ci-frame{background:#22150d}
 #win-cinema .wc-ci .ci-edge{background:linear-gradient(180deg,#fff,#f0cf7f 50%,#fff)}
 #win-cinema .ci-band .ci-frame{clip-path:polygon(-2% 38%,102% 26.6%,102% 64.7%,-2% 76%)}
 #win-cinema .ci-band .ci-edge{clip-path:polygon(-2% 35.4%,102% 24%,102% 67.3%,-2% 78.6%)}
-#win-cinema .ci-wedge .ci-frame{clip-path:polygon(35.1% 101%,101% 101%,101% -1%,65.6% -1%)}
-#win-cinema .ci-wedge .ci-edge{clip-path:polygon(33.7% 101%,101% 101%,101% -1%,64.2% -1%)}
 #win-cinema .wc-ci .ci-face{position:absolute;inset:0;background-repeat:no-repeat;animation:ci-push 1.3s ease-out both}
 #win-cinema .wc-ci .ci-frame::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(176deg,transparent 0 17px,rgba(255,255,255,.16) 17px 18px);animation:ci-streak 1.3s linear both}
 #win-cinema .wc-ci .ci-glint{position:absolute;width:76px;height:76px;margin:-38px 0 0 -38px;background:radial-gradient(circle,#fff 0 7%,rgba(255,255,255,.55) 13%,transparent 36%),linear-gradient(90deg,transparent 47%,rgba(255,255,255,.95) 50%,transparent 53%),linear-gradient(0deg,transparent 47%,rgba(255,255,255,.95) 50%,transparent 53%);opacity:0;animation:ci-glint .38s .42s ease-out both}
@@ -466,7 +463,6 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
    clipped to the band (or wedge) and snaps open to the full screen when the camera pulls back. The stamp stage that
    follows starts from white (the clip ends on a white flash). */
 #win-cinema .wc-ci .ci-clip{position:absolute;inset:0;animation:ci-in-l .2s cubic-bezier(.2,.8,.3,1) both}
-#win-cinema .wc-ci.ci-wedge .ci-clip{animation-name:ci-in-r}
 #win-cinema .wc-ci .ci-clip .ci-frame{background:#000}
 #win-cinema .wc-ci .ci-clip .ci-frame::after{content:none}
 #win-cinema .ci-clip video{position:absolute;left:0;top:-43px;width:854px;height:480px;object-fit:cover;transition:transform .26s cubic-bezier(.6,0,.3,1)}
@@ -523,8 +519,6 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #win-cinema .wc-ci .ci-clip .ci-frame,#win-cinema .wc-ci .ci-clip .ci-edge{transition:clip-path .26s cubic-bezier(.6,0,.3,1),opacity .2s}
 #win-cinema .ci-band .ci-clip .ci-frame{clip-path:polygon(-2% 47%,102% 36%,102% 74%,-2% 85%)}
 #win-cinema .ci-band .ci-clip .ci-edge{clip-path:polygon(-2% 44.4%,102% 33.4%,102% 76.6%,-2% 87.6%)}
-#win-cinema .ci-wedge .ci-clip .ci-frame{clip-path:polygon(35.1% 101%,101% 101%,101% -1%,65.6% -1%)}
-#win-cinema .ci-wedge .ci-clip .ci-edge{clip-path:polygon(33.7% 101%,101% 101%,101% -1%,64.2% -1%)}
 #win-cinema .wc-ci .ci-clip.open .ci-frame{clip-path:polygon(-2% -2%,102% -2%,102% 102%,-2% 102%)}
 #win-cinema .wc-ci .ci-clip.open .ci-edge{clip-path:polygon(-4% -4%,104% -4%,104% 104%,-4% 104%);opacity:0}
 #win-cinema .wc-white{position:absolute;inset:0;background:#fff;pointer-events:none;animation:wc-white-out .45s ease-out forwards}
@@ -684,3 +678,16 @@ body.deal-hide-flowers #self-flowers{visibility:hidden}
 #char-select .cs-go.wait{filter:saturate(.4) brightness(.8);font-size:13px}
 /* v1.64 · the ☺ button is gone (角色演出 moved to the character lab): the wall count keeps the same gap to the buttons */
 #header-count{right:110px!important}
+
+/* v1.70 · cut-in shapes: tier 2 = band with a gold edge; tier 3/4 = a wider band (more of the face) with a red lacquer
+   outer edge and a gold inner edge. Both golds/reds come from the 龍鳳柱 art (metal gold, lacquer red), with one light
+   sweep along the edge. The wedge (from the right) is retired: it cut one eye off. */
+#win-cinema .wc-ci .ci-edge{background:linear-gradient(180deg,#fff1c4,#f2ac3e 28%,#b06e0b 52%,#ffe081 74%,#c58a1f)}
+#win-cinema .wc-ci .ci-edge::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%) no-repeat;background-size:40% 100%;animation:ci-sheen-x 1.1s .15s ease-in-out both}
+@keyframes ci-sheen-x{from{background-position:-60% 0}to{background-position:160% 0}}
+#win-cinema .ci-wide .ci-frame{clip-path:polygon(-2% 30%,102% 17%,102% 73%,-2% 86%)}
+#win-cinema .ci-wide .ci-edge{clip-path:polygon(-2% 24.5%,102% 11.5%,102% 78.5%,-2% 91.5%);background:linear-gradient(180deg,#e8291a,#94100a 50%,#5a0000)}
+#win-cinema .ci-wide .ci-edge::before{content:"";position:absolute;inset:0;clip-path:polygon(-2% 27.5%,102% 14.5%,102% 75.5%,-2% 88.5%);background:linear-gradient(180deg,#fff1c4,#f2ac3e 28%,#b06e0b 52%,#ffe081 74%,#c58a1f)}
+#win-cinema .ci-wide .ci-clip .ci-frame{clip-path:polygon(-2% 37%,102% 25%,102% 84%,-2% 96%)}
+#win-cinema .ci-wide .ci-clip .ci-edge{clip-path:polygon(-2% 31.5%,102% 19.5%,102% 89.5%,-2% 101.5%)}
+#win-cinema .ci-wide .ci-clip .ci-edge::before{clip-path:polygon(-2% 34.5%,102% 22.5%,102% 86.5%,-2% 98.5%)}
