@@ -1,3 +1,4 @@
+import {mixBus} from './mixer.mjs';
 // Per-kind level under the sound bus; tile sounds sit under the character voices, cues lower still.
 export const SFX=Object.freeze({discard:{files:6,gain:.85},liuju:{files:1,gain:.6},draw:{files:5,gain:.5},meld:{files:3,gain:.8},riichi:{files:3,gain:1},strong:{files:3,gain:.9},reveal:{files:3,gain:1},shuffle:{files:2,gain:.55},call:{files:1,gain:.28},win:{files:1,gain:.5},flower:{files:1,gain:.35},button:{files:1,gain:.22},ready:{files:1,gain:.3},dice:{files:1,gain:.3},thud:{files:2,gain:1},pillar:{files:2,gain:.95},podium:{files:1,gain:.8}});
 export const SFX_VOLUME=.7;
@@ -30,8 +31,8 @@ export class TableSound{
  constructor({sampleBase=null,fetcher=(...a)=>fetch(...a)}={}){this.enabled=false;this.context=null;this.played=0;this.master=null;this.sampleBase=sampleBase;this.fetcher=fetcher;this.samples=null;}
  // v1.02 · Create the (still silent) audio context early so tracks and samples can be decoded before the first tap;
  // browsers allow that, they only refuse to resume it without a gesture.
- prepare(){try{if(this.context)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(this.context.destination);this.loadSamples();}catch{this.context=null;}}
- async unlock(){try{if(!this.context){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(this.context.destination);}// iOS may report 'interrupted' as well as 'suspended'; resume from any gesture until running.
+ prepare(){try{if(this.context)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(mixBus(this.context,'sfx'));this.loadSamples();}catch{this.context=null;}}
+ async unlock(){try{if(!this.context){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this.context=new C();this.master=this.context.createGain();this.master.gain.value=.16;this.master.connect(mixBus(this.context,'sfx'));}// iOS may report 'interrupted' as well as 'suspended'; resume from any gesture until running.
  this.loadSamples(); if(this.context.state!=='running'&&this.context.state!=='closed')await this.context.resume();}catch{this.context=null;}}
  // v1.33 · turning sound back on starts a fresh audio context: if iPhone audio ever jams (a stuck, beeping output),
  // the speaker button clears it. Decoded tracks and samples are rebuilt for the new context.
@@ -43,7 +44,7 @@ export class TableSound{
  // v0.92 · recorded tile sounds (BOOTH 麻雀サウンド素材集, trimmed) + synthesized cues. Falls back to tones until loaded.
  loadSamples(){
   if(!this.sampleBase||!this.context||this.samples)return;const ctx=this.context;this.samples=new Map();
-  this.bus=ctx.createGain();this.bus.gain.value=SFX_VOLUME;this.bus.connect(ctx.destination);
+  this.bus=ctx.createGain();this.bus.gain.value=SFX_VOLUME;this.bus.connect(mixBus(ctx,'sfx'));
   const all=[];
   for(const [kind,{files}] of Object.entries(SFX))for(let i=1;i<=files;i++)
    all.push(this.fetcher(this.sampleBase+kind+'-'+i+'.mp3').then(r=>{if(!r.ok)throw Error(kind);return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b)).then(buf=>{if(this.context!==ctx)return;const list=this.samples.get(kind)||[];list.push(buf);this.samples.set(kind,list);}).catch(()=>{}));

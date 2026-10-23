@@ -1,3 +1,4 @@
+import {mixBus} from './mixer.mjs';
 // Character lines play 20% quieter than the original .8 (user request, v0.90).
 export const VOICE_GAIN=.64;
 export class VoicePlayer{
@@ -22,7 +23,7 @@ export class VoicePlayer{
   const context=this.context(),buffer=this.buffers.get(kind);
   if(!this.enabled()||!context||context.state!=='running'||!buffer)return false;
   try{
-  this.stop();const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffer;gain.gain.value=VOICE_GAIN;source.connect(gain);gain.connect(context.destination);
+  this.stop();const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffer;gain.gain.value=VOICE_GAIN;source.connect(gain);gain.connect(mixBus(context,'voice'));
   const active={source,gain};this.active=active;
   source.onended=()=>{source.disconnect();gain.disconnect();if(this.active===active)this.active=null;};
   source.start();this.played++;return true;

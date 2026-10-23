@@ -7,6 +7,7 @@
 import {WIN_ANIM,slideCx} from './win-show.mjs';
 import {ChromaVideo} from './chroma-video.mjs';
 import {VOICE_GAIN} from './voice-player.mjs';
+import {mixBus} from './mixer.mjs';
 export const RISE_MS=320;
 export const CLIP_MAX_MS=6000;          // safety: never hold the table longer than this
 export const voiceUrl=id=>'./assets/win-v1/'+id+'-tsumo-voice.mp3';
@@ -39,7 +40,7 @@ export class TsumoShow{
   const ctx=this.sound?.context;if(!this.sound?.enabled||!ctx||ctx.state!=='running')return;
   const buf=await this.voiceBuffer(id);if(!buf||token!==this.run)return;
   const v=this.video,offset=Math.max(0,v&&!v.paused?v.currentTime:offsetSeconds);if(offset>=buf.duration)return;
-  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=VOICE_GAIN;src.connect(g);g.connect(ctx.destination);src.start(0,offset);
+  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=VOICE_GAIN;src.connect(g);g.connect(mixBus(ctx,'voice'));src.start(0,offset);
   this.voice={src,g};src.onended=()=>{src.disconnect();g.disconnect();if(this.voice?.src===src)this.voice=null;};
  }
  // Starts the clip inside the win stage. Returns false when it cannot (caller shows the still instead);

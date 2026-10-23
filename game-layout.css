@@ -722,3 +722,9 @@ body.no-motion .status-badge.ready-seal img{animation:none}
 #game-shell header{pointer-events:none}
 #game-shell header>*{pointer-events:auto}
 #auto-discard{z-index:11}
+/* v1.81 · volume sliders in the table menu */
+.volume-mix{display:grid;gap:6px;width:100%;margin:0;padding:8px 10px;border:1px solid #b38e5c66;border-radius:8px}
+.volume-mix legend{padding:0 4px;font-size:13px;color:#e8d6ae}
+.volume-mix label{display:grid;grid-template-columns:4.5em 1fr 2.4em;align-items:center;gap:8px}
+.volume-mix input[type=range]{width:100%;accent-color:#d9a94a;height:28px}
+.volume-mix output{text-align:right;font-variant-numeric:tabular-nums;color:#ffe9a8}

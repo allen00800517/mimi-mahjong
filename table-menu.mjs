@@ -7,7 +7,8 @@ export function organizeTableMenu(){
  const shortcuts=document.createElement('div');shortcuts.className='menu-shortcuts';shortcuts.append($('river-toggle'),$('result-toggle'),$('history-toggle'));
  const situation=document.createElement('details');situation.id='table-situation';situation.innerHTML='<summary>四家戰況</summary><table id="table-scores" aria-label="四家分數與門風"></table>';play.append($('resume-match'),$('fullscreen-toggle'),shortcuts,situation,newGame,$('table-status'));
  $('river-toggle').textContent='放大查看棄牌';
- for(const id of ['music-choice','speed','confirm-button','motion'])settings.append($(id).closest('label'));
+ // v1.81 · the volume sliders sit right under 背景音樂
+ for(const el of [$('music-choice').closest('label'),dialog.querySelector('.volume-mix'),...['speed','confirm-button','motion'].map(id=>$(id).closest('label'))])if(el)settings.append(el);
  const help=document.createElement('p');help.className='menu-help';help.textContent='出牌：點一下選牌，再點同張或向上滑。宣告聽牌時，選擇金框牌打出。';settings.append(help);
  appearance.append(dialog.querySelector('.cast-picker'),$('flower-skin').closest('label'),$('flower-preview'));
  for(const id of ['auto'])advanced.append($(id).closest('label'));

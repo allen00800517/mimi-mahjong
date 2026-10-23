@@ -4,6 +4,7 @@
 // tap) and its sound track is decoded into the game's audio context; both are downloaded ahead for the characters at
 // the table, so playback never waits on the network. A character without a clip keeps the still placeholder cut-in.
 import {VOICE_GAIN} from './voice-player.mjs';
+import {mixBus} from './mixer.mjs';
 // open = ms into the clip when the band opens to full screen (the camera starts pulling back); ms = clip length.
 // v1.29 · clean 16:9 clips (-c): once open the picture shows whole between the 龍鳳柱 (the blurred -w versions are retired).
 export const CUTIN_CLIPS=Object.freeze({
@@ -47,7 +48,7 @@ export class CutinShow{
  async playSound(id,offset,token){
   const ctx=this.sound?.context;if(!this.sound?.enabled||!ctx||ctx.state!=='running')return;
   const buf=await this.buffer(id);if(!buf||token!==this.run||offset>=buf.duration)return;
-  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=VOICE_GAIN;src.connect(g);g.connect(ctx.destination);src.start(0,offset);
+  const src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=VOICE_GAIN;src.connect(g);g.connect(mixBus(ctx,'voice'));src.start(0,offset);
   this.src={src,g};src.onended=()=>{src.disconnect();g.disconnect();if(this.src?.src===src)this.src=null;};
  }
  // Builds the clip inside `stage` (a .wc-stage) and plays it. Returns false when it cannot (caller shows the

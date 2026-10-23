@@ -1,3 +1,4 @@
+import {mixBus} from './mixer.mjs';
 // v0.91 · Background music. Four round tracks (東南西北) plus one "someone declared 聽" track.
 // Each file is stereo and already normalised; the loop crossfade is baked into the file just before loopEnd,
 // so an AudioBufferSourceNode can jump loopEnd → loopStart sample-accurately with no audible seam.
@@ -44,7 +45,7 @@ export class MusicPlayer{
  }
  output(){
   const ctx=this.context();if(!ctx)return null;
-  if(this.masterContext!==ctx){this.masterContext=ctx;this.master=ctx.createGain();this.master.gain.value=MUSIC_VOLUME;this.master.connect(ctx.destination);this.buffers.clear();this.loading.clear();this.active=null;}
+  if(this.masterContext!==ctx){this.masterContext=ctx;this.master=ctx.createGain();this.master.gain.value=MUSIC_VOLUME;this.master.connect(mixBus(ctx,'music'));this.buffers.clear();this.loading.clear();this.active=null;}
   return this.master;
  }
  load(id){

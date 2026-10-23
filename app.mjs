@@ -32,6 +32,7 @@ import {TitleScreen,TITLE_ART,titleLang} from './title-screen.mjs';
 import {unseenWaitCounts} from './table-views.mjs';
 import {bindHandInput} from './hand-input.mjs';
 import {freshSeed,newGameSeed} from './new-game.mjs';
+import {MIX_KINDS,loadMixLevels,setMixLevel,mixLevels} from './mixer.mjs';
 const $=id=>document.getElementById(id);
 // Status messages are written to the menu's #feedback; mirror them on the table so a closed menu never hides them.
 const toast={timer:null,pending:null,pendingAt:0,persistText:null};
@@ -81,10 +82,15 @@ $('speed').value=[250,750,1300].includes(Number(preferences.speed))?String(prefe
 $('motion').checked=preferences.motion!==false;
 sound.enabled=preferences.sound!==false;
 $('flower-skin').value=setFlowerSkin(preferences.flowerSkin);
+// v1.81 · three volume sliders (音樂／音效／角色語音), saved with the other preferences. Releasing a slider plays a
+// short sample of that channel so the player hears the new level (music is already playing).
+{const lv=loadMixLevels(preferences.volumes);for(const k of MIX_KINDS){const input=$('vol-'+k),out=$('vol-'+k+'-out');input.value=lv[k];out.textContent=lv[k];
+ input.oninput=()=>{setMixLevel(k,input.value);out.textContent=input.value;};
+ input.onchange=()=>{setMixLevel(k,input.value);savePreferences();if(!sound.enabled)return;if(k==='sfx')sound.play('discard');else if(k==='voice')characterActors.line(PORTRAITS[0],'pon');};}}
 function renderFlowerPreview(){$('flower-preview').innerHTML=Array.from({length:8},(_,i)=>'<button class="flower-preview-tile" data-flower="'+(i+1)+'f" aria-label="放大'+tileLabel((i+1)+'f')+'">'+tileFace((i+1)+'f')+'</button>').join('');}
 renderFlowerPreview();
 const reduced=()=>!$('motion').checked||matchMedia('(prefers-reduced-motion: reduce)').matches;
-function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,soundDefault:'v102',flowerSkin:$('flower-skin').value,characters:[...PORTRAITS]};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
+function savePreferences(){preferences={music:$('music-choice').value,confirmButton:$('confirm-button').checked,speed:Number($('speed').value),motion:$('motion').checked,sound:sound.enabled,soundDefault:'v102',flowerSkin:$('flower-skin').value,characters:[...PORTRAITS],volumes:mixLevels()};try{localStorage.setItem('mimi-tw-preferences-4',JSON.stringify(preferences));}catch{}}
 // Background music follows the master sound switch, the menu choice and page visibility.
 const music=new MusicPlayer({context:()=>sound.context,enabled:()=>sound.enabled&&$('music-choice').value!=='off'&&!document.hidden});globalThis.mimiMusic=music; // read-only handle for QA (which track is actually playing)
 // v1.35 · musicOverride: 'hush' from the cut-in on (the table music fades out), 'big3'/'big4' on the big-hand screen and
