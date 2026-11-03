@@ -292,11 +292,11 @@ function playBigClip(st,id){
  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';
  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';v.setAttribute('aria-hidden','true');document.body.append(v);v.src=url;
  const cv=document.createElement('canvas');cv.className='bw-who bw-clip';cv.style.cssText='left:'+r.left.toFixed(1)+'px;top:'+r.top.toFixed(1)+'px;width:'+r.width.toFixed(1)+'px;height:'+r.height.toFixed(1)+'px';
- img.after(cv);const chroma=new ChromaVideo(cv,v),run={v,raf:0,done:false};bigClipRun=run;
- const tick=()=>{if(bigClipRun!==run)return;if(chroma.draw()&&img.style.visibility!=='hidden')img.style.visibility='hidden';if(v.ended){run.done=true;img.style.visibility='';cv.remove();return;} /* v1.48 · back to the still on the last frame (same pose) so anything a clip trimmed at its edge returns */run.raf=requestAnimationFrame(tick);};
+ img.after(cv);const chroma=new ChromaVideo(cv,v),run={v,raf:0,done:false,chroma};bigClipRun=run;
+ const tick=()=>{if(bigClipRun!==run)return;if(chroma.draw()&&img.style.visibility!=='hidden')img.style.visibility='hidden';if(v.ended){run.done=true;img.style.visibility='';cv.remove();chroma.release();return;} /* v1.48 · back to the still on the last frame (same pose) so anything a clip trimmed at its edge returns */run.raf=requestAnimationFrame(tick);};
  v.play().then(()=>{if(bigClipRun===run)run.raf=requestAnimationFrame(tick);}).catch(()=>{cv.remove();stopBigClip();});
 }
-function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
+function stopBigClip(){const run=bigClipRun;bigClipRun=null;if(!run)return;cancelAnimationFrame(run.raf);run.chroma?.release();const v=run.v;try{v.pause();v.removeAttribute('src');v.load();}catch{}v.remove();}
 // v1.51 · load order on a first visit: the table art and the opponents' motion sheets come first (needed at once);
 // the win clips (自摸, cut-ins, big-win figures ~16 MB) follow a few seconds later instead of competing with them.
 let winClipsAt=0;

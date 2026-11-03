@@ -21,7 +21,7 @@ export class ChromaVideo{
   for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
  }
  draw(){
-  const v=this.video;if(!v.videoWidth)return false;
+  const v=this.video;if(this.released||!v.videoWidth)return false;
   if(this.canvas.width!==v.videoWidth||this.canvas.height!==v.videoHeight){this.canvas.width=v.videoWidth;this.canvas.height=v.videoHeight;}
   if(!this.gl){this.ctx.drawImage(v,0,0);return true;}
   const gl=this.gl;gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
@@ -29,5 +29,7 @@ export class ChromaVideo{
   try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,v);}catch{return false;}
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);return true;
  }
+ // v1.82 · give the WebGL context back right away (a phone allows only a few; each 自摸／big-win clip made a new one)
+ release(){this.released=true;try{this.gl?.getExtension('WEBGL_lose_context')?.loseContext();}catch{}this.gl=null;this.ctx=null;}
  clear(){if(this.gl){this.gl.clearColor(0,0,0,0);this.gl.clear(this.gl.COLOR_BUFFER_BIT);}else this.ctx?.clearRect(0,0,this.canvas.width,this.canvas.height);}
 }

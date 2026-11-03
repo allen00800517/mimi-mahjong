@@ -29,6 +29,8 @@ export const CUTIN_CLIPS=Object.freeze({
  jinying:{video:'./assets/cutin-v1/jinying-cutin-c3.mp4',audio:'./assets/cutin-v1/jinying-cutin-4.mp3',open:1200,ms:7750},
 });
 export const CUTIN_OPEN_MS=260;
+// v1.82 · if the clip has not started moving within this long (a stalled phone decoder), the still cut-in is used.
+export const CUTIN_START_GRACE_MS=2000;
 export class CutinShow{
  constructor({sound,fetcher=(...a)=>fetch(...a)}={}){this.sound=sound;this.fetcher=fetcher;this.urls=new Map();this.pending=new Set();this.bytes=new Map();this.buffers=new Map();this.run=0;this.timers=[];this.src=null;this.video=null;}
  // v1.25 · one clip at a time, after the table is ready (the caller gates it): four clips at once used to crowd out the
@@ -64,6 +66,8 @@ export class CutinShow{
   wrap.querySelector('.ci-frame').append(v);stage.append(wrap);this.video=v;
   let done=false;const end=()=>{if(done||token!==this.run)return;done=true;onEnd?.();};
   v.onended=end;
+  const bail=()=>{if(done||token!==this.run)return;done=true;this.stop();wrap.remove();this.failures=(this.failures||0)+1;onFail?.();};
+  this.timers.push(setTimeout(()=>{if(token===this.run&&v.currentTime<.05)bail();},CUTIN_START_GRACE_MS));
   v.play().then(()=>{
    if(token!==this.run)return;this.playSound(id,v.currentTime,token);
    const at=Math.max(0,c.open-v.currentTime*1000);
@@ -72,7 +76,7 @@ export class CutinShow{
    for(const d of [250,330])this.timers.push(setTimeout(()=>{if(token!==this.run)return;this.sound?.play?.('pillar');wrap.classList.remove('hit');void wrap.offsetWidth;wrap.classList.add('hit');},at+d));
    this.timers.push(setTimeout(()=>{if(token===this.run)wrap.classList.add('ending');},Math.max(0,c.ms-420-v.currentTime*1000)));
    this.timers.push(setTimeout(end,c.ms+600)); // safety if 'ended' never fires
-  }).catch(()=>{if(token!==this.run)return;wrap.remove();onFail?.();});
+  }).catch(()=>bail());
   return true;
  }
  stop(){

@@ -10,6 +10,10 @@ import {VOICE_GAIN} from './voice-player.mjs';
 import {mixBus} from './mixer.mjs';
 export const RISE_MS=320;
 export const CLIP_MAX_MS=6000;          // safety: never hold the table longer than this
+// v1.82 · user: a CPU 自摸 showed nothing, hung, then jumped to the settlement — the phone's video never started. If
+// the clip has not started moving within START_GRACE_MS, or freezes for STALL_MS before the stamp, the still 自摸
+// (portrait + stamp) is shown instead; a freeze after the stamp simply ends the clip early.
+export const START_GRACE_MS=1500,STALL_MS=1200;
 export const voiceUrl=id=>'./assets/win-v1/'+id+'-tsumo-voice.mp3';
 // Where the clip frame sits at a given moment: rise from below for RISE_MS, glide from the centre to the hand-off spot.
 export function clipTransform(anim,ms,sinceStart){
@@ -52,21 +56,27 @@ export class TsumoShow{
   try{v.currentTime=0;}catch{}
   const canvas=document.createElement('canvas'),h=a.handoff.frameH,w=h*16/9;canvas.className='wc-video';
   canvas.style.cssText='left:'+(427-w/2).toFixed(1)+'px;width:'+w.toFixed(1)+'px;height:'+h+'px;transform:translate(0px,'+h+'px)';
-  stage.insertBefore(canvas,before);const chroma=new ChromaVideo(canvas,v);
-  let stamped=false,began=null,voiced=false;const t0=performance.now();
+  this.chroma?.release();stage.insertBefore(canvas,before);const chroma=this.chroma=new ChromaVideo(canvas,v);
+  let stamped=false,began=null,voiced=false,lastPos=-1,movedAt=performance.now();const t0=performance.now();
+  // give up on the clip: the caller shows the still 自摸 (with the voice from the start)
+  const bail=()=>{if(token!==this.run)return;const t=++this.run;if(this.raf)cancelAnimationFrame(this.raf);this.raf=null;try{v.pause();}catch{}canvas.remove();chroma.release();this.failures=(this.failures||0)+1;if(!voiced)this.playVoice(id,0,t);onFail?.();};
+  this.timers=[setTimeout(()=>{if(token===this.run&&(began===null||v.currentTime<.05))bail();},START_GRACE_MS)];
   const tick=()=>{
    if(token!==this.run)return;const now=performance.now();began??=now;const ms=v.currentTime*1000;
    const {tx,ty}=clipTransform(a,ms,now-began);canvas.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px)';chroma.draw();
-   if(!voiced){voiced=true;this.playVoice(id,v.currentTime,token);}
+   if(v.currentTime>lastPos+.001){lastPos=v.currentTime;movedAt=now;}
+   else if(now-movedAt>STALL_MS&&!v.ended){if(!stamped){bail();return;}onEnd?.();return;}
+   if(!voiced&&v.currentTime>0){voiced=true;this.playVoice(id,v.currentTime,token);}
    if(!stamped&&ms>=a.stampAt){stamped=true;onStamp?.();}
    if(v.ended||now-t0>CLIP_MAX_MS){if(!stamped)onStamp?.();onEnd?.();return;}
    this.raf=requestAnimationFrame(tick);
   };
-  v.play().then(()=>{if(token===this.run)this.raf=requestAnimationFrame(tick);}).catch(()=>{if(token!==this.run)return;canvas.remove();this.playVoice(id,0,token);onFail?.();});
+  v.play().then(()=>{if(token===this.run)this.raf=requestAnimationFrame(tick);}).catch(()=>bail());
   return true;
  }
  stop(){
   this.run++;if(this.raf)cancelAnimationFrame(this.raf);this.raf=null;try{this.video?.pause();}catch{}
+  for(const t of this.timers||[])clearTimeout(t);this.timers=[];this.chroma?.release();this.chroma=null; // v1.82 · free the clip's WebGL context
   const voice=this.voice;this.voice=null;if(voice){try{const ctx=this.sound.context,now=ctx.currentTime;voice.g.gain.setValueAtTime(voice.g.gain.value,now);voice.g.gain.linearRampToValueAtTime(0,now+.15);voice.src.stop(now+.17);}catch{}}
  }
 }
