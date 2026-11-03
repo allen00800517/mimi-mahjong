@@ -4,6 +4,7 @@ import {setFaceImages} from './tiles.mjs';
 import {MotionTimeline,flightPose,FLIGHT,MOTION} from './motion-timeline.mjs';
 import {TileRenderer,faceObject} from './tile-renderer.mjs';
 import {ResourceGeneration} from './resource-generation.mjs';
+export const LOST_RETRY_MS=4000,SLOW_RETRY_MS=20000;
 const seatIds=['south','east','north','west'];
 function proxyFor(o){const seat=document.getElementById(seatIds[o.seat]);if(o.kind==='river')return document.getElementById('river-'+o.seat).children[o.index];if(o.kind==='hand')return seat.querySelectorAll('.back')[o.index];if(o.kind==='meld')return seat.querySelector('[data-meld-index="'+o.group+'"]')?.children[o.index];if(o.kind==='flower')return (o.seat===0?document.getElementById('self-flowers'):seat).querySelectorAll('.flower-tile')[o.index];return null;}
 export class PlayableTable{
@@ -13,8 +14,10 @@ export class PlayableTable{
   this.timeline=new MotionTimeline(()=>this.draw(),{onError:error=>this.onMotionError?.(error)});
   new ResizeObserver(()=>{this.staticDirty=true;this.draw();}).observe(canvas);
   for(const surface of [canvas,motionCanvas]){
-   surface.addEventListener("webglcontextlost",e=>{e.preventDefault();this.lostSurfaces.add(surface);this.resources.invalidate();this.ready=false;document.getElementById("table").classList.remove("table-3d-ready");document.getElementById("table-loading").hidden=false;document.getElementById("table-loading-text").textContent="正在恢復牌桌…";this.onUnavailable?.();});
-   surface.addEventListener("webglcontextrestored",()=>{this.lostSurfaces.delete(surface);if(!this.lostSurfaces.size)this.loading=this.start();});
+   surface.addEventListener("webglcontextlost",e=>{e.preventDefault();this.lostSurfaces.add(surface);this.resources.invalidate();this.ready=false;document.getElementById("table").classList.remove("table-3d-ready");document.getElementById("table-loading").hidden=false;document.getElementById("table-loading-text").textContent="正在恢復牌桌…";this.onUnavailable?.();
+    // v1.83 · a lost context the browser never gives back used to leave 「正在恢復牌桌…」 up for good: offer a reload (the hand is saved).
+    clearTimeout(this.lostTimer);this.lostTimer=setTimeout(()=>{if(!this.lostSurfaces.size)return;document.getElementById("table-loading-text").textContent="牌桌畫面無法恢復，請重新載入（牌局已自動保存）。";document.getElementById("table-retry").hidden=false;},LOST_RETRY_MS);});
+   surface.addEventListener("webglcontextrestored",()=>{this.lostSurfaces.delete(surface);if(!this.lostSurfaces.size)clearTimeout(this.lostTimer);if(!this.lostSurfaces.size)this.loading=this.start();});
   }
   // v1.28 · wait for the title to load first (app.mjs start gate); without a gate (labs, tests) start at once.
   this.loading=(globalThis.mimiStartGate||Promise.resolve()).then(()=>this.start());
@@ -25,6 +28,8 @@ export class PlayableTable{
   let stage='assets';
   try{
    if(this.lostSurfaces.size)return;
+   // v1.83 · a stalled connection used to leave 「正在準備牌桌…」 up with no way out: after a while, offer a reload too.
+   clearTimeout(this.slowTimer);this.slowTimer=setTimeout(()=>{if(!this.resources.current(generation)||this.ready)return;document.getElementById('table-loading-text').textContent='網路較慢，仍在準備牌桌…';retry.hidden=false;},SLOW_RETRY_MS);
    const renderer=new TileRenderer(this.canvas);this.resources.own(generation,renderer);
    const motionRenderer=new TileRenderer(this.motionCanvas);this.resources.own(generation,motionRenderer);
    await Promise.all([renderer.load(),motionRenderer.load()]);if(!this.resources.current(generation))return;
@@ -32,8 +37,8 @@ export class PlayableTable{
    if(renderer.gl.isContextLost()||motionRenderer.gl.isContextLost())throw Error('WebGL context lost');
    motionRenderer.draw([faceObject({x:0,y:0,width:42,height:57.75},{face:'1m'})],{background:false});motionRenderer.gl.finish();
    stage='presentation';
-   this.renderer=renderer;this.motionRenderer=motionRenderer;setFaceImages(images);this.staticDirty=true;this.layoutDirty=true;this.ready=true;this.draw();loading.hidden=true;this.onReady?.();
-  }catch(e){if(!this.resources.current(generation))return;this.ready=false;this.resources.invalidate();document.getElementById('table-loading-text').textContent=stage==='assets'?'牌桌素材未能載入，請重試。':'牌局畫面處理發生錯誤，請重新載入。';loading.hidden=false;retry.hidden=false;console.error(e);}
+   this.renderer=renderer;this.motionRenderer=motionRenderer;setFaceImages(images);this.staticDirty=true;this.layoutDirty=true;this.ready=true;clearTimeout(this.slowTimer);this.draw();loading.hidden=true;this.onReady?.();
+  }catch(e){if(!this.resources.current(generation))return;clearTimeout(this.slowTimer);this.ready=false;this.resources.invalidate();document.getElementById('table-loading-text').textContent=stage==='assets'?'牌桌素材未能載入，請重試。':'牌局畫面處理發生錯誤，請重新載入。';loading.hidden=false;retry.hidden=false;console.error(e);}
  }
  update(game,skin,lastEffect){this.layoutDirty=true;this.staticDirty=true;this.game=game;this.skin=skin;this.lastEffect=lastEffect;this.objects=tableLayout(game,skin,lastEffect);this.proxies=new Map(this.objects.map(o=>[o.key,proxyFor(o)]));this.draw();}
  toScreen(p){const r=rectOf(this.canvas);return [r.left+p[0]*r.width/VIEW.width,r.top+p[1]*r.height/VIEW.height];}
