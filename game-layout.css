@@ -728,3 +728,11 @@ body.no-motion .status-badge.ready-seal img{animation:none}
 .volume-mix label{display:grid;grid-template-columns:4.5em 1fr 2.4em;align-items:center;gap:8px}
 .volume-mix input[type=range]{width:100%;accent-color:#d9a94a;height:28px}
 .volume-mix output{text-align:right;font-variant-numeric:tabular-nums;color:#ffe9a8}
+/* v1.86 · iOS 27: a filter on the hand tile button itself (dimmed when it is not your turn, greyed during 吃／碰 choices,
+   iOS's sticky hover after a tap) is painted shifted down and enlarged inside the rotated, scaled stage, so after every
+   discard the hand looked sunk under the bottom bar. The buttons never carry a filter now; the same dimming is applied
+   to the tile picture inside (a filter there paints correctly, like the meld tiles). */
+#south .hand .tile,#south .hand .tile:disabled,#south .hand .tile:hover,#south.response-choice .hand .tile:not(.response-eligible),#south.response-choice .hand .tile.response-eligible,body.discard-in-flight #south.response-choice .hand .tile{filter:none!important}
+#south .hand .tile:disabled .tile-art{filter:brightness(.94) drop-shadow(0 1px 1px #0005)}
+#south.response-choice .hand .tile:not(.response-eligible) .tile-art{filter:brightness(.73) saturate(.65) drop-shadow(0 1px 1px #0005)}
+body.discard-in-flight #south.response-choice .hand .tile:not(.response-eligible) .tile-art{filter:drop-shadow(0 1px 1px #0005)}
